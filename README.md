@@ -10,7 +10,7 @@ The belief tested is *"I don't need a health insurance policy of my own"*, commo
 - **Measures:** belief (0–100) before, right after, and at day 7, plus unsupported claims per conversation, hand-labelled.
 
 ## Try it
-**Live:** `https://<hf-user>-verified-persuasion.static.hf.space`. Choose "I'm just trying it out"; try-outs aren't counted in the study.
+**Live:** https://somshubhra-verified-persuasion.static.hf.space. Choose "I'm just trying it out"; try-outs aren't counted in the study.
 
 ## How it works
 | Part | File |

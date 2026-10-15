@@ -125,3 +125,4 @@ Steps, one at a time with Som:
   - A bad token gets 403, so `SESSION_SECRET` is set.
   - A live `/api/start` (a declined try-out) wrote 2 rows to Supabase (ts in UTC); the test rows were deleted.
   - The frontend's `RENDER_API` was updated to the -f0vv URL.
+- **Step 6 started:** the Space is huggingface.co/spaces/somshubhra/verified-persuasion. The direct link (the live link) is https://somshubhra-verified-persuasion.static.hf.space. ALLOWED_ORIGIN and APP_URL were added to the local .env; the README carries the live link.
