@@ -124,3 +124,13 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - Selfchecks: converse, check_claims and analyze all pass.
 - Ledger doc bucket table: B2 "C06–C09, C25–C27" → "C06–C09, C26, C27 (C25 on hold)"; B4 "C08, C11, C15, C16, C25" → "C08, C11, C15, C16 (C25 on hold)", following the existing "(C31 on hold)" style.
 - Ledger doc bucket table, B4 "What actually needs answering": "Waiting periods, the moratorium clock, and how premiums rise with age" → "Waiting periods, underwriting when buying later, and the cap on premium rises after 60", to match B4's claims (C08, C11, C15, C16). The moratorium (C12) is B3-only, and nothing in B4 covers premiums rising with age now that C25 is on Hold.
+
+## Day-2 test log (run on 15 Oct evening via OpenRouter, before Groq reset)
+### Step 1: checker gold rescore — **FAIL** (stopped here, per the test plan)
+`PROVIDER=openrouter check_claims.py --gold` with `openai/gpt-oss-120b` via OpenRouter (host chosen by OpenRouter, not recorded):
+- Recall 13/16 on flagged rows, 1 false flag, label agreement 32/38. The bar is 16/16 and ≤ 2 false flags.
+- MISSED g21 ("will be subject to underwriting"; gold unsupported, got supported). This was caught on day 1 on Groq, before fix 3.
+- MISSED g35 ("Those amounts can quickly eat into savings."; got non-factual). Probably the echo rule: the person said "savings", so the judge treated the add-on as repeating them.
+- MISSED g37 ("a sizable share are upheld"; got supported). The characterising-words rule didn't fire.
+- FALSE FLAG g09 (the old C13 wording, "resolved in the policyholder's favour", Cafemutual): got unsupported. Probably caused by today's C13 rewrite ("mediated settlement or formal award"), not by the checker.
+- Two confounds: a different host from Groq, and the ledger changed after the gold rows were written. Not fixed yet; options go to Som.
