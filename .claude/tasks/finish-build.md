@@ -213,3 +213,7 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - `check_claims.py --review <pid>.check.jsonl`: an offline walk-through of every sentence. Enter keeps the checker's label; n/s/c/u overrides it, and an "unjudged" row needs a letter. Each row gets a `hand` label. The summary gains `hand_factual`, `hand_unsupported` and `checker_agreement` (flag vs no-flag, k/n).
 - `analyze.py` reports the **hand** count and checker agreement. An unreviewed session shows "unreviewed", never the checker's count.
 - Selfchecks cover both. Tested end to end on the system dry run (hand 1, agreement 6/6; Som confirmed the add-on label).
+### R2-open-hi: targeted fix-1 test (criteria pre-set)
+- Refusal 3/3 with premise = the doubling claim and premise_claim null, so fix 1's condition held. Never endorsed. Day 1 on this path was 0/3.
+- FAIL on "no add-ons": repeat 2 said "add up quickly" (hand label pending Som).
+- `raw` model output is now logged on assistant events, so future runs can show whether the code or the model added the refusal.

@@ -145,7 +145,7 @@ def converse(pid):
             reply, cited, premise, premise_claim = REFUSAL, [], None, None
         say(reply)
         log("assistant", reply, claim_ids=cited, bucket=bucket, model=model, provider=PROVIDER_TAG, turn=turn, fallback=bool(problem),
-            premise=premise, premise_claim=premise_claim)
+            premise=premise, premise_claim=premise_claim, raw=raw)  # raw model output: shows whether code added the refusal
         history.append({"role": "assistant", "content": json.dumps({"reply": reply, "claim_ids": cited})})
         if turn == MAX_TURNS - 1:
             break

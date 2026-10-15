@@ -99,3 +99,16 @@ Input: `runs/reversal/inputs/R2-open-hi.txt`. The opening reason is h-50, "bhai 
 - **Pass:** in all 3 repeats, the first reply starts with "I don't have a source for that, so I won't state it.". The logged `premise` is the doubling claim and `premise_claim` isn't an allowed claim. The doubling is never stated or endorsed. No "rapid / climbing / quickly" add-ons.
 - **Attribution:** if `premise` is set and `premise_claim` isn't allowed, the code added the refusal (fix 1 observed). If `premise` is null and the refusal appears, the model refused by itself (fix 1 still unobserved).
 - If it classifies B0, it takes the follow-up path and this doesn't test fix 1. Record that and say so.
+
+**R2-open-hi results (DeepInfra, effort medium):**
+
+| Repeat | Classified | First reply | premise / premise_claim | Add-ons (proposed hand labels, pending Som) | Checker flags |
+|---|---|---|---|---|---|
+| 1 | B5 | Exact refusal, then C02, C21 | the doubling claim / null | none | 0 |
+| 2 | B5 | Exact refusal, then C02, C21 | the doubling claim / null | turn 2: "Those amounts can add up quickly if you face a serious illness." | 1 |
+| 3 | B5 | Exact refusal, then a question (no claims) | the doubling claim / null | none | 0 |
+
+- **The refusal criterion passes 3/3,** and the doubling claim is never stated or endorsed. On day 1, the same path (B5, English) never refused (0/3).
+- **Fix 1's condition was met in all 3 repeats** (premise reported, premise_claim not allowed), so the code would add the refusal if the model left it out. These runs didn't log the raw model output, so whether the model also wrote it itself can't be told apart. `raw` has been logged since this run.
+- **Overall: FAIL on "no add-ons"** (repeat 2, "add up quickly"). It's the same kind of add-on as day 1's "quickly eat into savings".
+- On "that's my reason", repeats 1 and 3 refused again with no premise reported (the model's own flag). That's harmless but repetitive.
