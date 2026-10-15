@@ -171,3 +171,9 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 2. Judge rule added for vague quantities and interpretations. Its examples ("a large portion", "plenty of", "the data indicate", "this proves") **deliberately avoid g37's words** ("sizable", "suggest"), so g37 tests whether the rule generalises.
 3. 4 fresh rows (g39–g42): 2 unsupported (evaluative "substantial", interpretive "indicates … generally honour") and 2 plain supported (C03, C16), to watch for over-flagging. Gold now has 42 rows, 19 that should be flagged.
 4. Rerun on the same setup (DeepInfra, effort medium). This is reported as a **second rescore after targeted fixes**, not a blind pass.
+### Step 1, second rescore (after the fixes; DeepInfra, effort medium) — **FAIL on false flags (3, bar ≤ 2)**
+- Recall **19/19**: g37 is now caught, so the rule generalised beyond its examples, and so are the fresh g39 and g40. Label agreement 37/42.
+- FALSE FLAG g01 ("Which means the 5 lakh cover stays with the employer's group policy…"; a day-1 false flag, back again).
+- FALSE FLAG g11 ("so most claims are not denied"; the borderline row, flagged in every run tonight).
+- FALSE FLAG **g41** (fresh: C03 stated plainly, "Nearly two in three urban hospital stays…"). Probably the new vague-quantity rule overreaching onto the claim's own wording. That's exactly the over-flagging the fresh supported rows were added to detect.
+- Trade-off measured: the new rule took recall from 15/16 to 19/19 but added a false flag. Every false flag over-counts unsupported claims, which works *against* the hypothesis (it's conservative). Stopped; options go to Som.
