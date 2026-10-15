@@ -118,3 +118,4 @@ Steps, one at a time with Som:
   - The page uses `RENDER_API` (https://verified-persuasion.onrender.com) when served from hf.space or huggingface.co, else same-origin. It pings health on load and says "Starting up the server…" until the first response.
   - `requirements.txt` gains uvicorn. `SESSION_SECRET` is required when `RENDER` is set.
 - **Premise-rule fix verified:** B2 9/9 no false refusal. R2-B5 3/3 refused by code (fix 1 observed working). Learning log entry 12. Latency: first reply 5–60 s (median ~47 s), classify 8–20 s.
+- **Step 5a done:** the Supabase secret key is in .env, and a local write+read round trip passed. `SupabaseStore` uses the certifi CA bundle, because python.org macOS builds lack root certificates. The test row was deleted.

@@ -13,7 +13,7 @@ IDs: participants who pass screening get P01, P02, ... (odd = system arm, even =
 declined / screened-out get S01, S02, ...; try-outs get demo-N (always the system arm, never counted, capped per
 day); `?pilot=1` gives pilot-N (alternating arms, never counted).
 """
-import hashlib, hmac, json, os, sys, time, urllib.parse, urllib.request
+import hashlib, hmac, json, os, ssl, sys, time, urllib.parse, urllib.request
 from pathlib import Path
 
 os.environ.setdefault("RATE_LIMIT_WAITS", "5,10,20,30")  # keeps one request under ~2 min, so the page doesn't look stuck
@@ -59,12 +59,14 @@ class SupabaseStore:
     """Production: rows in the `events` table via Supabase's REST API (stdlib only)."""
     def __init__(self, url, key):
         self.base, self.key = url.rstrip("/") + "/rest/v1/events", key
+        import certifi  # installed with openai; python.org builds on macOS ship without root certificates
+        self.tls = ssl.create_default_context(cafile=certifi.where())
 
     def _call(self, method, query="", body=None):
         req = urllib.request.Request(self.base + query, method=method, data=json.dumps(body).encode() if body else None,
                                      headers={"apikey": self.key, "Authorization": f"Bearer {self.key}",
                                               "Content-Type": "application/json", "Prefer": "return=minimal"})
-        with urllib.request.urlopen(req, timeout=20) as r:
+        with urllib.request.urlopen(req, timeout=20, context=self.tls) as r:
             return json.loads(r.read() or "null")
 
     def append(self, rec):
