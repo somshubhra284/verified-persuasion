@@ -35,7 +35,7 @@ def usable_claims():
 def say_as(c):
     """How a claim must be attributed, built from its status and source so the model can't promote an insurer's page
     to 'IRDAI' or state an inference as a fact."""
-    s, src = c["status"], c["source"]
+    s, src = c["status"], re.sub(r"\s*\([^)]*cop(y|ies)[^)]*\)", "", c["source"])  # "(TaxGuru copy)" is for us, not them
     if s.startswith("Secondary") and "reported" not in src:
         return f"As reported by {src}, ..."
     if s.startswith("Inference"):
@@ -341,6 +341,7 @@ def selfcheck():
     assert say_as(by["C11"]).startswith("As reported by Royal Sundaram")  # an insurer's page, never "IRDAI states"
     assert say_as(by["C08"]).startswith("Based on IRDAI") and "reasoning" in say_as(by["C08"])  # Inference, as reasoning
     assert say_as(by["C10"]).startswith("According to IRDAI Annual Report")
+    assert "copy" not in say_as(by["C06"]).lower()
     # ending: the opening stance never counts; 3 non-moving replies after it, or the cap, force a wrap
     assert not should_wrap(["resisting", "resisting", "neutral"], 2)
     assert should_wrap(["resisting", "resisting", "neutral", "disengaged"], 3)

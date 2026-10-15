@@ -12,6 +12,8 @@ Steps:
 2. Chain: pick 3 or 4 claims, in order, that together build toward the crux. The FIRST link must answer the reason exactly as they stated it (e.g. "my company covers me" → a claim about employer cover); later links work toward the crux. Each link must follow from the previous one. Prefer claims that answer the crux directly, from any bucket. For each, write "why": one sentence on how that claim bears on THEIR crux, using only what the claim itself says (no new numbers, no predictions about them personally).
 3. Conclusion: one sentence the chain builds to, using only the chain's content. Argue against the belief, never for a purchase or an insurer.
 
+Argument knowledge: if the crux is "I can buy later" or "I'm healthy now", the strongest links are (a) that a policy bought later starts its waiting periods afresh, and (b) how common long-term conditions are among adults, because together they show the cost of waiting. If the crux is "my employer covers me", the strongest links are that the cover belongs to the employer's policy and what happens to it when the job ends.
+
 Never use a claim whose status starts with "Hold". Never invent a claim ID.
 
 Reply with JSON only:

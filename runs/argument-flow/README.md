@@ -35,3 +35,12 @@ Also: latency median < 5 s; the add-ons are hand-noted.
   - (1) a claim outside the plan may answer a *new point* the person raises, not only a question (logged as `question_claims`)
   - (2) the plan prompt requires the first link to answer the stated reason
 - Rerun: J1, J2, B2, N2 ×3 → "Run 2".
+
+## Run 2 results
+- B2 3/3 no refusal ✓. N2 3/3 C11 plus a question ✓. **J2 fixed:** the first reply is now C26 (employer cover) ✓, wrapped after 5 replies ✓. 0 violations, median 1.0 s.
+- **J1 still FAIL:** classified B2+B4, but the plan chose C06, C02, C03 (no C08/C05). "I don't have any pre-existing diseases" was handled as *advance* → C03, not as a new point. A bridge reply added "a sizable expense" (an add-on).
+- **Fixes after run 2** (general argument knowledge, no claim IDs):
+  - the plan prompt names the strongest links for "buy later / healthy now" (waiting periods restart + how common conditions are) and for "employer covers me"
+  - the conversation prompt treats "I'm healthy / no conditions / can't predict the future / employer covers me" as new points → answer
+  - `say_as` drops "(… copy)" parentheticals
+- Run 3: J1 ×3 plus a **fresh variant J4** (not used to write the fix) ×3, same J1 criteria (crux mentions later; C08 and C05 in the chain or used by reply 4; the reply to the "healthy" point cites C05 or C08).
