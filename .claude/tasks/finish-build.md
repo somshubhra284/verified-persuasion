@@ -134,3 +134,12 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - MISSED g37 ("a sizable share are upheld"; got supported). The characterising-words rule didn't fire.
 - FALSE FLAG g09 (the old C13 wording, "resolved in the policyholder's favour", Cafemutual): got unsupported. Probably caused by today's C13 rewrite ("mediated settlement or formal award"), not by the checker.
 - Two confounds: a different host from Groq, and the ledger changed after the gold rows were written. Not fixed yet; options go to Som.
+### Step 1, run 2 (rerun, same setup) — **FAIL, differently**
+- Recall 16/16, but 4 false flags. g06 and g08 came back unjudged (no JSON could be parsed), g09 uncited, g11 unsupported.
+- Runs 1 and 2 disagree on 7 rows, so the setup isn't stable enough to test with.
+- **Cause found:** OpenRouter spreads `openai/gpt-oss-120b` across about 24 hosts.
+  - They run different precisions (int4, fp4, fp8, bf16).
+  - Four don't support `response_format` (Venice, DigitalOcean, SambaNova, Amazon Bedrock).
+  - A diagnostic call of 3 requests hit CoreWeave, Novita, CoreWeave.
+  - So a "run" is a mix of hosts, and unjudged rows are JSON failures from hosts without JSON mode, not judgments.
+- **Next:** pin one host (`provider.order` with no fallbacks, `require_parameters`), log it, and then rescore. Som chooses the host.
