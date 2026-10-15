@@ -127,7 +127,7 @@
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
 <script>
 // On Hugging Face the page calls the API on Render; run locally (uvicorn app:app) it calls its own server.
-const RENDER_API = "https://verified-persuasion.onrender.com";
+const RENDER_API = "https://verified-persuasion-f0vv.onrender.com";
 const API_BASE = /(^|\.)hf\.space$|huggingface\.co$/.test(location.hostname) ? RENDER_API : "";
 let awake = false;
 fetch(API_BASE + "/api/health").then(() => { awake = true; }).catch(() => {});  // wake a sleeping free server early
