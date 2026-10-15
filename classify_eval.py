@@ -23,9 +23,9 @@ for line in (HERE / ".env").read_text().splitlines() if (HERE / ".env").exists()
         os.environ.setdefault(k.strip(), v.strip())
 PROVIDERS = {"groq": ("GROQ_API_KEY", "https://api.groq.com/openai/v1"),
              "openrouter": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1")}
-# Study setup (Som, 16 Oct): OpenRouter -> DeepInfra for the pilot and every participant. PROVIDER=groq to override.
+# Study setup (Som, 16 Oct): OpenRouter -> Cerebras (was DeepInfra; same model, ~40x faster) for the pilot and every participant.
 PROVIDER = os.environ.get("PROVIDER", "openrouter")
-HOST = os.environ.get("OPENROUTER_HOST", "DeepInfra") if PROVIDER == "openrouter" else None
+HOST = os.environ.get("OPENROUTER_HOST", "Cerebras") if PROVIDER == "openrouter" else None  # Cerebras since 16 Oct: ~1 s vs 30-60 s
 EFFORT = "medium"  # gpt-oss reasoning effort; hosts may default differently, so it is set explicitly on OpenRouter
 PROVIDER_TAG = PROVIDER + (f":{HOST}:effort-{EFFORT}" if HOST else "")  # logged next to the model, so results from each host stay separable
 BUCKETS = {f"B{i}" for i in range(8)}

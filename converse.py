@@ -14,6 +14,7 @@ BUCKET_NAMES = {"B1": "young / healthy", "B2": "employer covers me", "B3": "clai
                 "B4": "I'll buy later", "B5": "savings / too expensive", "B6": "government covers me",
                 "B7": "on a family member's policy"}
 REFUSAL = "I don't have a source for that, so I won't state it."
+FOLLOW_UP = "What makes you ask about that?"  # added when a refusal would otherwise be the whole message
 MAX_TURNS = 4
 LEDGER = json.loads((HERE / "data" / "ledger.json").read_text())["claims"]
 
@@ -21,6 +22,15 @@ LEDGER = json.loads((HERE / "data" / "ledger.json").read_text())["claims"]
 def allowed_claims(bucket):
     return [c for c in LEDGER if bucket in c["buckets"] and not c["status"].startswith("Hold")]
 
+
+def usable_claims():
+    """Since 16 Oct (Som): any non-Hold claim may answer a direct question; reason claims come from the buckets."""
+    return [c for c in LEDGER if not c["status"].startswith("Hold")]
+
+
+def reason_claims(buckets):
+    """Claims for the person's reasons: the primary bucket's plus the secondary's, in ledger order."""
+    return [c for c in usable_claims() if set(c["buckets"]) & {b for b in buckets if b}]
 
 def check_reply(raw, allowed_ids):
     """Parse model output; return (reply, claim_ids, problem or None, premise or None, premise_claim or None)."""
@@ -31,8 +41,12 @@ def check_reply(raw, allowed_ids):
         # A factual premise the person stated that no allowed claim covers gets the refusal, enforced here
         # because the model left "costs double every five years" standing when it arrived as their reason.
         unsupported_premise = premise and out.get("premise_claim") not in allowed_ids
-        if (out.get("refuse") or unsupported_premise) and REFUSAL not in reply:
-            reply = f"{REFUSAL} {reply}".strip()
+        refused = out.get("refuse") or unsupported_premise
+        if not reply.strip() and not refused:
+            return None, [], "empty reply", None, None
+        if refused and REFUSAL not in reply:
+            # never a dead end: the refusal always comes with something to answer
+            reply = f"{REFUSAL} {reply.strip() or FOLLOW_UP}"
     except (ValueError, KeyError, TypeError, AttributeError):
         return None, [], "unparseable reply", None, None
     bad = [i for i in ids if i not in allowed_ids]
@@ -75,17 +89,25 @@ def screen(age, own_policy, govt, t0):
                                     (govt, "government scheme"), (t0 < 60, f"T0 {t0} < 60")] if failed]
 
 
-def system_prompt(bucket, reason):
-    claims = allowed_claims(bucket)
+def secondary_of(primary, secondary):
+    return secondary if secondary in BUCKET_NAMES and secondary != primary else None
+
+
+def system_prompt(bucket, reason, secondary=None):
+    fields = ("id", "claim", "figure", "source", "status", "care")
+    mine = reason_claims([bucket, secondary])
+    other = [c for c in usable_claims() if c not in mine]
+    dump = lambda cs: json.dumps([{k: x[k] for k in fields} for x in cs], ensure_ascii=False, indent=1)
+    also = f" They also mentioned: {secondary} ({BUCKET_NAMES[secondary]})." if secondary else ""
     return ((HERE / "prompts" / "conversation_prompt.md").read_text()
             .replace("{reason}", reason).replace("{bucket}", bucket).replace("{bucket_name}", BUCKET_NAMES[bucket])
-            .replace("{claims}", json.dumps([{k: x[k] for k in ("id", "claim", "figure", "source", "status", "care")}
-                                             for x in claims], ensure_ascii=False, indent=1)))
+            .replace("{secondary_line}", also).replace("{claims}", dump(mine)).replace("{other_claims}", dump(other)))
 
 
-def next_reply(client, model, system, history, bucket, turn, log):
+def next_reply(client, model, system, history, bucket, turn, log, secondary=None):
     """One assistant turn: call the model, enforce the claim rules (one retry, then refuse), log it. Returns (reply, ids)."""
-    ids = {x["id"] for x in allowed_claims(bucket)}
+    ids = {x["id"] for x in usable_claims()}
+    mine = {x["id"] for x in reason_claims([bucket, secondary])}
     msgs = [{"role": "system", "content": system}] + history
     for attempt in range(2):  # one retry with the problem spelled out, then refuse
         raw = client.chat.completions.create(model=model, temperature=0, response_format={"type": "json_object"},
@@ -98,7 +120,9 @@ def next_reply(client, model, system, history, bucket, turn, log):
                        {"role": "user", "content": f"(system) Invalid: {problem}. Use only the listed claims; reply as JSON."}]
     if problem:
         reply, cited, premise, premise_claim = REFUSAL, [], None, None
-    log("assistant", reply, claim_ids=cited, bucket=bucket, model=model, provider=PROVIDER_TAG, turn=turn, fallback=bool(problem),
+    log("assistant", reply, claim_ids=cited, bucket=bucket, buckets=[b for b in (bucket, secondary) if b],
+        question_claims=[i for i in cited if i not in mine],  # used only because the person asked directly
+        model=model, provider=PROVIDER_TAG, turn=turn, fallback=bool(problem),
         premise=premise, premise_claim=premise_claim, raw=raw)  # raw model output: shows whether code added the refusal
     return reply, cited
 
@@ -133,7 +157,7 @@ def intake(log, arm):
 
 
 def classify_reason(log, reason, model):
-    """Classify, with one follow-up if B0. Returns (bucket, final reason text)."""
+    """Classify, with one follow-up if B0. Returns (bucket, secondary or None, final reason text)."""
     classify = llm_classifier()
     c = classify(reason)
     log("classify", reason, primary=c.get("primary"), secondary=c.get("secondary"), model=model, provider=PROVIDER_TAG)
@@ -143,7 +167,7 @@ def classify_reason(log, reason, model):
         log("reason", reason, follow_up=True)
         c = classify(reason)
         log("classify", reason, primary=c.get("primary"), secondary=c.get("secondary"), model=model, provider=PROVIDER_TAG)
-    return c.get("primary"), reason
+    return c.get("primary"), secondary_of(c.get("primary"), c.get("secondary")), reason
 
 
 def converse(pid):
@@ -151,16 +175,16 @@ def converse(pid):
     reason = intake(log, "system")
     if reason is None:
         return
-    bucket, reason = classify_reason(log, reason, model)
+    bucket, secondary, reason = classify_reason(log, reason, model)
     if bucket not in BUCKET_NAMES:  # still B0 (or parse error): never guess a bucket
         say("Thanks, that's really helpful. That's all I needed.")
         log("end", reason="unclassified", bucket=bucket)
         return
 
-    system = system_prompt(bucket, reason)
+    system = system_prompt(bucket, reason, secondary)
     client, history = make_client(), [{"role": "user", "content": reason}]
     for turn in range(MAX_TURNS):
-        reply, cited = next_reply(client, model, system, history, bucket, turn, log)
+        reply, cited = next_reply(client, model, system, history, bucket, turn, log, secondary)
         say(reply)
         history.append({"role": "assistant", "content": json.dumps({"reply": reply, "claim_ids": cited})})
         if turn == MAX_TURNS - 1:
@@ -202,7 +226,16 @@ def selfcheck():
     assert all(not c["status"].startswith("Hold") for b in BUCKET_NAMES for c in allowed_claims(b))
     assert all("B2" in c["buckets"] for c in allowed_claims("B2"))
     assert check_reply('{"reply": "x", "claim_ids": ["C10"]}', b3)[2] is None
-    assert check_reply('{"reply": "x", "claim_ids": ["C01"]}', b3)[2]  # C01 is B1-only
+    usable = {c["id"] for c in usable_claims()}
+    assert check_reply('{"reply": "x", "claim_ids": ["C25"]}', usable)[2]  # C25 is Hold: never usable
+    assert check_reply('{"reply": "x", "claim_ids": ["C01"]}', usable)[2] is None  # any non-Hold claim may answer a question
+    assert check_reply('{"refuse": true, "reply": "", "claim_ids": []}', b3)[0] == f"{REFUSAL} {FOLLOW_UP}"  # never bare
+    assert check_reply('{"reply": "", "claim_ids": []}', b3)[2] == "empty reply"
+    both = {c["id"] for c in reason_claims(["B2", "B5"])}
+    assert {"C06", "C21"} <= both and "C10" not in both  # B2 + B5 claims, not B3
+    p = system_prompt("B2", "x", "B5")
+    assert "also mentioned: B5" in p and "{other_claims}" not in p and '"C10"' in p and '"C25"' not in p
+    assert secondary_of("B2", "B2") is None and secondary_of("B2", None) is None and secondary_of("B2", "B5") == "B5"
     assert check_reply("not json", b3)[2]
     assert check_reply('{"refuse": true, "reply": "Why?", "claim_ids": []}', b3)[0] == f"{REFUSAL} Why?"
     # fix 1: an unsupported stated premise gets the refusal even when the model didn't set refuse
@@ -214,7 +247,7 @@ def selfcheck():
                        '"claim_ids": ["C10"]}', b3)[0] == "87% settled."
     assert check_reply('{"premise": null, "reply": "Hi.", "claim_ids": []}', b3)[0] == "Hi."
     assert screen(30, False, False, 80) == [] and screen(50, True, False, 40) == ["age 50", "has own policy", "T0 40 < 60"]
-    assert "{claims}" not in system_prompt("B3", "x") and '"C10"' in system_prompt("B3", "x")
+    assert "{claims}" not in system_prompt("B3", "x") and "{secondary_line}" not in system_prompt("B3", "x")
     assert "C25" in (HERE / "data" / "ledger.json").read_text() and "C25" not in (HERE / "data" / "fixed_brief.md").read_text()
     print("selfcheck ok")
 

@@ -105,6 +105,14 @@ def load(pid, tok):
     return events, cv.logger(pid, sink=STORE.append)
 
 
+BY_ID = {c["id"]: c for c in cv.LEDGER}
+
+
+def sources(ids):
+    """What the page shows under a reply: the named source and link behind each claim it used."""
+    return [{"id": i, "source": BY_ID[i]["source"], "url": BY_ID[i]["url"]} for i in ids if i in BY_ID]
+
+
 def first(events, name):
     return next((e for e in events if e["event"] == name), None)
 
@@ -198,7 +206,7 @@ def reason(t: Turn):
     if len(classes) < len(reasons):
         c = llm(lambda: llm_classifier()(reasons[-1]))
         log("classify", reasons[-1], primary=c.get("primary"), secondary=c.get("secondary"), model=MODEL, provider=PROVIDER_TAG)
-        classes.append({"primary": c.get("primary"), "follow_up": c.get("follow_up")})
+        classes.append({"primary": c.get("primary"), "secondary": c.get("secondary"), "follow_up": c.get("follow_up")})
     bucket = classes[-1]["primary"]
     if bucket not in cv.BUCKET_NAMES:  # never guess a bucket
         if len(reasons) == 1:
@@ -209,10 +217,11 @@ def reason(t: Turn):
         return {"brief": BRIEF}
     reply = next((e for e in events if e["event"] == "assistant"), None)
     if reply:
-        return {"reply": reply["text"], "last": cv.MAX_TURNS == 1}
-    text, _ = llm(lambda: cv.next_reply(make_client(), MODEL, cv.system_prompt(bucket, reasons[-1]),
-                                        [{"role": "user", "content": reasons[-1]}], bucket, 0, log))
-    return {"reply": text, "last": cv.MAX_TURNS == 1}
+        return {"reply": reply["text"], "sources": sources(reply["claim_ids"]), "last": cv.MAX_TURNS == 1}
+    secondary = cv.secondary_of(bucket, classes[-1].get("secondary"))
+    text, ids = llm(lambda: cv.next_reply(make_client(), MODEL, cv.system_prompt(bucket, reasons[-1], secondary),
+                                          [{"role": "user", "content": reasons[-1]}], bucket, 0, log, secondary))
+    return {"reply": text, "sources": sources(ids), "last": cv.MAX_TURNS == 1}
 
 
 @app.post("/api/message")
@@ -220,7 +229,9 @@ def message(t: Turn):
     """One more turn in the system arm (or 'done'). History is rebuilt from the log, as converse.py builds it."""
     events, log = load(t.pid, t.token)
     reason_text = [e["text"] for e in events if e["event"] == "reason"][-1]
-    bucket = [e for e in events if e["event"] == "classify"][-1]["primary"]
+    last_class = [e for e in events if e["event"] == "classify"][-1]
+    bucket = last_class["primary"]
+    secondary = cv.secondary_of(bucket, last_class.get("secondary"))
     history = [{"role": "user", "content": reason_text}]
     for e in events:
         if e["event"] == "assistant":
@@ -233,8 +244,9 @@ def message(t: Turn):
     if events[-1]["event"] != "user":  # a retry after "busy" must not log the same message twice
         log("user", t.text)
         history.append({"role": "user", "content": t.text})
-    text, _ = llm(lambda: cv.next_reply(make_client(), MODEL, cv.system_prompt(bucket, reason_text), history, bucket, turn, log))
-    return {"reply": text, "last": turn == cv.MAX_TURNS - 1}
+    text, ids = llm(lambda: cv.next_reply(make_client(), MODEL, cv.system_prompt(bucket, reason_text, secondary), history,
+                                          bucket, turn, log, secondary))
+    return {"reply": text, "sources": sources(ids), "last": turn == cv.MAX_TURNS - 1}
 
 
 @app.post("/api/brief_done")
@@ -279,7 +291,8 @@ def selfcheck():
             raise RateLimitError("busy", response=httpx.Response(429, request=httpx.Request("POST", "http://x")), body=None)
         return NS(choices=[NS(message=NS(content=json.dumps({"reply": "About 87% were paid.", "claim_ids": ["C10"]})))])
     make_client = lambda: NS(chat=NS(completions=NS(create=create)))
-    llm_classifier = lambda: (lambda text: {"primary": "B0" if "dunno" in text else "B3", "secondary": None,
+    llm_classifier = lambda: (lambda text: {"primary": "B0" if "dunno" in text else "B2" if "employer" in text else "B3",
+                                            "secondary": "B5" if "employer" in text else None,
                                             "follow_up": "What is your main reason?"})
     with tempfile.TemporaryDirectory() as d:
         STORE = FileStore(d)
@@ -291,6 +304,7 @@ def selfcheck():
         assert (s["pid"], s["arm"]) == ("P01", "system"), s
         r = c.post("/api/reason", json={**s, "text": "claims get rejected"}).json()
         assert r["reply"] == "About 87% were paid." and not r["last"]
+        assert r["sources"] == [{"id": "C10", "source": BY_ID["C10"]["source"], "url": BY_ID["C10"]["url"]}]
         calls["busy"] = 1
         assert c.post("/api/message", json={**s, "text": "really?"}).status_code == 503
         assert c.post("/api/message", json={**s, "text": "really?"}).json()["reply"]
@@ -313,6 +327,11 @@ def selfcheck():
         assert (d1["pid"], d1["arm"], d1["status"]) == ("demo-1", "system", "ok")
         assert c.post("/api/start", json={**ok, "mode": "pilot"}).json()["arm"] == "system"
         assert c.post("/api/start", json={**ok, "mode": "pilot"}).json()["arm"] == "brief"
+        # two reasons: both buckets reach the conversation and the log
+        two = c.post("/api/start", json={**ok, "mode": "demo"}).json()  # try-outs are always the system arm
+        c.post("/api/reason", json={**two, "text": "my employer covers me and it's a waste of money"})
+        a = next(e for e in STORE.events(two["pid"]) if e["event"] == "assistant")
+        assert a["buckets"] == ["B2", "B5"] and a["question_claims"] == ["C10"], a  # C10 is in neither B2 nor B5
         # B0 twice ends with no claims
         u = c.post("/api/start", json=ok).json()
         assert c.post("/api/reason", json={**u, "text": "dunno"}).json() == {"follow_up": "What is your main reason?"}

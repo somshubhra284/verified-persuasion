@@ -15,7 +15,7 @@ A sentence takes the worse of the two layers. Unsupported claims = uncited + uns
 import json, os, re, sys
 from pathlib import Path
 from classify_eval import HERE, DEFAULT_MODEL, PROVIDER_TAG, make_client
-from converse import LEDGER, allowed_claims
+from converse import LEDGER, usable_claims
 
 BY_ID = {c["id"]: c for c in LEDGER}
 RANK = {"non-factual": 0, "supported": 0, "uncited": 1, "unsupported": 2, "unjudged": 2}
@@ -51,12 +51,12 @@ def in_pool(n, pool):
     return any("." in x and len(x.split(".")[1]) > d and round(float(x), d) == float(n) for x in pool)
 
 
-def check_numbers(sentence, cited_ids, bucket, user_nums):
+def check_numbers(sentence, cited_ids, user_nums):
     """Layer 1: [(number, 'uncited'|'unsupported', claim_id or None)] for numbers no cited claim contains."""
     cited = set().union(*(claim_numbers(BY_ID[i]) for i in cited_ids if i in BY_ID))
     flags = []
     for n in sorted(x for x in numbers(sentence) if not in_pool(x, cited) and x not in user_nums):
-        other = next((c["id"] for c in allowed_claims(bucket) if in_pool(n, claim_numbers(c))), None)
+        other = next((c["id"] for c in usable_claims() if in_pool(n, claim_numbers(c))), None)
         flags.append((n, "uncited" if other else "unsupported", other))
     return flags
 
@@ -65,11 +65,12 @@ def split_sentences(reply):
     return [s for s in re.split(r"(?<=[.?!])\s+", reply.strip()) if s]
 
 
-def judge(sentences, cited_ids, bucket, client, model, user_text=""):
+def judge(sentences, cited_ids, client, model, user_text=""):
     """Layer 2: one LLM call per reply; returns {n: label dict}. user_text = what the person said so far (echo fix)."""
     fields = ("id", "status", "claim", "figure", "source")
     cited = [{k: BY_ID[i][k] for k in fields} for i in cited_ids if i in BY_ID]
-    others = [{k: c[k] for k in fields} for c in allowed_claims(bucket) if c["id"] not in cited_ids]
+    # since 16 Oct any non-Hold claim may answer a direct question, so the checker judges against the whole usable ledger
+    others = [{k: c[k] for k in fields} for c in usable_claims() if c["id"] not in cited_ids]
     user = (f"CITED claims:\n{json.dumps(cited, ensure_ascii=False)}\n\nOTHER claims:\n{json.dumps(others, ensure_ascii=False)}"
             f"\n\nWhat the PERSON said so far:\n{user_text.strip() or '(nothing)'}"
             "\n\nSentences:\n" + "\n".join(f"{n}. {s}" for n, s in enumerate(sentences, 1)))
@@ -82,14 +83,14 @@ def judge(sentences, cited_ids, bucket, client, model, user_text=""):
         return {}
 
 
-def check_reply(reply, cited_ids, bucket, user_text, client, model):
+def check_reply(reply, cited_ids, user_text, client, model):
     sentences = split_sentences(reply)
-    labels, user_nums = judge(sentences, cited_ids, bucket, client, model, user_text), numbers(user_text)
+    labels, user_nums = judge(sentences, cited_ids, client, model, user_text), numbers(user_text)
     rows = []
     for n, s in enumerate(sentences, 1):
         j = labels.get(n, {"label": "unjudged", "claim_id": None, "why": "judge returned no label"})
         label = j["label"] if j["label"] in RANK else "unjudged"
-        num_flags = check_numbers(s, cited_ids, bucket, user_nums)
+        num_flags = check_numbers(s, cited_ids, user_nums)
         worst_num = max((f[1] for f in num_flags), key=RANK.get, default="supported")
         rows.append({"n": n, "sentence": s, "label": max(label, worst_num, key=RANK.get), "judge": label,
                      "claim_id": j.get("claim_id"), "why": j.get("why"), "num_flags": num_flags})
@@ -104,7 +105,7 @@ def check_session(path, client, model):
             user_text += " " + (e["text"] or "")
         if e["event"] != "assistant":
             continue
-        for r in check_reply(e["text"], e.get("claim_ids") or [], e["bucket"], user_text, client, model):
+        for r in check_reply(e["text"], e.get("claim_ids") or [], user_text, client, model):
             r.update(turn=e["turn"], cited=e.get("claim_ids"))
             out_rows.append(r)
             totals[r["label"]] = totals.get(r["label"], 0) + 1
@@ -146,7 +147,7 @@ def score_gold(client, model):
     rows = [json.loads(l) for l in (HERE / "data" / "checker_gold.jsonl").read_text().splitlines() if l.strip()]
     missed, false_flags, exact = [], [], 0
     for g in rows:
-        got = max((r["label"] for r in check_reply(g["sentence"], g["cited_ids"], g["bucket"], g.get("user_text", ""),
+        got = max((r["label"] for r in check_reply(g["sentence"], g["cited_ids"], g.get("user_text", ""),
                                                    client, model)), key=RANK.get)
         exact += got == g["label"] or (RANK[got] == RANK[g["label"]] == 0)
         if g["label"] in FLAGS and got not in FLAGS:
@@ -168,13 +169,13 @@ def selfcheck():
     assert numbers("₹24,000 (≈$248)") == {"24000", "248"}
     assert numbers("86.88% of 63,71,620") == {"86.88", "6371620"}
     assert numbers("one major insurer") == set()
-    assert check_numbers("87% were settled and 8% rejected.", ["C10"], "B3", set()) == []
-    assert check_numbers("12% of claims were rejected.", ["C10"], "B3", set()) == [("12", "unsupported", None)]
-    assert check_numbers("Waiting periods start from zero.", ["C06"], "B2", set()) == [("0", "uncited", "C08")]
-    assert check_numbers("Your 5 lakh cover stays with the employer.", ["C06"], "B2", numbers("my 5 lakh cover")) == []
-    assert check_numbers("Insurers met the 1-hour target for 86.9% of requests.", ["C14"], "B3", set()) == []  # rounds 86.88
-    assert check_numbers("Insurers met the 1-hour target for 87% of requests.", ["C14"], "B3", set()) == []
-    assert check_numbers("About 52% of health complaints went to the policyholder.", ["C30"], "B3", set()) == [("52", "unsupported", None)]  # all-lines 52% removed from C30 (fix 2)
+    assert check_numbers("87% were settled and 8% rejected.", ["C10"], set()) == []
+    assert [f[0] for f in check_numbers("12% of claims were rejected.", ["C10"], set())] == ["12"]  # flagged (C24 has a 12 elsewhere)
+    assert check_numbers("Waiting periods start from zero.", ["C06"], set()) == [("0", "uncited", "C08")]
+    assert check_numbers("Your 5 lakh cover stays with the employer.", ["C06"], numbers("my 5 lakh cover")) == []
+    assert check_numbers("Insurers met the 1-hour target for 86.9% of requests.", ["C14"], set()) == []  # rounds 86.88
+    assert check_numbers("Insurers met the 1-hour target for 87% of requests.", ["C14"], set()) == []
+    assert [f[0] for f in check_numbers("About 52% of health complaints went to the policyholder.", ["C30"], set())] == ["52"]  # all-lines 52% removed from C30 (fix 2)
     from types import SimpleNamespace as NS
     from classify_eval import pin
     fake = lambda host, model: (lambda **kw: NS(model_extra={"provider": host}, model=model))
