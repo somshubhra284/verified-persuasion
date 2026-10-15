@@ -147,7 +147,7 @@
      "source": "National Health Authority, AB PM-JAY",
      "url": "https://nha.gov.in/PM-JAY",
      "care": null},
-    {"id": "C25", "buckets": ["B2", "B4"], "status": "Primary (chart undated)",
+    {"id": "C25", "buckets": ["B2", "B4"], "status": "Hold (quotes premiums, against hard rules; source Primary, chart undated)",
      "claim": "On one major insurer's ₹5 lakh plan in Mumbai, the yearly premium is ₹9,192 (≈$95) up to age 35 and ₹12,590 (≈$130) at 41–45, about 37% more.",
      "figure": "Care Supreme, Zone 2, 1 adult, excl. GST: ₹9,192 (18–35), ₹11,067 (36–40), ₹12,590 (41–45)",
      "source": "Care Health Insurance, Care Supreme rate chart; zones per Apr 2026 customer notice",
