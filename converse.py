@@ -74,7 +74,7 @@ def intake(log, arm):
     """Disclosure, consent, screening (CLAUDE.md criteria), T0 and reason. Returns the reason, or None if the session ends."""
     say("Hi! You're talking to a computer program, not a person. I'd like to understand one belief: "
         "\"I don't need a health insurance policy of my own.\" This is not financial advice. "
-        "Your answers are saved without your name and used only for a study project.")
+        "Your answers are saved without your name and used only for a study project. You can stop at any time (Ctrl-C).")
     if not ask_yes("Are you happy to take part? (yes/no) "):
         log("declined", arm=arm)
         say("No problem at all. Thank you for your time.")

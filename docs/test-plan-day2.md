@@ -19,6 +19,14 @@ py check_claims.py --gold
 - Record it as **"rescored after seeing the failures"**: g31–g38 were written after the reversal runs.
 - **If it fails, stop here.** Nothing measured later can be trusted until the checker passes.
 
+## 1b. Re-score the classifier after fix 4 (about 15K tokens)
+```
+py classify_eval.py --heldout --llm
+```
+- Fix 4 added a B0 rule for bare factual statements plus h-49/h-50 (both B0, written after the reversal runs).
+- Pass: the same bar as before (≥ 90%, ≤ 2 wrong buckets) on the 50 rows, and h-49/h-50 = B0 with a follow-up.
+- If an earlier-correct row breaks, stop and record it. Step 2's R2-open rerun depends on this.
+
 ## 2. Reversal reruns "after fix" (fix 1: premise check)
 ```
 for r in R2-open R1-open; do for i in 1 2 3; do py converse.py "$r-fix-$i" < runs/reversal/inputs/$r.txt > /dev/null; done; done

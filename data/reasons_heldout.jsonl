@@ -46,3 +46,5 @@
 {"id": "h-46", "text": "Ayushman card hai na", "primary": "B6", "secondary": null}
 {"id": "h-47", "text": "kya karna hai alag se, the one through work handles hospitalisation. used it once for dengue, cashless was smooth", "primary": "B2", "secondary": null}
 {"id": "h-48", "text": "I'd rather keep that 12k in my SIP", "primary": "B5", "secondary": null}
+{"id": "h-49", "text": "Hospital costs in India double every five years", "primary": "B0", "secondary": null, "note": "added after reversal runs (R2-open)"}
+{"id": "h-50", "text": "bhai hospital ka kharcha har 5 saal mein double ho jaata hai", "primary": "B0", "secondary": null, "note": "added after reversal runs (R2-open variant)"}
