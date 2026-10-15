@@ -122,3 +122,4 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - Ledger doc (Claude Docs): same figure change, plus a changelog row. The all-lines 52% remains in the Caveats table.
 - Fixed brief (Claude Docs): removed the C25 premium bullet and its Sources row, so Docs now matches `data/fixed_brief.md` (that file is unchanged, so `brief_sha` is unchanged).
 - Selfchecks: converse, check_claims and analyze all pass.
+- Ledger doc bucket table: B2 "C06–C09, C25–C27" → "C06–C09, C26, C27 (C25 on hold)"; B4 "C08, C11, C15, C16, C25" → "C08, C11, C15, C16 (C25 on hold)", following the existing "(C31 on hold)" style.
