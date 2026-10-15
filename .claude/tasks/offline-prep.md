@@ -94,3 +94,19 @@ Page refs below are PDF page numbers (printed page in brackets).
   - It's in `data/ledger.json`, both brief copies (a bullet after C10 plus a sources row) and the ledger doc (claim row, B3 in the bucket table, changelog row, count 33 → 34).
   - The brief's `brief_sha` changes again.
 - Installed `poppler` (brew), so the scanned PDFs (C13, C16) can now be rendered for checking.
+
+### Item 1, part 2: the scanned PDFs (15 Oct, after installing poppler) — PROPOSED, not applied
+Pages were read as images (`pdftoppm`; `pillow` was added to `.venv` for contact sheets and cropping, as a checking tool only).
+
+| Claim | Verdict | Evidence | Proposed change |
+|---|---|---|---|
+| C16 | Confirmed, with a nuance and a wording fix | IRDAI/HLT/CIR/MISC/27/1/2025, 30 Jan 2025, p.3: insurers offering indemnity-based individual health products to senior citizens "shall not revise the premium for senior citizens by more than 10% per annum". Para (b): a proposed rise **above 10% needs prior consultation with IRDAI**. Senior citizens are defined (p.2) as "aged 60 years and above". | Status → Primary. claim: "over 60" → "aged 60 and over". figure: "Senior-citizen premiums may not rise more than 10% a year on individual indemnity products; a bigger rise needs prior consultation with IRDAI". source: "IRDAI circular IRDAI/HLT/CIR/MISC/27/1/2025, 30 Jan 2025"; url: irdai.gov.in document-detail?documentId=6639156. care: "Individual indemnity products only. If asked, say a bigger rise needs prior consultation with IRDAI." |
+| C13 | Rate confirmed; Cafemutual's total is wrong; the method needs to be stated | CIO Annual Report 2024–25, Statement H2 (Health), PDF p.49 [printed 40], totals row: 4,930 carried over + 32,655 received = **37,585** (Cafemutual says 37,431). Disposed 29,156: recommendations (mediated) 9,418, awards for complainant 6,129, awards for insurer 4,898, withdrawn 3,664, non-entertainable 5,047. Pending 8,429. 9,418 + 6,129 = 15,547, which is 41.4% of 37,585: Cafemutual's "41%" counts mediated recommendations as favourable and divides by all complaints handled, pending included. | Status → Primary. claim: "In 2024–25, about 4 in 10 health complaints before the Insurance Ombudsman ended in a mediated settlement or a formal award for the policyholder." figure: "37,585 health complaints; 9,418 mediated recommendations + 6,129 awards for complainant = 15,547 (41%); 4,898 awards for insurer; 8,429 pending at year end". source: "Council for Insurance Ombudsmen, Annual Report 2024–25, Statement H2"; url: cioins.co.in/annualreports/AnnualReport2024-2025.pdf. care: "Say 'mediated settlement or award', never 'won'; the base includes complaints still pending." |
+
+Knock-on if approved:
+- Both brief bullets (C13, C16) get reworded, plus their sources rows (local and Docs).
+- The ledger doc gets claim rows, the Sources list status and a changelog row.
+- `brief_sha` changes again.
+- Gold rows g08 and g09 are real past outputs with their old attributions ("as reported by …"). They stay as they are: the judge rates content, not attribution wording.
+
+Optional, not proposed: the same table gives the 2024–25 formal-award split for health, 6,129 vs 4,898 (about 55% for the policyholder). C30 currently uses 2023–24 (about 6 in 10). Updating C30 to 2024–25 is Som's call.
