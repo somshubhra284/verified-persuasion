@@ -16,7 +16,7 @@ B1 young/healthy · B2 employer covers me · B3 claims rejected / scam / too com
 Primary = the first reason the person names; record the second as secondary.
 
 ## Hard rules for the conversation system
-- Assert only claims from `data/ledger.json`, and only those whose `buckets` include the person's bucket.
+- Assert only claims from `data/ledger.json`, and only those whose `buckets` include the person's primary or secondary bucket. **Exception (Som, 16 Oct):** when the person directly asks a factual question, any non-Hold claim that answers it may be used; it's logged as `question_claims`.
 - Every factual sentence names its source and is logged with its claim ID.
 - Follow each claim's `care` note. How each `status` may be used:
   - Primary → assert, naming the source.
@@ -79,7 +79,7 @@ The human-readable versions live in Claude Docs: the belief spec and ledger (wit
 - Show money in both INR and USD (≈ ₹96.8 per $1, rate as of 10 Oct 2026).
 - Keep it small: the brief says one conversation that moved a real belief beats six components without receipts.
 - API key lives in `.env` (never commit it; scripts read it themselves). Default model `openai/gpt-oss-120b` on Groq's free tier. Use `.venv/bin/python` (`python` isn't on PATH).
-- **Study provider (Som, 16 Oct): OpenRouter → DeepInfra, reasoning effort medium, for the pilot and every participant.** This is the code default (needs `OPENROUTER_API_KEY` in `.env`); `PROVIDER=groq` overrides it. The code pins the host, retries 429s on the same host, and stops if any other host or model answers. `analyze.py` warns if sessions ran on different providers. Every log records `provider`; don't pool results across providers without saying so.
+- **Study provider (Som, 16 Oct): OpenRouter → Cerebras, reasoning effort medium, for the pilot and every participant.** (Switched from DeepInfra the same day: median reply 1.0 s vs 30–60 s, with the same premise handling. Re-validated in `runs/chat-quality/`.) This is the code default (needs `OPENROUTER_API_KEY` in `.env`); `PROVIDER=groq` overrides it. The code pins the host, retries 429s on the same host, and stops if any other host or model answers. `analyze.py` warns if sessions ran on different providers. Every log records `provider`; don't pool results across providers without saying so.
 - Groq free tier: 200K tokens/day (rolling). The 9 reversal runs plus checks used about a day's budget. Plan participant sessions and checker runs on separate days if needed.
 - **Arm assignment (fixed before recruiting):** alternate in recruitment order: P01 system, P02 brief, P03 system… Screened-out or declined people don't take a number. The pilot (`pilot-1` system, `pilot-2` brief) is separate and never counted; participants start at P01.
 - Commands: `.venv/bin/python classify_eval.py [--heldout] [--llm]` · `.venv/bin/python converse.py <pid> [--brief] [--t2]` · `python3 analyze.py` · `converse.py --selfcheck` · `.venv/bin/python check_claims.py sessions/<pid>.jsonl` · `check_claims.py --review sessions/<pid>.check.jsonl` (hand labels = the metric) · `check_claims.py --gold`

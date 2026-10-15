@@ -104,6 +104,30 @@ This is a record of where the evidence changed the plan, the system or the hypot
 - **Retest:** 9/9 employer-cover openers were answered without a refusal. A false premise inside a real reason ("costs double every five years, so I'd rather keep my savings", B5) was refused by the code in 3/3.
 - **Means:** a code-level guard is only as precise as the model's report it acts on. Testing only the cases it should catch (R2) missed the cases it shouldn't. Both directions need a test.
 
+## 13. Speed came from the host, not from thinking less
+- **Found:** on the live site, replies took 6–60 s, and graders and friends would wait a minute per message. A benchmark on one realistic request, same model:
+
+| Host | Reasoning effort | Reply time | Caught the false premise? |
+|---|---|---|---|
+| DeepInfra | medium | 33–67 s | yes |
+| DeepInfra | low | 3–17 s | **no** |
+| Cerebras | medium | about 1 s | yes |
+
+- **Changed:**
+  - Switched to Cerebras at the same effort. The median reply is now 1.0 s.
+  - In multi-turn runs, Cerebras then **garbled 3 of 42 replies** (control characters where "–" belonged, and one runaway `\u000a` loop). The cause was in our code: earlier replies were fed back into the history with their non-ASCII characters escaped, and the model copied the escapes badly. Keeping the history unescaped fixed it: 0/27 afterwards.
+- **Means:** the cheap fix (think less) would have broken the safety property. A host change is also a setup change, so it needed the same re-validation, and that is what surfaced the encoding bug.
+
+## 14. Context: the second reason and direct questions
+- **Found:** "covered by my employer… waste of money, no returns" was classified B2 + B5, but only B2 claims were available, so "no returns" was never answered. A direct question ("which diseases have waiting periods?") got a bare refusal.
+- **Changed (Som approved):**
+  - Claims for both buckets are available.
+  - Any checked claim may answer a direct question, logged as `question_claims`.
+  - A refusal is never the whole message.
+  - Replies acknowledge the person first.
+  - Re-validated: a B5 claim within 2 replies 6/6; the diseases question answered with C11 6/6.
+- **Means:** the "bucket only" rule was a proxy for relevance. The person's own question is a stronger signal of relevance than the bucket, so the rule now follows it, and the log keeps it countable.
+
 ## To add
 - Day-2 results: the checker rescore, the classifier rescore, and the reversal runs after the fixes. Did fix 1 make R2-open refuse up front?
 - Pilot: how real reasons differed from my test sets.
