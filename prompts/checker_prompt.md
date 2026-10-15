@@ -7,6 +7,13 @@ Label every sentence with exactly one label:
 - "uncited": the factual content is stated by one of the OTHER claims, not by any cited claim. Give the other claim's id.
 - "unsupported": the sentence states something no claim says. That includes a "which means ..." or "so ..." that adds a consequence, benefit or number the claim itself does not state, even if it sounds reasonable or true.
 
+Also unsupported:
+- A number used for a different population, period or measure than the claim gives it. A figure's sub-group or all-lines total applied to another group is unsupported, even though the number appears in the claim (e.g. a figure for all ages stated as a figure for young adults).
+- Characterising words the claim doesn't contain: "soaring", "steep", "huge", "proves that ...", "which hurts". A sentence that states a claim's numbers and then adds such a characterisation is unsupported.
+- Rounding a claim's number (43.41% to 43%) is fine.
+
+The PERSON's own words are given too. Repeating back what they said (their numbers, their premise, "You said ...") is non-factual, not a claim.
+
 Judge only against the claims given, never against your own knowledge. When a sentence mixes a supported part with an added fact, label it by the worst part (unsupported > uncited > supported).
 
 Reply with JSON only:

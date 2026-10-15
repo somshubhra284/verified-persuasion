@@ -39,12 +39,20 @@ def claim_numbers(c):
     return numbers(" ".join([c["claim"], c["figure"] or "", c["source"]]))
 
 
+def in_pool(n, pool):
+    """n is in pool exactly, or is a pool number rounded to n's precision (86.88 -> 86.9 or 87)."""
+    if n in pool:
+        return True
+    d = len(n.split(".")[1]) if "." in n else 0
+    return any("." in x and len(x.split(".")[1]) > d and round(float(x), d) == float(n) for x in pool)
+
+
 def check_numbers(sentence, cited_ids, bucket, user_nums):
     """Layer 1: [(number, 'uncited'|'unsupported', claim_id or None)] for numbers no cited claim contains."""
     cited = set().union(*(claim_numbers(BY_ID[i]) for i in cited_ids if i in BY_ID))
     flags = []
-    for n in sorted(numbers(sentence) - cited - user_nums):
-        other = next((c["id"] for c in allowed_claims(bucket) if n in claim_numbers(c)), None)
+    for n in sorted(x for x in numbers(sentence) if not in_pool(x, cited) and x not in user_nums):
+        other = next((c["id"] for c in allowed_claims(bucket) if in_pool(n, claim_numbers(c))), None)
         flags.append((n, "uncited" if other else "unsupported", other))
     return flags
 
@@ -53,12 +61,13 @@ def split_sentences(reply):
     return [s for s in re.split(r"(?<=[.?!])\s+", reply.strip()) if s]
 
 
-def judge(sentences, cited_ids, bucket, client, model):
-    """Layer 2: one LLM call per reply; returns {n: label dict}."""
+def judge(sentences, cited_ids, bucket, client, model, user_text=""):
+    """Layer 2: one LLM call per reply; returns {n: label dict}. user_text = what the person said so far (echo fix)."""
     fields = ("id", "status", "claim", "figure", "source")
     cited = [{k: BY_ID[i][k] for k in fields} for i in cited_ids if i in BY_ID]
     others = [{k: c[k] for k in fields} for c in allowed_claims(bucket) if c["id"] not in cited_ids]
     user = (f"CITED claims:\n{json.dumps(cited, ensure_ascii=False)}\n\nOTHER claims:\n{json.dumps(others, ensure_ascii=False)}"
+            f"\n\nWhat the PERSON said so far:\n{user_text.strip() or '(nothing)'}"
             "\n\nSentences:\n" + "\n".join(f"{n}. {s}" for n, s in enumerate(sentences, 1)))
     r = client.chat.completions.create(model=model, temperature=0, response_format={"type": "json_object"}, messages=[
         {"role": "system", "content": (HERE / "prompts" / "checker_prompt.md").read_text()},
@@ -71,7 +80,7 @@ def judge(sentences, cited_ids, bucket, client, model):
 
 def check_reply(reply, cited_ids, bucket, user_text, client, model):
     sentences = split_sentences(reply)
-    labels, user_nums = judge(sentences, cited_ids, bucket, client, model), numbers(user_text)
+    labels, user_nums = judge(sentences, cited_ids, bucket, client, model, user_text), numbers(user_text)
     rows = []
     for n, s in enumerate(sentences, 1):
         j = labels.get(n, {"label": "unjudged", "claim_id": None, "why": "judge returned no label"})
@@ -138,6 +147,9 @@ def selfcheck():
     assert check_numbers("12% of claims were rejected.", ["C10"], "B3", set()) == [("12", "unsupported", None)]
     assert check_numbers("Waiting periods start from zero.", ["C06"], "B2", set()) == [("0", "uncited", "C08")]
     assert check_numbers("Your 5 lakh cover stays with the employer.", ["C06"], "B2", numbers("my 5 lakh cover")) == []
+    assert check_numbers("Insurers met the 1-hour target for 86.9% of requests.", ["C14"], "B3", set()) == []  # rounds 86.88
+    assert check_numbers("Insurers met the 1-hour target for 87% of requests.", ["C14"], "B3", set()) == []
+    assert check_numbers("About 52% of health complaints went to the policyholder.", ["C30"], "B3", set()) == []  # judge's job
     print("selfcheck ok")
 
 

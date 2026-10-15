@@ -35,6 +35,11 @@ Primary = the first reason the person names; record the second as secondary.
 - `prompts/classifier_prompt.md`: the reason classifier prompt.
 - `classify_eval.py`: scores classifiers (keyword baseline or LLM) on either set.
 - `docs/capstone-brief.md`: the 100x brief and its grading criteria.
+- `converse.py`: both arms. Intake = consent + screening (age 22–45, no own policy, not CGHS/ESIC/PM-JAY, T0 ≥ 60) → reason → classify. The system arm argues from the bucket's claims; `--brief` shows `data/fixed_brief.md`. `--t2` for day 7. Logs go to `sessions/<pid>.jsonl` (gitignored).
+- `check_claims.py` + `prompts/checker_prompt.md` + `data/checker_gold.jsonl` (38 rows): the unsupported-claims metric.
+- `analyze.py`: the results table (T0/T1/T2 and Δ per participant and per arm, plus unsupported claims). Offline.
+- `data/fixed_brief.md`: the baseline arm's brief, exported from Claude Docs on 15 Oct **minus the C25 premium bullet** (C25 is Hold).
+- `runs/reversal/` + `docs/reversal-runs.md`: reversal inputs, logs, write-up. `docs/test-plan-day2.md`: the LLM tests still to run.
 
 The human-readable versions live in Claude Docs: the belief spec and ledger (with evidence on why people hold the belief, caveats and a changelog) at https://claude.ai/code/artifact/6f86ca1d-592b-4f48-a7b6-6905bca1b34c, and the fixed brief for the baseline arm at https://claude.ai/code/artifact/1c9dbba8-a3e9-4456-8868-59e7c3750e32.
 
@@ -45,14 +50,14 @@ The human-readable versions live in Claude Docs: the belief spec and ledger (wit
 - Conversation loop built and dry-run (`converse.py` + `prompts/conversation_prompt.md`; plan and change log in `.claude/tasks/conversation-loop.md`). B3 and B0 are clean; the exact refusal and the disclaimer are enforced in code. Known leak in B2: a reply used C08's content while citing only C06/C09, and Inference claims often lack a named source. The step-3 checker must catch content-vs-cited-ID mismatches.
 - Claim checker (`check_claims.py`: numbers check + LLM judge) **passes its pre-set bar on `data/checker_gold.jsonl`**: 12/12 flagged sentences caught, 2 false flags (bar ≤ 2). Both false flags over-count: a user-echoed number ("5 lakh") and a restating "so most claims are not denied". Dry runs: B2 has 1 real leak (C08 content cited as C06/C09), B3 has 0. Plan and log: `.claude/tasks/claim-checker.md`.
 - C25 set to Hold on 15 Oct (quotes premiums, against the hard rules); it leaves B2 and B4. Mirror this in the Claude Docs ledger changelog.
-- Reversal runs (15 Oct; `docs/reversal-runs.md`, logs in `runs/reversal/`): R1 countered with C10 3/3. R2 mid-conversation got the exact refusal 3/3. **R2 as the opening reason failed 3/3**: it was classified B5, never refused, and C17 was spun into "rapid cost growth". All 3 R1 runs said "52% of health complaints" (C30's all-lines figure; health is 6 in 10), and the checker missed it. Fixes are proposed in the doc, not applied. The R2-mid checker counts are pending (Groq daily limit).
+- Reversal runs (15 Oct; `docs/reversal-runs.md`, logs in `runs/reversal/`): R1 countered with C10 3/3. R2 mid-conversation got the exact refusal 3/3. **R2 as the opening reason failed 3/3**: it was classified B5, never refused, and C17 was spun into "rapid cost growth". All 3 R1 runs said "52% of health complaints" (C30's all-lines figure; health is 6 in 10), and the checker missed it. Fixes 1 and 3 were applied on 15 Oct, offline, and are **untested until day 2** (`docs/test-plan-day2.md`): (1) every reply reports the person's factual `premise`, and code prepends the refusal when no allowed claim covers it; no trend characterisation. (3) Judge rules for wrong-population numbers and characterisations; the judge sees the person's words (echo fix); the number check accepts rounding; gold is now 38 rows. Fix 2 (C30's figure) is open. The R2-mid checker counts are pending.
 - Five primary documents still need manual download (IRDAI and Ombudsman sites block bots). The list is in the Sources section of the ledger doc.
 
 ## Next steps, in order
 1. ~~Run the LLM classifier~~ (done, see Status).
 2. ~~Conversation loop~~ (built and dry-run, see Status).
 3. ~~Post-hoc checker~~ (done, see Status). Optional: give the judge the user's words to fix echo false flags, then rescore on gold.
-4. Run reversal runs R1 and R2. Pilot with 1–2 friends, then add their real answers to the held-out set.
+4. ~~Reversal runs~~ (done; after-fix reruns in the day-2 test plan). Run `docs/test-plan-day2.md`. Then pilot with 1–2 friends (one per arm) and add their real answers to the held-out set.
 5. Run participants and collect T0/T1/T2 scores. Write up honestly, including a null result. Keep a log of where evidence changed the hypothesis, since the brief's Learning criterion rewards it.
 
 ## Conventions
@@ -60,4 +65,5 @@ The human-readable versions live in Claude Docs: the belief spec and ledger (wit
 - Keep it small: the brief says one conversation that moved a real belief beats six components without receipts.
 - API key lives in `.env` (never commit it; scripts read it themselves). Default model `openai/gpt-oss-120b` on Groq's free tier. Use `.venv/bin/python` (`python` isn't on PATH).
 - Groq free tier: 200K tokens/day (rolling). The 9 reversal runs plus checks used about a day's budget. Plan participant sessions and checker runs on separate days if needed.
-- Commands: `.venv/bin/python classify_eval.py [--heldout] [--llm]` · `.venv/bin/python converse.py <pid> [--t2]` · `converse.py --selfcheck` · `.venv/bin/python check_claims.py sessions/<pid>.jsonl` · `check_claims.py --gold`
+- **Arm assignment (fixed before recruiting):** alternate in recruitment order: P01 system, P02 brief, P03 system… Screened-out or declined people don't take a number.
+- Commands: `.venv/bin/python classify_eval.py [--heldout] [--llm]` · `.venv/bin/python converse.py <pid> [--brief] [--t2]` · `python3 analyze.py` · `converse.py --selfcheck` · `.venv/bin/python check_claims.py sessions/<pid>.jsonl` · `check_claims.py --gold`

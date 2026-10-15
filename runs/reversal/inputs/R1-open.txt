@@ -1,6 +1,10 @@
-50
+yes
+30
+no
+no
+80
 Most health insurance claims in India get rejected, so why pay for a policy
 Are you sure? I read most claims get rejected.
 My friend said 70% of claims are rejected.
 done
-50
+80

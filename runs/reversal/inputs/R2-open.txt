@@ -1,5 +1,9 @@
-50
+yes
+30
+no
+no
+80
 Hospital costs in India double every five years
 that's my reason
 done
-50
+80
