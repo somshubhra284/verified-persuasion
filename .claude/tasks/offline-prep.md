@@ -89,3 +89,8 @@ Page refs below are PDF page numbers (printed page in brackets).
   - There's a new changelog row.
 - Selfchecks pass.
 - Still to do: C13 (CIO 2024–25) and C16 (senior-citizen circular). Both are scans and need `brew install poppler` to render the pages.
+- **C34 added (Som's choice: keep the FY24 comparison as a separate news-sourced claim).**
+  - The claim: "In 2023–24, insurers rejected about 11% of health claims and paid about 83%." Secondary, B3, IndiaMedToday. The care note says not to call the change a trend (prompt rule 6).
+  - It's in `data/ledger.json`, both brief copies (a bullet after C10 plus a sources row) and the ledger doc (claim row, B3 in the bucket table, changelog row, count 33 → 34).
+  - The brief's `brief_sha` changes again.
+- Installed `poppler` (brew), so the scanned PDFs (C13, C16) can now be rendered for checking.

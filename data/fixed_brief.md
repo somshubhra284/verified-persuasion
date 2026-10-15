@@ -42,6 +42,7 @@ Many working Indians rely on employer cover, a parent's policy, savings or a gov
 ## If you worry claims get rejected
 
 - Of about 3.7 crore health claims handled in 2024–25, 87% were paid, 8% were rejected and about 5% were still pending at year end, according to the regulator's annual report. [C10]
+- The year before, in 2023–24, about 11% were rejected and about 83% paid, as reported by IndiaMedToday. [C34]
 - The government says health claims are usually rejected under the policy's exclusion clauses, or because the treatment didn't need hospital admission. [C29]
 - After 5 years of continuous cover, an insurer can't reject a claim for non-disclosure or misrepresentation, except established fraud; policy exclusions still apply. [C12]
 - Insurers must decide cashless requests within 1 hour; from Aug 2024 to May 2025, 87% met that. [C14]
@@ -86,3 +87,4 @@ Many working Indians rely on employer cover, a parent's policy, savings or a gov
 | C30 | [Council for Insurance Ombudsmen, Annual Report 2023–24](https://cioins.co.in/annualreports/AnnualReport2023-2024.pdf) |
 | C32 | [Business Standard (Tata AIG sponsored), Aug 2025](https://www.business-standard.com/content/specials/how-long-can-a-child-stay-on-parents-health-insurance-policy-in-india-125081901561_1.html) |
 | C33 | [PM-JAY package rates, Nagaland CMHIS copy](https://cmhis.nagaland.gov.in/storage/pageFiles/381.pdf) |
+| C34 | [IndiaMedToday, on IRDAI health claims data](https://indiamedtoday.com/record-health-insurance-claims-settled-in-fy25-average-payout-per-claim-declines/) |

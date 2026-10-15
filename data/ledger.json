@@ -200,6 +200,12 @@
      "figure": "PM-JAY HBP 2022 code MC011A ₹50,800 + stent ₹10,263",
      "source": "PM-JAY package rates, Nagaland CMHIS copy",
      "url": "https://cmhis.nagaland.gov.in/storage/pageFiles/381.pdf",
-     "care": "Never estimate the private price."}
+     "care": "Never estimate the private price."},
+    {"id": "C34", "buckets": ["B3"], "status": "Secondary",
+     "claim": "In 2023–24, insurers rejected about 11% of health claims and paid about 83%.",
+     "figure": "FY24: 83% settled, 11% repudiated, 6% pending",
+     "source": "IRDAI data for 2023–24, as reported by IndiaMedToday",
+     "url": "https://indiamedtoday.com/record-health-insurance-claims-settled-in-fy25-average-payout-per-claim-declines/",
+     "care": "Attribute to IndiaMedToday. May be set beside C10's 2024–25 figure; don't call the change a trend."}
   ]
 }
