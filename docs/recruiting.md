@@ -5,7 +5,9 @@ Copy and paste into WhatsApp or DMs. Don't mention the hypothesis, the two versi
 Arm assignment is fixed in CLAUDE.md: alternate in recruitment order (P01 system, P02 brief, …). Screened-out and declined people don't take a number.
 
 ## 1. Invite
-> Hi! I'm doing a small study for my course and need 10 minutes of your time. You'd type with a computer program about one belief on health insurance, and give a 0–100 score before and after. A week later I'll send one short follow-up message (1 minute). Nothing to buy and no one will sell you anything. Your name isn't saved with your answers. Interested?
+> Hi! I'm doing a small study for my course and need 10 minutes of your time. You'd chat with a computer program about one belief on health insurance, and give a 0–100 score before and after. A week later I'll send one short follow-up link (1 minute). Nothing to buy and no one will sell you anything. Your name isn't saved with your answers. Interested?
+
+When they say yes (and pass the self-check): send **https://somshubhra-verified-persuasion.static.hf.space** and say "choose *I'm taking part in Som's study*". Pilot friends get **https://somshubhra-verified-persuasion.static.hf.space/?pilot=1** instead.
 
 ## 2. Quick self-check (send if they say yes, before fixing a time)
 > Just checking you fit the study. Are all of these true?
@@ -16,39 +18,44 @@ Arm assignment is fixed in CLAUDE.md: alternate in recruitment order (P01 system
 
 If any is false: "Thanks so much! This one needs a narrow group, so I'll skip you this time." The program asks these again and logs any screen-out.
 
-## 3. Consent (the same words the program shows; send beforehand so nothing is a surprise)
-> You'll be talking to a computer program, not a person. It wants to understand one belief: "I don't need a health insurance policy of my own." This is not financial advice. Your answers are saved without your name and used only for a study project. You can stop at any time (Ctrl-C).
+## 3. Consent (the same words the website shows; send beforehand so nothing is a surprise)
+> You're talking to a computer program, not a person. It wants to understand one belief: "I don't need a health insurance policy of my own." This is not financial advice. Your answers are saved without your name and used only for a study project. You can stop at any time by closing this page.
 
-A stopped session stays in `sessions/` and `analyze.py` counts it as incomplete.
+A session that's stopped partway is saved and counted as incomplete.
 
-## 4. Running a session
-All sessions run on OpenRouter → DeepInfra, reasoning effort medium. That's the code default, so commands need no prefix; every call is checked for host and model. Check your OpenRouter credit before a session day.
+## 4. Running a session (the live website)
+- **Links:**
+  - Participants: **https://somshubhra-verified-persuasion.static.hf.space**. They choose "I'm taking part in Som's study".
+  - Pilot: **https://somshubhra-verified-persuasion.static.hf.space/?pilot=1**.
+  - Graders and anyone curious: the same plain link with "I'm just trying it out". This is never counted.
+- **IDs are given by the website:**
+  - Participants who pass screening get P01, P02, … in order, alternating system and brief arms, so the CLAUDE.md rule is applied automatically.
+  - Screened-out or declined people get S01, S02, ….
+  - Pilots get pilot-1 (system) and pilot-2 (brief). Try-outs get demo-N.
+  - At the end, participants see their code (e.g. **P03**) and are asked to send it to you. Write it in your recruiting log next to their name, so you know whom to message on day 7.
+- **Before a session day:**
+  - Open the link yourself about a minute early. The free server sleeps after 15 minutes idle and takes about a minute to wake.
+  - Check your OpenRouter credit.
+- **Replies take 5–60 seconds;** the page says so.
+- **Stack:**
+  - page on Hugging Face Spaces
+  - API on Render (https://verified-persuasion-f0vv.onrender.com)
+  - data in Supabase (`events` table)
+  - model `openai/gpt-oss-120b` via OpenRouter → DeepInfra, effort medium
 
-**IDs:**
-- Pilot = `pilot-1` (system arm) and `pilot-2` (brief arm). The pilot is **not** in the results: `analyze.py` counts only `P01`, `P02`, …
-- Participants start at P01 and alternate system/brief (the rule in CLAUDE.md).
-
-**Before each session (1 minute):**
-```
-.venv/bin/python converse.py --selfcheck && .venv/bin/python check_claims.py --selfcheck
-.venv/bin/python -c "from classify_eval import make_client as m; r=m().chat.completions.create(model='openai/gpt-oss-120b', messages=[{'role':'user','content':'ok'}]); print(r.model_extra['provider'], r.model)"
-```
-The second line must print `DeepInfra openai/gpt-oss-120b`. If DeepInfra is rate-limited, the code waits and retries by itself (up to about 4 minutes).
-
-**The session:**
-- System arm: `.venv/bin/python converse.py P0N`. Brief arm: `.venv/bin/python converse.py P0N --brief`.
-- They type, you don't help. If they ask you what to answer, say "whatever you actually think".
-
-**Right after a system-arm session:**
-1. `.venv/bin/python check_claims.py sessions/P0N.jsonl` (the checker's first pass)
-2. `.venv/bin/python check_claims.py --review sessions/P0N.check.jsonl`: label every sentence yourself. Enter keeps the checker's label; n/s/c/u changes it. **Your labels are the metric.**
+**After sessions (on your laptop):**
+1. `.venv/bin/python export_sessions.py` copies all sessions from Supabase into `sessions/`.
+2. For each new system-arm session: `.venv/bin/python check_claims.py sessions/P0N.jsonl`, then `.venv/bin/python check_claims.py --review sessions/P0N.check.jsonl`. **Your labels are the metric.**
+3. `python3 analyze.py` prints the results table. It counts P- and S-numbers only.
 
 **After the pilot only:** add both pilots' "why" answers to `data/reasons_heldout.jsonl` as new rows (h-51, h-52, …). Write your bucket label **before** looking at what the classifier said. If the pilot shows something that needs a change, change it before P01, never mid-study.
 
 ## 5. Day-7 message (T2)
-> Hi! Last step from the study last week, 1 minute. On a scale of 0 (not at all) to 100 (completely), how much do you agree with: "I don't need a health insurance policy of my own"? And did you look into a policy this week (yes/no)?
+1. Make that participant's personal link: `.venv/bin/python export_sessions.py --t2-link P0N`
+2. Send it:
+> Hi! Last step from the study last week, 1 minute: <their link>
 
-Then record it: `.venv/bin/python converse.py P0N --t2` and type in their two answers.
+The link opens a two-question page (the 0–100 score and "Did you look into a policy this week?"), and the answers are saved to their session. Each link only works for that participant's code.
 
 ## 6. Debrief (after T2)
 > Thank you! What the study tested: whether a program that only states facts it can source, chosen to answer *your* reason, changes this belief as much as a fixed information sheet. Half the people got the program and half got the sheet. Neither is financial advice, and I'm not recommending any insurer. Happy to share the results when they're written up.

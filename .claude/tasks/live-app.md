@@ -126,3 +126,10 @@ Steps, one at a time with Som:
   - A live `/api/start` (a declined try-out) wrote 2 rows to Supabase (ts in UTC); the test rows were deleted.
   - The frontend's `RENDER_API` was updated to the -f0vv URL.
 - **Step 6 started:** the Space is huggingface.co/spaces/somshubhra/verified-persuasion. The direct link (the live link) is https://somshubhra-verified-persuasion.static.hf.space. ALLOWED_ORIGIN and APP_URL were added to the local .env; the README carries the live link.
+- **Steps 6–7 done:**
+  - `ALLOWED_ORIGIN` set on Render. The CORS preflight from the Space origin is allowed.
+  - The Space serves `index.html` (the `/` → `/index.html` redirect keeps query params) with `RENDER_API` = -f0vv.
+  - **Live end-to-end try-out** (browser → Space → Render → DeepInfra → Supabase): B1 reason, reply with C01+C02 in about 6 s, follow-up with C04+C05, then done and T1. 8 rows in the same shape as the CLI, provider `openrouter:DeepInfra:effort-medium`.
+  - `export_sessions.py` pulled it into `sessions/demo-1.jsonl`. `--t2-link` works. `analyze.py` ignores demo-.
+  - `docs/recruiting.md` and CLAUDE.md now describe the live-site workflow.
+- **Remaining for submission:** demo video, case study (after participants).

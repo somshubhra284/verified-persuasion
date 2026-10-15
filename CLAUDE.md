@@ -34,6 +34,7 @@ Primary = the first reason the person names; record the second as secondary.
 - `data/reasons_testset.jsonl` (110 answers) and `data/reasons_heldout.jsonl` (50 harder answers; h-49/h-50 added after the reversal runs): labelled "why" answers.
 - `prompts/classifier_prompt.md`: the reason classifier prompt.
 - `classify_eval.py`: scores classifiers (keyword baseline or LLM) on either set.
+- **Live site:** https://somshubhra-verified-persuasion.static.hf.space (static HF Space serving `public/index.html`). The API is `app.py` on Render (https://verified-persuasion-f0vv.onrender.com, free, Singapore; it sleeps after 15 min). Data is in Supabase project `verified-persuasion` (ref `ykireedojkbfucxkjcxp`), table `events`. `export_sessions.py` pulls the data into `sessions/` and makes day-7 links. GitHub: https://github.com/somshubhra284/verified-persuasion (public). Pushing to main redeploys Render; **after changing `public/index.html`, upload it to the Space again**.
 - `docs/learning-log.md`: where evidence changed the plan or the hypothesis (draft; add day-2 and participant results).
 - `docs/recruiting.md`: invite, self-check, consent, day-7 message, debrief, recruiting log template.
 - `docs/capstone-brief.md`: the 100x brief and its grading criteria.
@@ -70,8 +71,9 @@ The human-readable versions live in Claude Docs: the belief spec and ledger (wit
 2. ~~Conversation loop~~ (built and dry-run, see Status).
 3. ~~Post-hoc checker~~ (done, see Status). Optional: give the judge the user's words to fix echo false flags, then rescore on gold.
 4. ~~Reversal runs and day-2 tests~~ (done 16 Oct; see Status).
-5. **Pilot next:** `pilot-1` (system) and `pilot-2` (brief), following `docs/recruiting.md` §4. Add their "why" answers to the held-out set (label first). Fix anything before P01.
-6. Run participants and collect T0/T1/T2 scores. Hand-review every system-arm session (`--review`). Write up honestly, including a null result. Keep a log of where evidence changed the hypothesis, since the brief's Learning criterion rewards it.
+5. **Pilot next (on the live site):** send `…static.hf.space/?pilot=1` to 2 friends; the site gives pilot-1 (system) and pilot-2 (brief). Follow `docs/recruiting.md` §4. Add their "why" answers to the held-out set (label first). Fix anything before P01.
+6. Run participants through the live link (the site gives P-numbers and arms). After sessions: `export_sessions.py`, then `check_claims.py` + `--review`, then `analyze.py`. Day 7: `export_sessions.py --t2-link P0N`.
+7. Capstone submission: live link ✓, GitHub ✓; still to do: demo video, case study. Write up honestly, including a null result. Keep a log of where evidence changed the hypothesis, since the brief's Learning criterion rewards it.
 
 ## Conventions
 - Show money in both INR and USD (≈ ₹96.8 per $1, rate as of 10 Oct 2026).
