@@ -192,3 +192,8 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 | C (narrow fix added) | g21 | g11, g41 |
 
 - Single rows flip between runs at temperature 0. The judge is not stable enough to meet "100% recall and ≤ 2 false flags" on one run. More prompt tuning is chasing noise. Stopped; options go to Som.
+### Decision (Som, 16 Oct): checker + full hand review — a **recorded change from the pre-set bar**
+- The checker is a first pass. Som hand-labels **every factual sentence** in the system arm (about 60–120 sentences for 5–7 people). The hand labels are the unsupported-claims metric.
+- The write-up reports checker-vs-hand agreement.
+- Why: across three runs on one fixed setup, single gold rows flipped between runs (table above). No single run can reliably meet "100% recall, ≤ 2 false flags", and prompt fixes only moved the errors.
+- Still to build before participants: a way to record hand labels next to the checker's, and `analyze.py` reading the hand count. Step 1 is closed by this decision; testing continues with step 1b.

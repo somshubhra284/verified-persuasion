@@ -73,6 +73,22 @@ This is a record of where the evidence changed the plan, the system or the hypot
 - **Changed:** building and testing now run on separate days; tests are ordered by value (the checker first, since everything measured after it depends on it). There's an OpenRouter backup, and every log records which provider served it.
 - **Means:** results from different providers are kept apart and labelled, not pooled.
 
+## 10. The judge couldn't pass its own bar, so the metric changed
+- **Expected:** after fixes 1 and 3, the checker would pass the gold set (catch every flagged sentence, ≤ 2 false flags).
+- **Found** (on one fixed setup, DeepInfra with reasoning effort medium; earlier runs that mixed hosts don't count):
+
+| Run | Missed | False flags |
+|---|---|---|
+| A (before the fixes) | g37 | g09, g11 |
+| B (vague-wording rule added) | none | g01, g11, g41 |
+| C (narrow fix added) | g21 | g11, g41 |
+
+  - Rows flip between runs even at temperature 0.
+  - Each prompt fix moved the error rather than removing it. The new rule caught g37, but a fresh plain row (g41) started being flagged.
+  - Before pinning, OpenRouter spread calls across hosts at different precisions, some without JSON mode. That alone produced "unjudged" rows.
+- **Changed:** the checker became a first pass. Every factual sentence in the system arm is labelled by hand, and those labels are the metric. Checker-vs-hand agreement is reported. This is a recorded change from the bar set beforehand.
+- **Means:** an LLM judge is useful for screening, but on its own it wasn't reliable enough to be the measurement. Small n makes full hand review affordable here; at larger scale it wouldn't be.
+
 ## To add
 - Day-2 results: the checker rescore, the classifier rescore, and the reversal runs after the fixes. Did fix 1 make R2-open refuse up front?
 - Pilot: how real reasons differed from my test sets.
