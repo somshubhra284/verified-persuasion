@@ -149,3 +149,7 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - Logs and the gold output record `provider: openrouter:Groq`.
 - Verified offline (the check_claims selfcheck: a wrong host or a wrong model raises) and live (3 calls, all `Groq | openai/gpt-oss-120b`, base_url openrouter.ai).
 - Runs 1–2 of step 1 above were unpinned, so they don't count toward the verdict. Step 1 is rerun pinned.
+### Step 1, pinned run — **blocked**
+- Two attempts (each with 4 SDK retries) failed with 429: "openai/gpt-oss-120b is temporarily rate-limited upstream", provider_name Groq.
+- That's OpenRouter's shared Groq capacity, not Som's key. No result.
+- Options for Som: retry later on Groq; pin another full-precision host (e.g. Crusoe bf16), noting the host change; or BYOK (that would use the Groq key, which Som ruled out).
