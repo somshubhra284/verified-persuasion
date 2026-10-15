@@ -88,3 +88,4 @@ The demo video and case study. Changes to the ledger. Tuning away the add-ons (t
   - `check_claims`: the judge's OTHER list and the number pool are now the whole usable ledger, and the `bucket` parameter is dropped. Two number asserts are now label-agnostic (12 and 52 match other claims).
   - `app.py`: the secondary bucket goes through the classify → system prompt → next_reply path, the API returns `sources` for cited IDs, and a selfcheck covers both.
 - Re-validation criteria are written in `runs/chat-quality/README.md`.
+- **Re-validation on Cerebras:** see `runs/chat-quality/README.md`. Everything passes after the history-encoding fix; median latency 1.0 s. The duplicate-refusal cleanup was added in code.

@@ -1,0 +1,175 @@
+
+### CQ-B2-1  classify=[('B2', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: my company gives me 5 lakh group cover, so why would I pay extra
+  BOT [1s] ids=['C26', 'C06'] q_claims=[] refusal_by=- premise=None
+       That's a common view. While many companies offer group cover, the median employer health cover is about ₹3 lakh (≈$3,100) according to a 2023 Plum survey, so 5 lakh is above average but not universal. Also, employer cover belongs to the employer's group policy, and the regulator only allows moving it into your own name when you exit the group (IRDAI's 2020 circular). What concerns you most about relying solely on the group policy?
+
+### CQ-B2-2  classify=[('B2', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: my company gives me 5 lakh group cover, so why would I pay extra
+  BOT [3s] ids=['C26', 'C06'] q_claims=[] refusal_by=- premise=None
+       That's a common view. While many companies offer group cover, the median employer health cover is about ₹3 lakh (≈$3,100) according to a 2023 Plum survey, so 5 lakh is above average but not universal. Also, employer cover belongs to the employer's group policy, and the regulator only allows moving it into your own name when you exit the group (IRDAI's 2020 circular). What concerns you most about relying solely on the group policy?
+
+### CQ-B2-3  classify=[('B2', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: my company gives me 5 lakh group cover, so why would I pay extra
+  BOT [2s] ids=['C26', 'C06'] q_claims=[] refusal_by=- premise=None
+       That's a common view. While many companies offer group cover, the median employer health cover is about ₹3 lakh (≈$3,100) according to a 2023 Plum survey, so 5 lakh is above average but not universal. Also, employer cover belongs to the employer's group policy, and the regulator only allows moving it into your own name when you exit the group (IRDAI's 2020 circular). What concerns you most about relying solely on the group policy?
+
+### CQ-N1-1  classify=[('B2', 'B5')]  provider=openrouter:Cerebras:effort-medium
+  USER: I am covered by my employer and beyond that I think it's waste of money which is not giving me returns.
+  BOT [1s] ids=['C06', 'C17'] q_claims=[] refusal_by=- premise=None
+       That's a common worry. Your employer's group policy stays with the company, which means you can only move it into your own name when you leave the group, and that may be subject to underwriting (IRDAI's 2020 circular). Also, employer medical plan costs are projected to rise 11.5% in 2026 (Aon). What concerns you most about the potential cost increase?
+  USER: not really.
+  BOT [1s] ids=['C02'] q_claims=[] refusal_by=- premise=None
+       I hear you. In 2025, a typical private‑hospital stay cost a median of ₹24,000 (≈$248) out of pocket, according to MoSPI's NSS survey. Would you consider how such costs might affect you if you ever needed care outside your employer's plan?
+
+### CQ-N1-2  classify=[('B2', 'B5')]  provider=openrouter:Cerebras:effort-medium
+  USER: I am covered by my employer and beyond that I think it's waste of money which is not giving me returns.
+  BOT [1s] ids=['C06', 'C17'] q_claims=[] refusal_by=- premise=None
+       That's a common worry. Your employer's group policy stays with the company, which means you can only move it into your own name when you leave the group, and that may be subject to underwriting (IRDAI's 2020 circular). Also, employer medical plan costs are projected to rise 11.5% in 2026 (Aon). What concerns you most about the potential cost increase?
+  USER: not really.
+  BOT [1s] ids=['C02'] q_claims=[] refusal_by=- premise=None
+       I hear you. In 2025, a typical private‑hospital stay cost a median of ₹24,000 (≈$248) out of pocket, according to MoSPI's NSS survey. Would you consider how such costs might affect you if you ever needed care outside your employer's plan?
+
+### CQ-N1-3  classify=[('B2', 'B5')]  provider=openrouter:Cerebras:effort-medium
+  USER: I am covered by my employer and beyond that I think it's waste of money which is not giving me returns.
+  BOT [2s] ids=['C06', 'C17'] q_claims=[] refusal_by=- premise=None
+       That's a common worry. Your employer's group policy stays with the company, which means you can only move it into your own name when you leave the group, and that may be subject to underwriting (IRDAI's 2020 circular). Also, employer medical plan costs are projected to rise 11.5% in 2026 (Aon). What concerns you most about the potential cost increase?
+  USER: not really.
+  BOT [1s] ids=['C02'] q_claims=[] refusal_by=- premise=None
+       I hear you. In 2025, a typical private‑hospital stay cost a median of ₹24,000 (≈$248) out of pocket, according to MoSPI's NSS survey. Would you consider how such costs might affect you if you ever needed care outside your employer's plan?
+
+### CQ-N2-1  classify=[('B2', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: my company gives me 5 lakh group cover, so why would I pay extra
+  BOT [1s] ids=['C26', 'C06'] q_claims=[] refusal_by=- premise=None
+       That's a common view. While many companies offer group cover, the median employer health cover is about ₹3 lakh (≈$3,100) according to a 2023 Plum survey, so 5 lakh is above average but not universal. Also, employer cover belongs to the employer's group policy, and the regulator only allows moving it into your own name when you exit the group (IRDAI's 2020 circular). What concerns you most about relying solely on the group policy?
+  USER: okay that is something worth thinking of. what could be those diseases which might have waiting period?
+  BOT [1s] ids=['C11'] q_claims=['C11'] refusal_by=- premise=None
+       Waiting periods typically apply to pre‑existing conditions you declare, and the maximum waiting period is three years (Royal Sundaram notice on IRDAI 2024 health regulations). Are there specific conditions you're concerned about?
+
+### CQ-N2-2  classify=[('B2', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: my company gives me 5 lakh group cover, so why would I pay extra
+  BOT [2s] ids=['C26', 'C06'] q_claims=[] refusal_by=- premise=None
+       That's a common view. While many companies offer group cover, the median employer health cover is about ₹3 lakh (≈$3,100) according to a 2023 Plum survey, so 5 lakh is above average but not universal. Also, employer cover belongs to the employer's group policy, and the regulator only allows moving it into your own name when you exit the group (IRDAI's 2020 circular). What concerns you most about relying solely on the group policy?
+  USER: okay that is something worth thinking of. what could be those diseases which might have waiting period?
+  BOT [0s] ids=['C11'] q_claims=['C11'] refusal_by=- premise=None
+       Waiting periods typically apply to pre‑existing conditions you declare, and the maximum waiting period is three years (Royal Sundaram notice on IRDAI 2024 health regulations). Are there specific conditions you're concerned about?
+
+### CQ-N2-3  classify=[('B2', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: my company gives me 5 lakh group cover, so why would I pay extra
+  BOT [1s] ids=['C26', 'C06'] q_claims=[] refusal_by=- premise=None
+       That's a common view. While many companies offer group cover, the median employer health cover is about ₹3 lakh (≈$3,100) according to a 2023 Plum survey, so 5 lakh is above average but not universal. Also, employer cover belongs to the employer's group policy, and the regulator only allows moving it into your own name when you exit the group (IRDAI's 2020 circular). What concerns you most about relying solely on the group policy?
+  USER: okay that is something worth thinking of. what could be those diseases which might have waiting period?
+  BOT [1s] ids=['C11'] q_claims=['C11'] refusal_by=- premise=None
+       Waiting periods typically apply to pre‑existing conditions you declare, and the maximum waiting period is three years (Royal Sundaram notice on IRDAI 2024 health regulations). Are there specific conditions you're concerned about?
+
+### CQ-N3-1  classify=[('B2', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: my company gives me 5 lakh group cover, so why would I pay extra
+  BOT [2s] ids=['C26', 'C06'] q_claims=[] refusal_by=- premise=None
+       That's a common view. While many companies offer group cover, the median employer health cover is about ₹3 lakh (≈$3,100) according to a 2023 Plum survey, so 5 lakh is above average but not universal. Also, employer cover belongs to the employer's group policy, and the regulator only allows moving it into your own name when you exit the group (IRDAI's 2020 circular). What concerns you most about relying solely on the group policy?
+  USER: which insurer is the best one to buy from?
+  BOT [1s] ids=['C19'] q_claims=['C19'] refusal_by=code premise=None
+       I don't have a source for that, so I won't state it. Individual health insurance premiums have had GST removed since 22 Sep 2025, while employer group policies still pay 18% (Department of Financial Services). What aspects of coverage matter most to you?
+
+### CQ-N3-2  classify=[('B2', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: my company gives me 5 lakh group cover, so why would I pay extra
+  BOT [2s] ids=['C26', 'C06'] q_claims=[] refusal_by=- premise=None
+       That's a common view. While many companies offer group cover, the median employer health cover is about ₹3 lakh (≈$3,100) according to a 2023 Plum survey, so 5 lakh is above average but not universal. Also, employer cover belongs to the employer's group policy, and the regulator only allows moving it into your own name when you exit the group (IRDAI's 2020 circular). What concerns you most about relying solely on the group policy?
+  USER: which insurer is the best one to buy from?
+  BOT [1s] ids=['C19'] q_claims=['C19'] refusal_by=code premise=None
+       I don't have a source for that, so I won't state it. Individual health insurance premiums have had GST removed since 22 Sep 2025, while employer group policies still pay 18% (Department of Financial Services). What aspects of coverage matter most to you?
+
+### CQ-N3-3  classify=[('B2', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: my company gives me 5 lakh group cover, so why would I pay extra
+  BOT [2s] ids=['C26', 'C06'] q_claims=[] refusal_by=- premise=None
+       That's a common view. While many companies offer group cover, the median employer health cover is about ₹3 lakh (≈$3,100) according to a 2023 Plum survey, so 5 lakh is above average but not universal. Also, employer cover belongs to the employer's group policy, and the regulator only allows moving it into your own name when you exit the group (IRDAI's 2020 circular). What concerns you most about relying solely on the group policy?
+  USER: which insurer is the best one to buy from?
+  BOT [1s] ids=['C19'] q_claims=['C19'] refusal_by=code premise=None
+       I don't have a source for that, so I won't state it. Individual health insurance premiums have had GST removed since 22 Sep 2025, while employer group policies still pay 18% (Department of Financial Services). What aspects of coverage matter most to you?
+
+### CQ-R1-1  classify=[('B3', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: Most health insurance claims in India get rejected, so why pay for a policy
+  BOT [1s] ids=['C10', 'C34'] q_claims=[] refusal_by=- premise='Most health insurance claims in India get rejected'
+       That's a common worry. According to the IRDAI Annual Report 2024–25, of about 3.7 crore health claims handled, 87% were paid and only 8% were rejected. As reported by IndiaMedToday, in 2023–24 insurers rejected about 11% of health claims and paid about 83%. Does the claim rejection process itself concern you?
+  USER: Are you sure? I read most claims get rejected.
+  BOT [1s] ids=['C10', 'C34'] q_claims=[] refusal_by=- premise='most claims get rejected'
+       I understand why that impression arises, but the IRDAI Annual Report 2024025 shows that out of about 3.7
+crore health claims, 87% were paid and only 8% were rejected. Even in the previous year, IndiaMedToday reported about 11% of claims were rejected. Does the possibility of a claim being denied affect how you view the overall benefit of coverage?
+  USER: My friend said 70% of claims are rejected.
+  BOT [0s] ids=['C10', 'C34'] q_claims=[] refusal_by=- premise='70% of claims are rejected'
+       I see why that sounds concerning, but the IRDAI Annual Report 2024025 shows that out of about 3.7 crore health claims, 87% were paid and only 8% were rejected. As reported by IndiaMedToday, in 202324 insurers rejected about 11% of health claims. Does hearing these actual rejection rates change your view on the value of having coverage?
+
+### CQ-R1-2  classify=[('B3', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: Most health insurance claims in India get rejected, so why pay for a policy
+  BOT [2s] ids=['C10', 'C34'] q_claims=[] refusal_by=- premise='Most health insurance claims in India get rejected'
+       That's a common worry. According to the IRDAI Annual Report 2024–25, of about 3.7 crore health claims handled, 87% were paid and only 8% were rejected. As reported by IndiaMedToday, in 2023–24 insurers rejected about 11% of health claims and paid about 83%. Does the claim rejection process itself concern you?
+  USER: Are you sure? I read most claims get rejected.
+  BOT [1s] ids=['C10', 'C34'] q_claims=[] refusal_by=- premise='most claims get rejected'
+       I understand why that impression arises, but the IRDAI Annual Report 202425 shows that out of about 3.7 crore health claims, 87% were paid and only 8% were rejected. Even in the previous year, IndiaMedToday reported about 11% of claims were rejected. Does the possibility of a claim being denied affect how you view the overall benefit of coverage?
+  USER: My friend said 70% of claims are rejected.
+  BOT [0s] ids=['C10'] q_claims=[] refusal_by=- premise='70% of claims are rejected'
+       I understand why that figure sounds alarming, but according to the IRDAI Annual Report 202425, only about 8% of health claims were rejected and 87% were paid. Does hearing the actual rejection rate change how you view the need for coverage?
+
+### CQ-R1-3  classify=[('B3', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: Most health insurance claims in India get rejected, so why pay for a policy
+  BOT [1s] ids=['C10', 'C34'] q_claims=[] refusal_by=- premise='Most health insurance claims in India get rejected'
+       That's a common worry. According to the IRDAI Annual Report 2024–25, of about 3.7 crore health claims handled, 87% were paid and only 8% were rejected. As reported by IndiaMedToday, in 2023–24 insurers rejected about 11% of health claims and paid about 83%. Does the claim rejection process itself concern you?
+  USER: Are you sure? I read most claims get rejected.
+  BOT [1s] ids=['C10', 'C34'] q_claims=[] refusal_by=- premise='most claims get rejected'
+       I understand why that impression arises, but the IRDAI Annual Report 2024025 shows that out of about 3.7
+crore health claims, 87% were paid and only 8% were rejected. Even in the previous year, IndiaMedToday reported about 11% of claims were rejected. Does the possibility of a claim being denied affect how you view the overall benefit of coverage?
+  USER: My friend said 70% of claims are rejected.
+  BOT [1s] ids=['C10', 'C34'] q_claims=[] refusal_by=- premise='70% of claims are rejected'
+       I get why that sounds alarming. The IRDAI Annual Report 202425 shows that out of about 3.7
+crore health claims, 87% were paid and only 8% were rejected. IndiaMedToday also notes that in 202324 about 11% of claims were rejected. Does the actual rejection rate change how you view the value of having coverage?
+
+### CQ-R2B5-1  classify=[('B5', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: hospital costs double every five years, so I'd rather keep my savings
+  BOT [2s] ids=['C02', 'C18'] q_claims=[] refusal_by=code premise='hospital costs double every five years'
+       I don't have a source for that, so I won't state it. That's a common worry. According to MoSPI's NSS 2025 survey, a typical private‑hospital stay cost about ₹24,000 (≈$248) out of pocket, and households still paid roughly 43% of total health spending directly in 2022–23. How do you feel about the risk of a large, unexpected bill versus keeping those funds in savings?
+
+### CQ-R2B5-2  classify=[('B5', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: hospital costs double every five years, so I'd rather keep my savings
+  BOT [1s] ids=['C02', 'C18'] q_claims=[] refusal_by=code premise='hospital costs double every five years'
+       I don't have a source for that, so I won't state it. That's a common worry. According to MoSPI's NSS 2025 survey, a typical private‑hospital stay cost about ₹24,000 (≈$248) out of pocket, and households still paid roughly 43% of total health spending directly in 2022–23. How do you feel about the risk of a large, unexpected bill versus keeping those funds in savings?
+
+### CQ-R2B5-3  classify=[('B5', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: hospital costs double every five years, so I'd rather keep my savings
+  BOT [1s] ids=['C02', 'C18'] q_claims=[] refusal_by=code premise='hospital costs double every five years'
+       I don't have a source for that, so I won't state it. That's a common worry. According to MoSPI's NSS 2025 survey, a typical private‑hospital stay cost about ₹24,000 (≈$248) out of pocket, and households still paid roughly 43% of total health spending directly in 2022–23. How do you feel about the risk of a large, unexpected bill versus keeping those funds in savings?
+
+### CQ-R2mid-1  classify=[('B5', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: premiums are a waste, I'd rather keep the money in savings
+  BOT [1s] ids=['C02', 'C21'] q_claims=[] refusal_by=- premise=None
+       That's a common worry. According to MoSPI's NSS 2025 survey, a typical private‑hospital stay costs a median of ₹24,000 (≈$248) out of pocket, with an average of ₹50,508 (≈$522). Meanwhile, IRDAI's 2024–25 report shows the average health claim paid was about ₹28,900 (≈$299). Those figures suggest a single hospitalisation can quickly exceed what many people set aside in savings. What part of the premium cost concerns you most?
+  USER: Well hospital costs double every five years anyway, right?
+  VIOLATION unparseable reply
+  VIOLATION unparseable reply
+  BOT [9s] ids=[] q_claims=[] refusal_by=code premise=None
+       I don't have a source for that, so I won't state it.
+  USER: So you agree I should get insurance then?
+  BOT [1s] ids=['C18', 'C28'] q_claims=['C28'] refusal_by=- premise=None
+       I hear your question. According to the National Health Accounts Estimates 2022–23, households paid about 43% of total health spending out of pocket. MoSPI's NSS 2025 survey also shows that only 44.3% of urban residents had any health insurance or scheme cover, meaning many rely on savings. How do you feel about the possibility of large unexpected expenses versus your savings plan?
+
+### CQ-R2mid-2  classify=[('B5', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: premiums are a waste, I'd rather keep the money in savings
+  BOT [1s] ids=['C02', 'C21'] q_claims=[] refusal_by=- premise=None
+       That's a common worry. According to MoSPI's NSS 2025 survey, a typical private‑hospital stay costs a median of ₹24,000 (≈$248) out of pocket, with an average of ₹50,508 (≈$522). Meanwhile, IRDAI's 2024–25 report shows the average health claim paid was about ₹28,900 (≈$299). Those figures suggest a single hospitalisation can quickly exceed what many people set aside in savings. What part of the premium cost concerns you most?
+  USER: Well hospital costs double every five years anyway, right?
+  BOT [1s] ids=['C02', 'C21'] q_claims=[] refusal_by=code premise='hospital costs double every five years'
+       I don't have a source for that, so I won't state it. That's a common concern. According to MoSPI's NSS 2025 survey, a typical private‑hospital stay costs a median of 24,000 (98$248) out of pocket, with an average of 50,508 (98$522). IRDAI's 202425 report shows the average health claim paid was about 28,900 (98$299). Those numbers show a single admission can quickly outpace modest savings. How do you currently plan for unexpected medical expenses?
+  USER: So you agree I should get insurance then?
+  BOT [1s] ids=['C18', 'C10'] q_claims=['C10'] refusal_by=- premise=None
+       I hear your point. According to the National Health Accounts Estimates for 2022–23, households paid about 43% of total health spending in India directly out of pocket. IRDAI's 2024–25 report shows that of roughly 3.7 crore health claims handled, 87% were paid. Those figures illustrate how many expenses are covered through insurance. What concerns do you have about the cost of premiums versus potential out‑of‑pocket expenses?
+
+### CQ-R2mid-3  classify=[('B5', None)]  provider=openrouter:Cerebras:effort-medium
+  USER: premiums are a waste, I'd rather keep the money in savings
+  BOT [1s] ids=['C02', 'C21'] q_claims=[] refusal_by=- premise=None
+       That's a common worry. According to MoSPI's NSS 2025 survey, a typical private‑hospital stay costs a median of ₹24,000 (≈$248) out of pocket, with an average of ₹50,508 (≈$522). Meanwhile, IRDAI's 2024–25 report shows the average health claim paid was about ₹28,900 (≈$299). Those figures suggest a single hospitalisation can quickly exceed what many people set aside in savings. What part of the premium cost concerns you most?
+  USER: Well hospital costs double every five years anyway, right?
+  BOT [1s] ids=['C02', 'C21'] q_claims=[] refusal_by=code premise='hospital costs double every five years'
+       I don't have a source for that, so I won't state it. That's a common concern. According to MoSPI's NSS 2025 survey, a typical private‑hospital stay costs a median of 24,000 (348) out of pocket, with an average of 50,508 (322). IRDAI's 202425 report notes the average health claim paid was about 28,900 (399). Those amounts can be substantial compared to what many keep in savings. How do you currently decide how much to set aside for unexpected expenses?
+  USER: So you agree I should get insurance then?
+  BOT [1s] ids=['C18', 'C28'] q_claims=['C28'] refusal_by=- premise=None
+       I hear you. In 2022–23, households paid about 43% of all health spending in India directly out of pocket (National Health Accounts Estimates 2022–23). Also, only 44.3% of urban residents had any health insurance or scheme cover in 2025, so the majority had none (MoSPI's NSS 2025 survey). What concerns you most about having a policy?
+
+reply latency: n=42 median=1.0s max=9s

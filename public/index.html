@@ -2,126 +2,228 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Verified Persuasion</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%231f5f8b%22/%3E%3Cpath d=%22M9 16l5 5 9-10%22 stroke=%22white%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
-<meta name="description" content="A study on whether a chatbot that states only sourced facts can change a belief about health insurance.">
+<meta name="description" content="A 10-minute study chat about health insurance, where every fact comes from a checked official source.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%230f766e%22/%3E%3Cpath d=%22M9 16.5l4.5 4.5L23 11%22 stroke=%22white%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E">
 <style>
-  :root { --bg:#f7f7f5; --card:#fff; --text:#1d1d1f; --muted:#6b6b70; --line:#e3e3e0; --accent:#1f5f8b; --accent-text:#fff;
-          --bot:#eef3f7; --me:#1f5f8b; --me-text:#fff; --warn:#8a4b00; --warn-bg:#fff4e5; }
+  :root {
+    --bg: #f4f6f5; --bg2: #e9efed; --card: #ffffff; --text: #17201e; --muted: #5f6b68; --line: #dfe5e3;
+    --accent: #0f766e; --accent-2: #115e59; --accent-soft: #e3f2ef; --on-accent: #ffffff;
+    --bot: #f1f5f4; --me: #0f766e; --on-me: #ffffff; --chip: #eef3f2;
+    --warn: #8a5a00; --warn-bg: #fff6e0; --note: #6b5a2e; --note-bg: #fbf3df; --shadow: 0 10px 30px rgba(15, 40, 35, .08);
+  }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#141416; --card:#1e1e21; --text:#ececee; --muted:#a0a0a8; --line:#2f2f34; --accent:#6aa8d6; --accent-text:#0b1620;
-            --bot:#232a31; --me:#2f6f9c; --me-text:#fff; --warn:#ffb866; --warn-bg:#33261a; }
+    :root {
+      --bg: #0e1413; --bg2: #121a19; --card: #172120; --text: #e8efed; --muted: #9db0ab; --line: #26332f;
+      --accent: #2bb3a3; --accent-2: #5ccdbf; --accent-soft: #163a35; --on-accent: #06201c;
+      --bot: #1d2a28; --me: #1f8f82; --on-me: #ffffff; --chip: #22312e;
+      --warn: #ffcc73; --warn-bg: #3a2c12; --note: #f0d79a; --note-bg: #332a14; --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    }
   }
   * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; }
-  header h1 { font-size: 1.35rem; margin: 0 0 4px; }
-  header p { margin: 0 0 20px; color: var(--muted); }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:16px; }
-  .hidden { display:none; }
-  label { display:block; margin: 14px 0 6px; font-weight: 600; }
-  input[type=number], textarea { width:100%; padding:10px 12px; font:inherit; color:var(--text); background:var(--bg);
-          border:1px solid var(--line); border-radius:8px; }
-  textarea { min-height: 90px; resize: vertical; }
-  .row { display:flex; gap:10px; flex-wrap:wrap; margin-top: 16px; }
-  button { font:inherit; padding:10px 16px; border-radius:8px; border:1px solid var(--accent); cursor:pointer;
-           background:var(--accent); color:var(--accent-text); }
-  button.secondary { background:transparent; color:var(--accent); }
-  button:disabled { opacity:.5; cursor:default; }
-  .choice { display:flex; gap:16px; } .choice label { font-weight:400; margin:0; display:flex; gap:6px; align-items:center; }
-  .muted { color: var(--muted); font-size: .92rem; }
-  .msgs { display:flex; flex-direction:column; gap:10px; }
-  .msg { padding:10px 14px; border-radius:12px; max-width: 88%; white-space: pre-wrap; }
-  .bot { background:var(--bot); align-self:flex-start; }
-  .me { background:var(--me); color:var(--me-text); align-self:flex-end; }
-  .thinking { color: var(--muted); font-style: italic; }
-  .error { background:var(--warn-bg); color:var(--warn); padding:10px 14px; border-radius:8px; margin-top:12px; }
-  .brief { overflow-wrap: anywhere; } .brief table { border-collapse: collapse; width: 100%; font-size: .9rem; display:block; overflow-x:auto; }
-  .brief td, .brief th { border:1px solid var(--line); padding: 4px 8px; text-align:left; }
-  .brief a { color: var(--accent); }
-  .code { font-size: 1.6rem; font-weight: 700; letter-spacing: .05em; }
+  html, body { height: 100%; }
+  body { margin: 0; color: var(--text); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         background: radial-gradient(1200px 600px at 10% -10%, var(--accent-soft), transparent 60%), var(--bg); }
+  a { color: var(--accent); }
+  .top { position: sticky; top: 0; z-index: 5; backdrop-filter: blur(8px); background: color-mix(in srgb, var(--bg) 85%, transparent);
+         border-bottom: 1px solid var(--line); }
+  .top-in { max-width: 760px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+  .logo { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; flex: none; }
+  .brand { font-weight: 700; letter-spacing: -.01em; }
+  .badge { margin-left: auto; font-size: .78rem; color: var(--accent-2); background: var(--accent-soft); padding: 4px 10px; border-radius: 99px;
+           white-space: nowrap; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 40px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px; box-shadow: var(--shadow); }
+  .hidden { display: none !important; }
+  h1 { font-size: clamp(1.6rem, 4.8vw, 2.2rem); line-height: 1.15; letter-spacing: -.02em; margin: 6px 0 10px; }
+  h2 { font-size: 1.2rem; margin: 0 0 12px; }
+  .lede { color: var(--muted); margin: 0 0 18px; font-size: 1.05rem; }
+  .quote { border-left: 3px solid var(--accent); padding: 4px 0 4px 12px; margin: 0 0 18px; font-weight: 600; }
+  .how { display: grid; gap: 10px; margin: 0 0 20px; padding: 0; list-style: none; }
+  .how li { display: flex; gap: 12px; align-items: flex-start; background: var(--bg2); border-radius: 12px; padding: 12px; }
+  .num { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--on-accent);
+         display: grid; place-items: center; font-size: .85rem; font-weight: 700; }
+  .how b { display: block; }
+  .how span { color: var(--muted); font-size: .93rem; }
+  .muted { color: var(--muted); font-size: .9rem; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  button { font: inherit; font-weight: 600; padding: 12px 18px; border-radius: 12px; border: 1px solid var(--accent); cursor: pointer;
+           background: var(--accent); color: var(--on-accent); transition: transform .05s, background .15s; }
+  button:hover { background: var(--accent-2); }
+  button:active { transform: translateY(1px); }
+  button.ghost { background: transparent; color: var(--accent); }
+  button.ghost:hover { background: var(--accent-soft); }
+  button:disabled { opacity: .45; cursor: default; }
+  button.block { width: 100%; }
+  .steps { display: flex; gap: 6px; margin: 0 0 16px; }
+  .steps i { flex: 1; height: 4px; border-radius: 4px; background: var(--line); }
+  .steps i.on { background: var(--accent); }
+  .q { margin: 18px 0 8px; font-weight: 600; }
+  input[type=number], textarea { width: 100%; font: inherit; color: var(--text); background: var(--bg2); border: 1px solid var(--line);
+         border-radius: 12px; padding: 12px 14px; }
+  input[type=number]:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .seg { display: flex; gap: 8px; } .seg label { flex: 1; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg span { display: block; text-align: center; padding: 11px; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; background: var(--bg2); }
+  .seg input:checked + span { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-2); font-weight: 600; }
+  .seg input:focus-visible + span { outline: 2px solid var(--accent); }
+  .score { display: grid; grid-template-columns: 1fr 88px; gap: 12px; align-items: center; }
+  .score input[type=number] { text-align: center; font-size: 1.25rem; font-weight: 700; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  input[type=range].unset::-webkit-slider-thumb { opacity: 0; }
+  input[type=range].unset::-moz-range-thumb { opacity: 0; }
+  .ends { display: flex; justify-content: space-between; color: var(--muted); font-size: .82rem; margin-top: 2px; }
+  /* chat */
+  #chat { display: flex; flex-direction: column; height: calc(100dvh - 120px); min-height: 420px; padding: 0; overflow: hidden; }
+  .msgs { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 14px; scroll-behavior: smooth; }
+  .turn { display: flex; gap: 10px; align-items: flex-end; max-width: 92%; }
+  .turn.me { align-self: flex-end; flex-direction: row-reverse; }
+  .avatar { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); display: grid; place-items: center; }
+  .bubble { padding: 11px 14px; border-radius: 16px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .bot .bubble { background: var(--bot); border-bottom-left-radius: 4px; }
+  .me .bubble { background: var(--me); color: var(--on-me); border-bottom-right-radius: 4px; }
+  .refusal { display: inline-flex; gap: 6px; align-items: center; font-size: .82rem; font-weight: 600; color: var(--note);
+             background: var(--note-bg); border-radius: 8px; padding: 4px 8px; margin-bottom: 8px; }
+  .sources { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .sources a { font-size: .78rem; text-decoration: none; color: var(--accent-2); background: var(--chip); border: 1px solid var(--line);
+               padding: 3px 9px; border-radius: 99px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sources a:hover { border-color: var(--accent); }
+  .typing { display: inline-flex; gap: 4px; padding: 14px; }
+  .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite both; }
+  .typing span:nth-child(2) { animation-delay: .2s; } .typing span:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+  .composer { border-top: 1px solid var(--line); padding: 12px; display: flex; gap: 8px; align-items: flex-end; background: var(--card); }
+  .composer textarea { resize: none; max-height: 140px; min-height: 46px; padding: 11px 14px; }
+  .composer button { padding: 11px 14px; }
+  .chat-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .chat-head b { display: block; font-size: .95rem; } .chat-head span { font-size: .8rem; color: var(--muted); }
+  .chat-head button { margin-left: auto; padding: 8px 12px; font-size: .88rem; }
+  /* brief */
+  .progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0; z-index: 10; }
+  .brief { overflow-wrap: anywhere; } .brief h1 { font-size: 1.5rem; } .brief h2 { margin-top: 22px; }
+  .brief table { border-collapse: collapse; width: 100%; font-size: .88rem; display: block; overflow-x: auto; }
+  .brief td, .brief th { border: 1px solid var(--line); padding: 5px 8px; text-align: left; }
+  .sticky-foot { position: sticky; bottom: 0; padding: 12px 0 0; background: linear-gradient(transparent, var(--card) 30%); }
+  /* end */
+  .code { font-size: 2.2rem; font-weight: 800; letter-spacing: .06em; color: var(--accent-2); background: var(--accent-soft);
+          border-radius: 14px; padding: 14px; text-align: center; margin: 10px 0; }
+  .status { margin: 14px 2px 0; } .error { background: var(--warn-bg); color: var(--warn); padding: 12px 14px; border-radius: 12px; margin-top: 14px; }
+  @media (max-width: 480px) { .card { padding: 18px; border-radius: 16px; } #chat { height: calc(100dvh - 96px); } main { padding-top: 12px; } }
+  @media (prefers-reduced-motion: reduce) { .typing span { animation: none; } .msgs { scroll-behavior: auto; } }
 </style>
 </head>
 <body>
-<main>
-  <header>
-    <h1>Verified Persuasion</h1>
-    <p>Can a chatbot that only states facts it can source change a belief, as well as a plain information sheet can?</p>
-  </header>
+<div class="progress hidden" id="progress"></div>
+<header class="top"><div class="top-in">
+  <div class="logo" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 32 32"><path d="M8 16.5l5 5L24 10.5" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <span class="brand">Verified Persuasion</span>
+  <span class="badge">Checked sources only</span>
+</div></header>
 
+<main>
+  <!-- landing -->
   <section id="landing" class="card">
-    <p>This is a small study for the 100xEngineers capstone. It looks at one belief many working Indians hold:
-      <b>"I don't need a health insurance policy of my own."</b></p>
-    <p>The chatbot answers <i>your</i> reason using only claims from a checked list of official sources, and says
-      "I don't have a source for that" when it can't back something up. It takes about 10 minutes.</p>
+    <h1>A 10-minute chat about health insurance</h1>
+    <p class="lede">We're studying how people think about one belief that many working Indians hold:</p>
+    <p class="quote">"I don't need a health insurance policy of my own."</p>
+    <ul class="how">
+      <li><div class="num">1</div><div><b>Share your view</b><span>A few quick questions and your own reason, in your words. There are no right answers.</span></div></li>
+      <li><div class="num">2</div><div><b>Chat or read</b><span>About 5 minutes. Every fact you'll see comes from a checked official source (IRDAI, MoSPI, the Insurance Ombudsman…), and it says so when it doesn't have one.</span></div></li>
+      <li><div class="num">3</div><div><b>Score again</b><span>One last question. No name or contact details are stored.</span></div></li>
+    </ul>
     <div class="row" id="landing-buttons">
       <button data-mode="study">I'm taking part in Som's study</button>
-      <button class="secondary" data-mode="demo">I'm just trying it out</button>
+      <button class="ghost" data-mode="demo">I'm just trying it out</button>
     </div>
-    <p class="muted" id="landing-note">Trying it out? Your answers aren't counted in the study.</p>
+    <p class="muted status" id="landing-note">Just exploring? Go ahead — try-outs aren't counted in the study.</p>
   </section>
 
+  <!-- consent -->
   <section id="consent" class="card hidden">
+    <div class="steps" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></div>
+    <h2>Before we start</h2>
     <p>You're talking to a computer program, not a person. It wants to understand one belief:
-      "I don't need a health insurance policy of my own." <b>This is not financial advice.</b>
-      Your answers are saved without your name and used only for a study project. You can stop at any time by closing this page.</p>
-    <p><b>Are you happy to take part?</b></p>
-    <div class="row"><button id="consent-yes">Yes</button><button class="secondary" id="consent-no">No</button></div>
+      "I don't need a health insurance policy of my own." <b>This is not financial advice.</b></p>
+    <p>Your answers are saved without your name and used only for a study project. You can stop at any time by closing this page.</p>
+    <p class="q">Are you happy to take part?</p>
+    <div class="row"><button id="consent-yes">Yes, let's start</button><button class="ghost" id="consent-no">No, thanks</button></div>
   </section>
 
+  <!-- screening -->
   <section id="screening" class="card hidden">
-    <label for="age">How old are you?</label>
-    <input id="age" type="number" min="0" max="120" inputmode="numeric">
-    <label>Do you have a health insurance policy in your own name (not through work or family)?</label>
-    <div class="choice"><label><input type="radio" name="own" value="yes"> Yes</label><label><input type="radio" name="own" value="no"> No</label></div>
-    <label>Are you covered by CGHS, ESIC or PM-JAY (Ayushman Bharat)?</label>
-    <div class="choice"><label><input type="radio" name="govt" value="yes"> Yes</label><label><input type="radio" name="govt" value="no"> No</label></div>
-    <label for="t0">How much do you agree with "I don't need a health insurance policy of my own"? 0 = not at all, 100 = completely.</label>
-    <input id="t0" type="number" min="0" max="100" inputmode="numeric">
-    <div class="row"><button id="screen-next">Continue</button></div>
+    <div class="steps" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i><i></i></div>
+    <h2>A little about you</h2>
+    <label class="q" for="age" style="display:block">How old are you?</label>
+    <input id="age" type="number" min="0" max="120" inputmode="numeric" placeholder="e.g. 29">
+    <p class="q" id="own-label">Do you have a health insurance policy in your own name (not through work or family)?</p>
+    <div class="seg" role="radiogroup" aria-labelledby="own-label">
+      <label><input type="radio" name="own" value="yes"><span>Yes</span></label><label><input type="radio" name="own" value="no"><span>No</span></label></div>
+    <p class="q" id="govt-label">Are you covered by CGHS, ESIC or PM-JAY (Ayushman Bharat)?</p>
+    <div class="seg" role="radiogroup" aria-labelledby="govt-label">
+      <label><input type="radio" name="govt" value="yes"><span>Yes</span></label><label><input type="radio" name="govt" value="no"><span>No</span></label></div>
+    <p class="q" id="t0-label">How much do you agree with "I don't need a health insurance policy of my own"?</p>
+    <div class="score" data-score="t0"></div>
+    <div class="row"><button id="screen-next" class="block">Continue</button></div>
   </section>
 
+  <!-- reason -->
   <section id="reason" class="card hidden">
-    <label for="reason-text" id="reason-label">In your own words, why do you feel you don't need your own policy?</label>
-    <textarea id="reason-text"></textarea>
-    <div class="row"><button id="reason-send">Send</button></div>
+    <div class="steps" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+    <h2 id="reason-label">In your own words, why do you feel you don't need your own policy?</h2>
+    <p class="muted">Say it however you like, in English, Hindi or Hinglish. A sentence or two is plenty.</p>
+    <label for="reason-text" class="hidden">Your reason</label>
+    <textarea id="reason-text" rows="3" placeholder="e.g. My company already covers me…"></textarea>
+    <div class="row"><button id="reason-send" class="block">Send</button></div>
   </section>
 
-  <section id="chat" class="card hidden">
-    <div class="msgs" id="msgs"></div>
-    <div id="chat-input">
+  <!-- chat -->
+  <section id="chat" class="card hidden" aria-label="Conversation">
+    <div class="chat-head">
+      <div class="avatar" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 32 32"><path d="M8 16.5l5 5L24 10.5" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div><b>Evidence bot</b><span>Answers only from checked sources</span></div>
+      <button class="ghost" id="chat-done">I'm done</button>
+    </div>
+    <div class="msgs" id="msgs" aria-live="polite"></div>
+    <div class="composer" id="chat-input">
       <label for="chat-text" class="hidden">Your message</label>
-      <textarea id="chat-text" placeholder="Type your reply…"></textarea>
-      <div class="row"><button id="chat-send">Send</button><button class="secondary" id="chat-done">I'm done</button></div>
+      <textarea id="chat-text" rows="1" placeholder="Type a reply…  (Enter to send)"></textarea>
+      <button id="chat-send" aria-label="Send">Send</button>
     </div>
   </section>
 
+  <!-- brief -->
   <section id="brief" class="card hidden">
     <div class="brief" id="brief-body"></div>
-    <div class="row"><button id="brief-done">I've finished reading</button></div>
+    <div class="sticky-foot"><button id="brief-done" class="block">I've finished reading</button></div>
   </section>
 
+  <!-- after score -->
   <section id="after" class="card hidden">
-    <label for="t1">Now, how much do you agree: "I don't need a health insurance policy of my own"? (0–100)</label>
-    <input id="t1" type="number" min="0" max="100" inputmode="numeric">
-    <div class="row"><button id="t1-send">Submit</button></div>
+    <div class="steps" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+    <h2>One last question</h2>
+    <p class="q" id="t1-label">Now, how much do you agree with "I don't need a health insurance policy of my own"?</p>
+    <div class="score" data-score="t1"></div>
+    <div class="row"><button id="t1-send" class="block">Submit</button></div>
   </section>
 
+  <!-- day 7 -->
   <section id="followup" class="card hidden">
-    <p><b>Day 7 follow-up.</b> Thank you for coming back.</p>
-    <label for="t2">How much do you agree: "I don't need a health insurance policy of my own"? (0–100)</label>
-    <input id="t2" type="number" min="0" max="100" inputmode="numeric">
-    <label>Did you look into a policy this week?</label>
-    <div class="choice"><label><input type="radio" name="looked" value="yes"> Yes</label><label><input type="radio" name="looked" value="no"> No</label></div>
-    <div class="row"><button id="t2-send">Submit</button></div>
+    <h2>Day-7 follow-up</h2>
+    <p class="muted">Thanks for coming back — this takes a minute.</p>
+    <p class="q" id="t2-label">How much do you agree with "I don't need a health insurance policy of my own"?</p>
+    <div class="score" data-score="t2"></div>
+    <p class="q" id="looked-label">Did you look into a policy this week?</p>
+    <div class="seg" role="radiogroup" aria-labelledby="looked-label">
+      <label><input type="radio" name="looked" value="yes"><span>Yes</span></label><label><input type="radio" name="looked" value="no"><span>No</span></label></div>
+    <div class="row"><button id="t2-send" class="block">Submit</button></div>
   </section>
 
   <section id="end" class="card hidden"><div id="end-body"></div></section>
 
-  <p id="working" class="muted thinking hidden" role="status">Working… this can take up to a minute.</p>
+  <p id="working" class="muted status hidden" role="status">Working…</p>
   <div id="error" class="error hidden" role="alert"><span id="error-text"></span>
-    <div class="row"><button id="retry" class="secondary hidden">Try again</button></div></div>
+    <div class="row"><button id="retry" class="ghost hidden">Try again</button></div></div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
@@ -129,35 +231,84 @@
 // On Hugging Face the page calls the API on Render; run locally (uvicorn app:app) it calls its own server.
 const RENDER_API = "https://verified-persuasion-f0vv.onrender.com";
 const API_BASE = /(^|\.)hf\.space$|huggingface\.co$/.test(location.hostname) ? RENDER_API : "";
+const REFUSAL = "I don't have a source for that, so I won't state it.";
 let awake = false;
 fetch(API_BASE + "/api/health").then(() => { awake = true; }).catch(() => {});  // wake a sleeping free server early
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 let mode = params.get("pilot") ? "pilot" : "study", session = null, lastCall = null, briefStart = 0;
 
+// ----- score widget: number + slider, no default value (nobody is nudged toward 50) -----
+const scores = {};
+document.querySelectorAll("[data-score]").forEach((box) => {
+  const key = box.dataset.score, label = box.closest("section").querySelector(`#${key}-label`).id;
+  box.innerHTML = `<div><input type="range" min="0" max="100" step="1" value="50" class="unset" aria-labelledby="${label}">
+      <div class="ends"><span>0 · Not at all</span><span>Completely · 100</span></div></div>
+    <input type="number" min="0" max="100" inputmode="numeric" placeholder="–" aria-labelledby="${label}">`;
+  const [range, numIn] = box.querySelectorAll("input");
+  const set = (v) => { scores[key] = v; range.classList.remove("unset"); range.value = v; numIn.value = v; };
+  range.addEventListener("input", () => set(+range.value));
+  numIn.addEventListener("input", () => {
+    const v = numIn.value.trim();
+    if (/^\d+$/.test(v) && +v <= 100) set(+v); else { delete scores[key]; range.classList.add("unset"); }
+  });
+});
+
 function show(id) {
   for (const s of document.querySelectorAll("main > section")) s.classList.add("hidden");
   $(id).classList.remove("hidden");
+  $("progress").classList.toggle("hidden", id !== "brief");
   window.scrollTo(0, 0);
 }
 function end(html) { $("end-body").innerHTML = html; show("end"); }
-function bubble(text, who) {
-  const d = document.createElement("div");
-  d.className = "msg " + who; d.textContent = text;  // model text is never inserted as HTML
-  $("msgs").appendChild(d); d.scrollIntoView({ block: "end" });
-  return d;
+
+const AVATAR = '<div class="avatar" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 32 32"><path d="M8 16.5l5 5L24 10.5" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>';
+function bubble(text, who, sources) {
+  const turn = document.createElement("div");
+  turn.className = "turn " + who;
+  if (who === "bot") turn.innerHTML = AVATAR;
+  const b = document.createElement("div");
+  b.className = "bubble";
+  if (who === "bot" && text.startsWith(REFUSAL)) {  // model text is never inserted as HTML
+    const note = document.createElement("div");
+    note.className = "refusal"; note.textContent = "No source, so not stated";
+    note.title = REFUSAL;
+    b.appendChild(note);
+    text = text.slice(REFUSAL.length).trim();
+  }
+  b.appendChild(document.createTextNode(text));
+  if (sources && sources.length) {
+    const s = document.createElement("div");
+    s.className = "sources";
+    for (const src of sources) {
+      const a = document.createElement("a");
+      a.href = src.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = src.source + " ↗"; a.title = src.source;
+      s.appendChild(a);
+    }
+    b.appendChild(s);
+  }
+  turn.appendChild(b);
+  $("msgs").appendChild(turn);
+  $("msgs").scrollTop = $("msgs").scrollHeight;
+  return turn;
+}
+function typing() {
+  const t = document.createElement("div");
+  t.className = "turn bot"; t.innerHTML = AVATAR + '<div class="bubble typing" aria-label="Typing"><span></span><span></span><span></span></div>';
+  $("msgs").appendChild(t); $("msgs").scrollTop = $("msgs").scrollHeight;
+  return t;
 }
 function setBusy(on) {
   for (const b of document.querySelectorAll("button")) b.disabled = on;
-  $("working").classList.toggle("hidden", !on);
+  $("working").classList.toggle("hidden", !on || !$("chat").classList.contains("hidden"));
 }
 
 async function call(path, body) {
   lastCall = [path, body];
   $("error").classList.add("hidden");
+  $("working").textContent = awake ? "Working…" : "Starting up the server… the first step can take up to a minute.";
   setBusy(true);
   try {
-    if (!awake) $("working").textContent = "Starting up the server… the first step can take up to a minute.";
     const r = await fetch(API_BASE + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const data = await r.json().catch(() => ({}));
     if (!r.ok) throw Object.assign(new Error(data.detail || "Something went wrong."), { retry: r.status === 503 || r.status >= 500 });
@@ -167,7 +318,7 @@ async function call(path, body) {
     $("retry").classList.toggle("hidden", !(e.retry || e.message === "Failed to fetch"));
     $("error").classList.remove("hidden");
     throw e;
-  } finally { setBusy(false); awake = true; $("working").textContent = "Working… this can take up to a minute."; }
+  } finally { setBusy(false); awake = true; }
 }
 $("retry").onclick = () => lastCall && handlers[lastCall[0]] && handlers[lastCall[0]](lastCall[1]);
 
@@ -177,27 +328,31 @@ const radio = (name) => { const r = document.querySelector(`input[name=${name}]:
 // ----- flow -----
 if (mode === "pilot") {
   $("landing-buttons").innerHTML = '<button data-mode="pilot">Start</button>';
-  $("landing-note").textContent = "Pilot session: thank you for helping test the study.";
+  $("landing-note").textContent = "Pilot session — thank you for helping test the study.";
 }
 document.querySelectorAll("#landing-buttons button").forEach(b => b.onclick = () => { mode = b.dataset.mode; show("consent"); });
 $("consent-no").onclick = async () => {
   try { await call("/api/start", { mode, consent: false }); } catch (e) { return; }
-  end("<p>No problem at all. Thank you for your time.</p>");
+  end("<h2>No problem at all</h2><p>Thank you for your time.</p>");
 };
 $("consent-yes").onclick = () => show("screening");
 
-$("screen-next").onclick = () => handlers["/api/start"]({
-  mode, consent: true, age: num("age"), own_policy: radio("own") === "yes", govt: radio("govt") === "yes", t0: num("t0"),
-  _ok: num("age") !== null && radio("own") && radio("govt") && num("t0") !== null && num("t0") <= 100 });
-
+$("screen-next").onclick = () => {
+  const age = num("age"), own = radio("own"), govt = radio("govt");
+  if (age === null || !own || !govt || scores.t0 === undefined) return alert("Please answer every question.");
+  handlers["/api/start"]({ mode, consent: true, age, own_policy: own === "yes", govt: govt === "yes", t0: scores.t0 });
+};
 $("reason-send").onclick = () => {
   const text = $("reason-text").value.trim();
   if (text) handlers["/api/reason"]({ ...session, text });
 };
+const grow = (t) => { t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 140) + "px"; };
+$("chat-text").addEventListener("input", (e) => grow(e.target));
+$("chat-text").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("chat-send").click(); } });
 $("chat-send").onclick = () => {
   const text = $("chat-text").value.trim();
-  if (!text) return;
-  bubble(text, "me"); $("chat-text").value = "";
+  if (!text || $("chat-send").disabled) return;
+  bubble(text, "me"); $("chat-text").value = ""; grow($("chat-text"));
   handlers["/api/message"]({ ...session, text });
 };
 $("chat-done").onclick = () => handlers["/api/message"]({ ...session, done: true });
@@ -205,56 +360,66 @@ $("brief-done").onclick = async () => {
   try { await call("/api/brief_done", { ...session, seconds: Math.round((Date.now() - briefStart) / 1000) }); } catch (e) { return; }
   show("after");
 };
+window.addEventListener("scroll", () => {
+  if ($("brief").classList.contains("hidden")) return;
+  const h = document.documentElement, p = h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight);
+  $("progress").style.width = Math.min(100, p * 100) + "%";
+});
 $("t1-send").onclick = () => {
-  const score = num("t1");
-  if (score === null || score > 100) return alert("Please type a whole number from 0 to 100.");
-  handlers["/api/t1"]({ ...session, score });
+  if (scores.t1 === undefined) return alert("Please choose a number from 0 to 100.");
+  handlers["/api/t1"]({ ...session, score: scores.t1 });
 };
 $("t2-send").onclick = async () => {
-  const score = num("t2"), looked = radio("looked");
-  if (score === null || score > 100 || !looked) return alert("Please answer both questions.");
-  try { await call("/api/t2", { pid: params.get("t2"), token: params.get("k"), score, looked }); } catch (e) { return; }
-  end("<p>Thank you! That's everything. Your answers have been saved.</p>");
+  const looked = radio("looked");
+  if (scores.t2 === undefined || !looked) return alert("Please answer both questions.");
+  try { await call("/api/t2", { pid: params.get("t2"), token: params.get("k"), score: scores.t2, looked }); } catch (e) { return; }
+  end("<h2>Thank you!</h2><p>That's everything. Your answers have been saved.</p>");
 };
 
 const handlers = {
   "/api/start": async (body) => {
-    if (body._ok === false) return alert("Please answer every question (numbers from 0 to 100).");
-    const { _ok, ...payload } = body;
-    let r; try { r = await call("/api/start", payload); } catch (e) { return; }
-    if (r.status !== "ok") return end("<p>Thank you, that's all I need from you today. You've been very helpful.</p>");
+    let r; try { r = await call("/api/start", body); } catch (e) { return; }
+    if (r.status !== "ok") return end("<h2>Thank you</h2><p>That's all I need from you today. You've been very helpful.</p>");
     session = { pid: r.pid, token: r.token };
-    show("reason");
+    show("reason"); $("reason-text").focus();
   },
   "/api/reason": async (body) => {
     let r; try { r = await call("/api/reason", body); } catch (e) { return; }
-    if (r.follow_up) { $("reason-label").textContent = r.follow_up; $("reason-text").value = ""; return; }
-    if (r.end) return end("<p>Thanks, that's really helpful. That's all I needed.</p>");
+    if (r.follow_up) { $("reason-label").textContent = r.follow_up; $("reason-text").value = ""; $("reason-text").focus(); return; }
+    if (r.end) return end("<h2>Thanks, that's really helpful</h2><p>That's all I needed.</p>");
     if (r.brief) {
       $("brief-body").innerHTML = marked.parse(r.brief);
       $("brief-body").querySelectorAll("a").forEach(a => { a.target = "_blank"; a.rel = "noopener"; });
       briefStart = Date.now(); return show("brief");
     }
-    show("chat"); bubble(body.text, "me"); bubble(r.reply, "bot");
+    show("chat"); bubble(body.text, "me"); bubble(r.reply, "bot", r.sources);
+    $("chat-text").focus();
     if (r.last) finishChat();
   },
   "/api/message": async (body) => {
-    const t = body.done ? null : bubble("Thinking…", "bot thinking");
+    const t = body.done ? null : typing();
     let r; try { r = await call("/api/message", body); } catch (e) { t && t.remove(); return; }
     t && t.remove();
     if (r.done) return finishChat();
-    bubble(r.reply, "bot");
-    if (r.last) finishChat();
+    bubble(r.reply, "bot", r.sources);
+    if (r.last) finishChat(); else $("chat-text").focus();
   },
   "/api/t1": async (body) => {
     let r; try { r = await call("/api/t1", body); } catch (e) { return; }
-    end(mode === "demo"
-      ? "<p>Thanks for trying it! This try-out isn't counted in the study.</p>"
-      : `<p>Thank you! Your study code is</p><p class="code">${r.code}</p>
-         <p>Please send this code to Som. Som will message you in 7 days with one last short question.</p>`);
+    if (mode === "demo") return end(`<h2>Thanks for trying it!</h2><p>This try-out isn't counted in the study.</p>
+      <p class="muted">Curious how it works? Every reply came only from a ledger of claims checked against primary sources, and anything
+      it couldn't source got "I don't have a source for that".</p>`);
+    end(`<h2>Thank you!</h2><p>Your study code is</p><div class="code" id="code">${r.code}</div>
+      <div class="row"><button class="ghost block" id="copy">Copy code</button></div>
+      <p>Please send this code to Som. Som will message you in 7 days with one last short question.</p>`);
+    $("copy").onclick = () => navigator.clipboard && navigator.clipboard.writeText(r.code).then(() => { $("copy").textContent = "Copied ✓"; });
   },
 };
-function finishChat() { bubble("Thank you for talking with me.", "bot"); $("chat-input").classList.add("hidden"); setTimeout(() => show("after"), 1500); }
+function finishChat() {
+  bubble("Thank you for talking with me.", "bot");
+  $("chat-input").classList.add("hidden"); $("chat-done").classList.add("hidden");
+  setTimeout(() => show("after"), 1600);
+}
 
 if (params.get("t2")) show("followup");
 </script>

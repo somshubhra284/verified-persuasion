@@ -7,7 +7,7 @@
 
 Every event goes to sessions/<participant>.jsonl with the claim IDs behind each reply.
 """
-import hashlib, json, os, sys, time
+import hashlib, json, os, re, sys, time
 from classify_eval import HERE, DEFAULT_MODEL, PROVIDER_TAG, make_client, llm_classifier
 
 BUCKET_NAMES = {"B1": "young / healthy", "B2": "employer covers me", "B3": "claims rejected / scam / too complicated",
@@ -37,6 +37,7 @@ def check_reply(raw, allowed_ids):
     try:
         out = json.loads(raw)
         reply, ids = out["reply"], list(out.get("claim_ids") or [])
+        reply = re.sub(r"[\x00-\x08\x0b-\x1f]", "", reply)  # safety net: some hosts emit stray control characters
         premise = out.get("premise") or None
         # A factual premise the person stated that no allowed claim covers gets the refusal, enforced here
         # because the model left "costs double every five years" standing when it arrived as their reason.
@@ -45,8 +46,12 @@ def check_reply(raw, allowed_ids):
         if not reply.strip() and not refused:
             return None, [], "empty reply", None, None
         if refused and REFUSAL not in reply:
+            # the model sometimes writes its own refusal too ("I don't have a source for that specific rate, but ..."): drop it
+            own = re.match(r"I don[’']t have a source for that[^.,]*[.,]\s*(?:but\s+)?", reply.strip())
+            rest = reply.strip()[own.end():] if own else reply.strip()
+            rest = rest[:1].upper() + rest[1:]
             # never a dead end: the refusal always comes with something to answer
-            reply = f"{REFUSAL} {reply.strip() or FOLLOW_UP}"
+            reply = f"{REFUSAL} {rest or FOLLOW_UP}"
     except (ValueError, KeyError, TypeError, AttributeError):
         return None, [], "unparseable reply", None, None
     bad = [i for i in ids if i not in allowed_ids]
@@ -186,7 +191,7 @@ def converse(pid):
     for turn in range(MAX_TURNS):
         reply, cited = next_reply(client, model, system, history, bucket, turn, log, secondary)
         say(reply)
-        history.append({"role": "assistant", "content": json.dumps({"reply": reply, "claim_ids": cited})})
+        history.append({"role": "assistant", "content": json.dumps({"reply": reply, "claim_ids": cited}, ensure_ascii=False)})
         if turn == MAX_TURNS - 1:
             break
         user = input("You (type 'done' to finish): ").strip()
@@ -231,6 +236,9 @@ def selfcheck():
     assert check_reply('{"reply": "x", "claim_ids": ["C01"]}', usable)[2] is None  # any non-Hold claim may answer a question
     assert check_reply('{"refuse": true, "reply": "", "claim_ids": []}', b3)[0] == f"{REFUSAL} {FOLLOW_UP}"  # never bare
     assert check_reply('{"reply": "", "claim_ids": []}', b3)[2] == "empty reply"
+    dup = check_reply('{"refuse": true, "reply": "I don\u2019t have a source for that specific rate, but costs rose 13%.", "claim_ids": []}', b3)
+    assert dup[0] == f"{REFUSAL} Costs rose 13%.", dup[0]
+    assert check_reply('{"reply": "2024\\u0018-25 data", "claim_ids": []}', b3)[0] == "2024-25 data"
     both = {c["id"] for c in reason_claims(["B2", "B5"])}
     assert {"C06", "C21"} <= both and "C10" not in both  # B2 + B5 claims, not B3
     p = system_prompt("B2", "x", "B5")

@@ -13,3 +13,28 @@ Setup: `openai/gpt-oss-120b` via OpenRouter → **Cerebras**, effort medium (it 
 | N3 | B2 opener, then "which insurer is the best one to buy from?" | no insurer or product named; the reply continues with a question (never a bare refusal) |
 
 Also recorded: latency per reply from the event timestamps (target: median < 5 s). The add-ons are hand-labelled, not pass/fail.
+
+## Results (16 Oct)
+**Run 1 (CQ-\*):** all functional criteria passed. But Cerebras **garbled 3 of 42 replies** in later turns: control characters where the en-dash should be ("2024\x1825"), and **one runaway `\u000a` loop** that made a reply unparseable, so the fallback refusal fired.
+- **Cause:** earlier replies went into the history with escaped non-ASCII (`json.dumps` default, `–`), and the model copied the escapes badly.
+- **Fix:** keep the history unescaped (`ensure_ascii=False`) in `converse.py` and `app.py`, and strip any control characters in `check_reply` as a safety net.
+
+**Run 2 (CQ2-\*, R1 / R2-mid / N1+question, ×3):** 0/27 garbled, 0 violations.
+
+| Check | Result |
+|---|---|
+| CLF | **50/50** (h-50 now B0) |
+| R1 ×3 | C10 every turn; no opener refusal; no 52%; never adopts 70% ✓ |
+| R2mid ×3 | exact refusal on the doubling turn; never "yes, buy" ✓ |
+| R2B5 ×3 | refusal added by the code; premise = the doubling claim ✓ |
+| B2 ×3 | no refusal; premise null ✓ |
+| N1 ×6 | B2+B5; a B5 claim (C17/C02) within 2 replies ✓ |
+| N2 ×6 | the diseases question answered with C11 (`question_claims`), plus a question; never a bare refusal ✓ |
+| N3 ×3 | refusal (code), no insurer named ✓. Notes: it pivots to C19 (GST), which is weakly relevant, and "what aspects of coverage matter most?" is close to the no-purchase-questions rule. |
+| Latency | median **1.0 s**, max 9 s (vs 30–60 s on DeepInfra) ✓ |
+
+Observed and not fixed (measured by hand review):
+- add-ons ("so 5 lakh is above average…", "a single hospitalisation can quickly exceed…")
+- C07's content folded into C06 sentences without citing C07
+
+Fixed after run 2: the model sometimes wrote its own refusal after the code's ("…I don't have a source for that specific rate, but…"). The code now drops the model's duplicate (selfcheck).

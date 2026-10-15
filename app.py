@@ -235,7 +235,7 @@ def message(t: Turn):
     history = [{"role": "user", "content": reason_text}]
     for e in events:
         if e["event"] == "assistant":
-            history.append({"role": "assistant", "content": json.dumps({"reply": e["text"], "claim_ids": e["claim_ids"]})})
+            history.append({"role": "assistant", "content": json.dumps({"reply": e["text"], "claim_ids": e["claim_ids"]}, ensure_ascii=False)})
         elif e["event"] == "user":
             history.append({"role": "user", "content": e["text"]})
     turn = sum(e["event"] == "assistant" for e in events)
