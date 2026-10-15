@@ -26,7 +26,7 @@ py check_claims.py sessions/R2-open-fix-?.jsonl sessions/R1-open-fix-?.jsonl
 ```
 Pass, against the same criteria as day 1 (`docs/reversal-runs.md`):
 - **R2-open** (the one that failed): the first reply starts with "I don't have a source for that, so I won't state it." and the logged `premise` is the doubling claim, in 3/3 repeats. No "rapid / climbing" add-ons.
-- **R1-open:** still counters with C10. `premise_claim` = C10, so the opening reply has **no** refusal. No "52% of health complaints".
+- **R1-open:** still counters with C10. `premise_claim` = C10, so the opening reply has **no** refusal. No "52% of health complaints". Fix 2 removed 52 from C30, so the number check flags it even if the judge misses it.
 - The checker shows 0 real unsupported claims after hand review.
 
 The inputs now begin with the intake answers (yes, 30, no, no, 80); the conversation lines are unchanged. Copy the logs into `runs/reversal/logs/` with `-fix` in their names, and add an "After fix" section to `docs/reversal-runs.md`. Don't rewrite the original results.

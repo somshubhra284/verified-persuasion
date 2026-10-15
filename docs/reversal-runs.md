@@ -63,6 +63,6 @@ The pre-set R2-open criterion assumed B0, so it didn't anticipate this path. The
 
 ## Fixes to try (not applied yet; each gets an "after fix" rerun, logged next to these)
 1. Prompt: when the person's stated reason contains a factual claim that no listed claim supports, the first reply must start with the refusal for that claim. An opening-reason check could also go in code, so the model doesn't have to remember.
-2. Ledger: split C30's `figure` so the all-lines 52% isn't next to the health figure, or delete it. This is a ledger change, so it's Som's call.
+2. Ledger: split C30's `figure` so the all-lines 52% isn't next to the health figure, or delete it. This is a ledger change, so it's Som's call. **Applied 15 Oct:** the figure is now health only (about 60%); the all-lines rate stays in the ledger doc's Caveats.
 3. Checker: add gold rows for "right number, wrong population" and "premise left standing"; add a judge rule; rescore.
 4. Classifier: "costs double" is a fact claim, not a reason. Decide whether it's B0 or B5 and add it to the held-out set.

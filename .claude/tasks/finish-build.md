@@ -115,3 +115,10 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - **Reversal inputs** now begin with the intake answers (yes, 30, no, no, T0 80 instead of 50). The conversation lines are unchanged. The day-1 logs used the old format.
 - **Assignment rule** (alternate in recruitment order) is in CLAUDE.md Conventions.
 - **Not tested:** anything that calls Groq. See `docs/test-plan-day2.md`.
+
+## Follow-up, 15 Oct: fix 2 and the Docs brief (approved by Som)
+- `data/ledger.json` C30 `figure`: "Health: 6,235 awards for complainant, 4,125 for insurer, 10,140 mediated (all lines: about 52%)" → "Health only: 6,235 awards for complainant, 4,125 for insurer (about 60%); 10,140 mediated". 6,235 / 10,360 = 60.2%, matching the claim's "about 6 in 10".
+- Effect: 52 is no longer in any B3 claim, so `check_numbers` flags "52%" deterministically. The `check_claims.py` selfcheck assert now expects that flag. g31 in the gold set stays labelled unsupported.
+- Ledger doc (Claude Docs): same figure change, plus a changelog row. The all-lines 52% remains in the Caveats table.
+- Fixed brief (Claude Docs): removed the C25 premium bullet and its Sources row, so Docs now matches `data/fixed_brief.md` (that file is unchanged, so `brief_sha` is unchanged).
+- Selfchecks: converse, check_claims and analyze all pass.

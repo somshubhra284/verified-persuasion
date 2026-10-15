@@ -179,7 +179,7 @@
      "care": "Never give percentages; it is a description, not a ranking."},
     {"id": "C30", "buckets": ["B3"], "status": "Primary",
      "claim": "When the Insurance Ombudsman issued a formal award on a health complaint in 2023–24, about 6 in 10 went for the policyholder.",
-     "figure": "Health: 6,235 awards for complainant, 4,125 for insurer, 10,140 mediated (all lines: about 52%)",
+     "figure": "Health only: 6,235 awards for complainant, 4,125 for insurer (about 60%); 10,140 mediated",
      "source": "Council for Insurance Ombudsmen, Annual Report 2023–24",
      "url": "https://cioins.co.in/annualreports/AnnualReport2023-2024.pdf",
      "care": "Always say 'health complaint'."},

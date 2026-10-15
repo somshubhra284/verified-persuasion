@@ -149,7 +149,7 @@ def selfcheck():
     assert check_numbers("Your 5 lakh cover stays with the employer.", ["C06"], "B2", numbers("my 5 lakh cover")) == []
     assert check_numbers("Insurers met the 1-hour target for 86.9% of requests.", ["C14"], "B3", set()) == []  # rounds 86.88
     assert check_numbers("Insurers met the 1-hour target for 87% of requests.", ["C14"], "B3", set()) == []
-    assert check_numbers("About 52% of health complaints went to the policyholder.", ["C30"], "B3", set()) == []  # judge's job
+    assert check_numbers("About 52% of health complaints went to the policyholder.", ["C30"], "B3", set()) == [("52", "unsupported", None)]  # all-lines 52% removed from C30 (fix 2)
     print("selfcheck ok")
 
 
