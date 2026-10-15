@@ -10,7 +10,7 @@ A sentence takes the worse of the two layers. Unsupported claims = uncited + uns
 """
 import json, os, re, sys
 from pathlib import Path
-from classify_eval import HERE, DEFAULT_MODEL, PROVIDER, make_client
+from classify_eval import HERE, DEFAULT_MODEL, PROVIDER_TAG, make_client
 from converse import LEDGER, allowed_claims
 
 BY_ID = {c["id"]: c for c in LEDGER}
@@ -108,7 +108,7 @@ def check_session(path, client, model):
                 print(f"  turn {r['turn']} [{r['label']}] {r['sentence']}\n      judge: {r['judge']} {r['claim_id'] or ''} "
                       f"({r['why']}); numbers: {r['num_flags'] or 'ok'}")
     factual = sum(v for k, v in totals.items() if k != "non-factual")
-    summary = {"session": Path(path).stem, "model": model, "provider": PROVIDER, "factual_sentences": factual, **totals,
+    summary = {"session": Path(path).stem, "model": model, "provider": PROVIDER_TAG, "factual_sentences": factual, **totals,
                "unsupported_claims": totals["uncited"] + totals["unsupported"] + totals["unjudged"]}
     with open(Path(path).with_suffix(".check.jsonl"), "w") as f:
         for r in out_rows + [{"summary": summary}]:
@@ -129,7 +129,7 @@ def score_gold(client, model):
         elif g["label"] not in FLAGS and got in FLAGS:
             false_flags.append((g["id"], g["label"], got, g["sentence"]))
     n_flag = sum(g["label"] in FLAGS for g in rows)
-    print(f"Gold: {len(rows)} sentences, {n_flag} should be flagged ({model} via {PROVIDER})")
+    print(f"Gold: {len(rows)} sentences, {n_flag} should be flagged ({model} via {PROVIDER_TAG})")
     print(f"Recall on flagged: {n_flag - len(missed)}/{n_flag}   False flags: {len(false_flags)}   "
           f"Label agreement: {exact}/{len(rows)}")
     for kind, lst in (("MISSED", missed), ("FALSE FLAG", false_flags)):
@@ -150,6 +150,15 @@ def selfcheck():
     assert check_numbers("Insurers met the 1-hour target for 86.9% of requests.", ["C14"], "B3", set()) == []  # rounds 86.88
     assert check_numbers("Insurers met the 1-hour target for 87% of requests.", ["C14"], "B3", set()) == []
     assert check_numbers("About 52% of health complaints went to the policyholder.", ["C30"], "B3", set()) == [("52", "unsupported", None)]  # all-lines 52% removed from C30 (fix 2)
+    from types import SimpleNamespace as NS
+    from classify_eval import pin
+    fake = lambda host, model: (lambda **kw: NS(model_extra={"provider": host}, model=model))
+    assert pin(fake("Groq", "m"), "Groq")(model="m").model == "m"
+    for bad in (fake("Novita", "m"), fake("Groq", "other")):
+        try:
+            pin(bad, "Groq")(model="m"); raise AssertionError("pin let a wrong host/model through")
+        except RuntimeError:
+            pass
     print("selfcheck ok")
 
 

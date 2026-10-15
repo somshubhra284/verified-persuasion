@@ -6,7 +6,9 @@
 
 LLM mode needs `openai` (installed in .venv) and an API key in .env or the environment. Defaults to Groq's free tier:
   GROQ_API_KEY=...   [MODEL=openai/gpt-oss-120b]   [BASE_URL=https://api.groq.com/openai/v1]
-Backup provider: put OPENROUTER_API_KEY=... in .env and run with PROVIDER=openrouter in front of the command.
+Backup provider: put OPENROUTER_API_KEY=... in .env and run with PROVIDER=openrouter OPENROUTER_HOST=Groq in front.
+OpenRouter spreads a model over many hosts (different precisions, some without JSON mode), so a host must be pinned;
+every response is checked to have come from that host and that model, or the run stops.
 """
 import json, os, re, sys
 from collections import Counter
@@ -21,7 +23,9 @@ for line in (HERE / ".env").read_text().splitlines() if (HERE / ".env").exists()
         os.environ.setdefault(k.strip(), v.strip())
 PROVIDERS = {"groq": ("GROQ_API_KEY", "https://api.groq.com/openai/v1"),
              "openrouter": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1")}
-PROVIDER = os.environ.get("PROVIDER", "groq")  # logged next to the model, so results from each host stay separable
+PROVIDER = os.environ.get("PROVIDER", "groq")
+HOST = os.environ.get("OPENROUTER_HOST") if PROVIDER == "openrouter" else None
+PROVIDER_TAG = PROVIDER + (f":{HOST}" if HOST else "")  # logged next to the model, so results from each host stay separable
 BUCKETS = {f"B{i}" for i in range(8)}
 
 # ponytail: substring keywords with first-match-wins ordering. Ceiling: no negation or context ("not young").
@@ -54,12 +58,28 @@ def keyword_classify(text):
     return {"primary": ranked[0] if ranked else "B0", "secondary": ranked[1] if len(ranked) > 1 else None}
 
 
+def pin(create, host):
+    """Wrap chat.completions.create: ask OpenRouter for one host only, then verify the host and model that answered."""
+    def pinned(**kw):
+        r = create(**kw, extra_body={"provider": {"order": [host], "allow_fallbacks": False, "require_parameters": True}})
+        served = (r.model_extra or {}).get("provider")
+        if served != host or r.model != kw["model"]:
+            raise RuntimeError(f"answered by {served} / {r.model}, expected {host} / {kw['model']}; stopping")
+        return r
+    return pinned
+
+
 def make_client():
     from openai import OpenAI
     key_var, url = PROVIDERS[PROVIDER]
-    return OpenAI(api_key=os.environ.get(key_var) or os.environ["OPENAI_API_KEY"],
-                  base_url=os.environ.get("BASE_URL", url),
-                  max_retries=4)  # SDK backs off on 429; free tier is ~8K tokens/min
+    client = OpenAI(api_key=os.environ.get(key_var) or os.environ["OPENAI_API_KEY"],
+                    base_url=os.environ.get("BASE_URL", url),
+                    max_retries=4)  # SDK backs off on 429; free tier is ~8K tokens/min
+    if PROVIDER == "openrouter":
+        if not HOST:
+            sys.exit("PROVIDER=openrouter needs OPENROUTER_HOST (e.g. Groq): unpinned runs mix hosts")
+        client.chat.completions.create = pin(client.chat.completions.create, HOST)
+    return client
 
 
 def llm_classifier():
@@ -116,5 +136,5 @@ if __name__ == "__main__":
     assert keyword_classify("benefits are solid")["primary"] == "B0"  # 'fit' must not match inside 'benefits'
 
     use_llm = "--llm" in sys.argv
-    print("Classifier:", f"LLM {os.environ.get('MODEL', DEFAULT_MODEL)} via {PROVIDER}" if use_llm else "keyword baseline")
+    print("Classifier:", f"LLM {os.environ.get('MODEL', DEFAULT_MODEL)} via {PROVIDER_TAG}" if use_llm else "keyword baseline")
     evaluate(rows, llm_classifier() if use_llm else keyword_classify)

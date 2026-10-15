@@ -143,3 +143,9 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
   - A diagnostic call of 3 requests hit CoreWeave, Novita, CoreWeave.
   - So a "run" is a mix of hosts, and unjudged rows are JSON failures from hosts without JSON mode, not judgments.
 - **Next:** pin one host (`provider.order` with no fallbacks, `require_parameters`), log it, and then rescore. Som chooses the host.
+### Host pinning (Som chose Groq via OpenRouter; billed to OpenRouter, the Groq key is never used)
+- `classify_eval.pin()` wraps `chat.completions.create`. Each request carries `provider: {order: [HOST], allow_fallbacks: false, require_parameters: true}`. Each response is checked: `provider` must equal HOST and `model` must equal the requested model, or a RuntimeError stops the run.
+- `PROVIDER=openrouter` without `OPENROUTER_HOST` exits, so an unpinned (mixed-host) run can't happen.
+- Logs and the gold output record `provider: openrouter:Groq`.
+- Verified offline (the check_claims selfcheck: a wrong host or a wrong model raises) and live (3 calls, all `Groq | openai/gpt-oss-120b`, base_url openrouter.ai).
+- Runs 1–2 of step 1 above were unpinned, so they don't count toward the verdict. Step 1 is rerun pinned.

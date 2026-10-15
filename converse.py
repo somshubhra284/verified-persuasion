@@ -8,7 +8,7 @@
 Every event goes to sessions/<participant>.jsonl with the claim IDs behind each reply.
 """
 import hashlib, json, os, sys, time
-from classify_eval import HERE, DEFAULT_MODEL, PROVIDER, make_client, llm_classifier
+from classify_eval import HERE, DEFAULT_MODEL, PROVIDER_TAG, make_client, llm_classifier
 
 BUCKET_NAMES = {"B1": "young / healthy", "B2": "employer covers me", "B3": "claims rejected / scam / too complicated",
                 "B4": "I'll buy later", "B5": "savings / too expensive", "B6": "government covers me",
@@ -102,13 +102,13 @@ def classify_reason(log, reason, model):
     """Classify, with one follow-up if B0. Returns (bucket, final reason text)."""
     classify = llm_classifier()
     c = classify(reason)
-    log("classify", reason, primary=c.get("primary"), secondary=c.get("secondary"), model=model, provider=PROVIDER)
+    log("classify", reason, primary=c.get("primary"), secondary=c.get("secondary"), model=model, provider=PROVIDER_TAG)
     if c.get("primary") == "B0":
         say(c.get("follow_up") or "If you had to name one reason, what would it be?")
         reason = input("You: ").strip()
         log("reason", reason, follow_up=True)
         c = classify(reason)
-        log("classify", reason, primary=c.get("primary"), secondary=c.get("secondary"), model=model, provider=PROVIDER)
+        log("classify", reason, primary=c.get("primary"), secondary=c.get("secondary"), model=model, provider=PROVIDER_TAG)
     return c.get("primary"), reason
 
 
@@ -144,7 +144,7 @@ def converse(pid):
         if problem:
             reply, cited, premise = REFUSAL, [], None
         say(reply)
-        log("assistant", reply, claim_ids=cited, bucket=bucket, model=model, provider=PROVIDER, turn=turn, fallback=bool(problem),
+        log("assistant", reply, claim_ids=cited, bucket=bucket, model=model, provider=PROVIDER_TAG, turn=turn, fallback=bool(problem),
             premise=premise)
         history.append({"role": "assistant", "content": json.dumps({"reply": reply, "claim_ids": cited})})
         if turn == MAX_TURNS - 1:
