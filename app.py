@@ -230,11 +230,24 @@ def reason(t: Turn):
         return {"cards": [c["text"] for c in cv.brief_cards(bucket, cv.secondary_of(bucket, classes[-1].get("secondary")))]}
     reply = next((e for e in events if e["event"] == "assistant"), None)
     if reply:
-        return {"reply": reply["text"], "sources": sources(reply["claim_ids"]), "last": cv.MAX_TURNS == 1}
+        return {"reply": reply["text"], "sources": sources(reply["claim_ids"]), "last": bool(reply.get("done"))}
     secondary = cv.secondary_of(bucket, classes[-1].get("secondary"))
-    text, ids = llm(lambda: cv.next_reply(make_client(), MODEL, cv.system_prompt(bucket, reasons[-1], secondary),
-                                          [{"role": "user", "content": reasons[-1]}], bucket, 0, log, secondary))
-    return {"reply": text, "sources": sources(ids), "last": cv.MAX_TURNS == 1}
+    plan = get_plan(events, log, reasons[-1], bucket, secondary)
+    text, ids, done, _ = llm(lambda: cv.next_reply(make_client(), MODEL, cv.system_prompt(bucket, reasons[-1], secondary, plan),
+                                                   [{"role": "user", "content": reasons[-1]}], bucket, 0, log, secondary, plan))
+    return {"reply": text, "sources": sources(ids), "last": done}
+
+
+def get_plan(events, log, reason_text, bucket, secondary):
+    """The argument plan is made once per session and logged; later requests (and retries) reuse the logged one."""
+    e = first(events, "plan")
+    if e:
+        return {"crux": e["text"], "chain": e["chain"], "conclusion": e["conclusion"]}
+    plan = llm(lambda: cv.make_plan(make_client(), MODEL, reason_text, bucket, secondary))
+    mine = {c["id"] for c in cv.reason_claims([bucket, secondary])}
+    log("plan", plan["crux"], chain=plan["chain"], conclusion=plan["conclusion"], fallback=plan.get("fallback", False),
+        plan_extra=[i for i in cv.plan_ids(plan) if i not in mine])
+    return plan
 
 
 @app.post("/api/message")
@@ -252,14 +265,18 @@ def message(t: Turn):
         elif e["event"] == "user":
             history.append({"role": "user", "content": e["text"]})
     turn = sum(e["event"] == "assistant" for e in events)
-    if t.done or turn >= cv.MAX_TURNS or first(events, "t1"):
+    replies = [e for e in events if e["event"] == "assistant"]
+    if t.done or turn >= cv.MAX_TURNS or first(events, "t1") or (replies and replies[-1].get("done")):
         return {"done": True}
+    plan = get_plan(events, log, reason_text, bucket, secondary)
+    stances = [e.get("stance") for e in replies]
     if events[-1]["event"] != "user":  # a retry after "busy" must not log the same message twice
         log("user", t.text)
         history.append({"role": "user", "content": t.text})
-    text, ids = llm(lambda: cv.next_reply(make_client(), MODEL, cv.system_prompt(bucket, reason_text, secondary), history,
-                                          bucket, turn, log, secondary))
-    return {"reply": text, "sources": sources(ids), "last": turn == cv.MAX_TURNS - 1}
+    text, ids, done, _ = llm(lambda: cv.next_reply(make_client(), MODEL, cv.system_prompt(bucket, reason_text, secondary, plan),
+                                                   history, bucket, turn, log, secondary, plan,
+                                                   wrap_now=cv.should_wrap(stances, turn)))
+    return {"reply": text, "sources": sources(ids), "last": done}
 
 
 @app.post("/api/brief_done")
@@ -279,7 +296,7 @@ def t1(t: Turn):
         raise HTTPException(422, f"Please choose a number from 0 to {cv.SCALE}.")
     if not first(events, "t1"):
         log("t1", score=t.score)
-    return {"t0": first(events, "t0")["score"], "t1": t.score}  # the page shows "you started at X, now Y"
+    return {"ok": True}  # scores are recorded for the study, never shown back (Som, 16 Oct)
 
 
 @app.post("/api/contact")
@@ -314,7 +331,14 @@ def selfcheck():
             calls["busy"] -= 1
             import httpx
             raise RateLimitError("busy", response=httpx.Response(429, request=httpx.Request("POST", "http://x")), body=None)
-        return NS(choices=[NS(message=NS(content=json.dumps({"reply": "About 87% were paid.", "claim_ids": ["C10"]})))])
+        if "You plan a short, honest argument" in kw["messages"][0]["content"]:
+            return NS(choices=[NS(message=NS(content=json.dumps({"crux": "c", "chain": [{"claim_id": "C10", "why": "w"}], "conclusion": "z"})))])
+        msgs = kw["messages"]
+        wrap = "Wrap up now" in msgs[-1]["content"]
+        stance = "agrees" if "fair point" in msgs[-1]["content"] else "resisting"
+        return NS(choices=[NS(message=NS(content=json.dumps({"reply": "Thanks for talking." if wrap else "About 87% were paid.",
+                                                             "claim_ids": [] if wrap else ["C10"], "stance": stance,
+                                                             "move": "wrap" if wrap else "advance"})))])
     make_client = lambda: NS(chat=NS(completions=NS(create=create)))
     llm_classifier = lambda: (lambda text: {"primary": "B0" if "dunno" in text else "B2" if "employer" in text else "B3",
                                             "secondary": "B5" if "employer" in text else None,
@@ -335,11 +359,11 @@ def selfcheck():
         assert c.post("/api/message", json={**s, "text": "really?"}).json()["reply"]
         assert c.post("/api/message", json={**s, "done": True}).json() == {"done": True}
         assert c.post("/api/t1", json={**s, "score": 11}).status_code == 422  # 0-10 scale
-        assert c.post("/api/t1", json={**s, "score": 5}).json() == {"t0": 8, "t1": 5}
+        assert c.post("/api/t1", json={**s, "score": 5}).json() == {"ok": True}  # no scores shown back
         c.post("/api/contact", json={**s, "text": "friend@example.com"})
         assert "friend@example.com" in (Path(d) / "contacts.ndjson").read_text()
         assert "friend@example.com" not in json.dumps(STORE.events("P01"))  # contacts never go into the answers
-        assert evs("P01") == ["start", "t0", "reason", "classify", "assistant", "user", "assistant", "t1"], evs("P01")
+        assert evs("P01") == ["start", "t0", "reason", "classify", "plan", "assistant", "user", "assistant", "t1"], evs("P01")
         # P02: brief arm
         s2 = c.post("/api/start", json=ok).json()
         assert (s2["pid"], s2["arm"]) == ("P02", "brief")
@@ -364,7 +388,15 @@ def selfcheck():
         two = c.post("/api/start", json={**ok, "mode": "demo"}).json()  # try-outs are always the system arm
         c.post("/api/reason", json={**two, "text": "my employer covers me and it's a waste of money"})
         a = next(e for e in STORE.events(two["pid"]) if e["event"] == "assistant")
-        assert a["buckets"] == ["B2", "B5"] and a["question_claims"] == ["C10"], a  # C10 is in neither B2 nor B5
+        assert a["buckets"] == ["B2", "B5"] and a["question_claims"] == [], a  # C10 came from the plan, not a question
+        pl = next(e for e in STORE.events(two["pid"]) if e["event"] == "plan")
+        assert pl["plan_extra"] == ["C10"]  # a plan claim outside the person's buckets (the C05 case) is logged
+        # a stalled argument: after the opening, 3 resisting replies force a wrap, and the API reports last
+        st = c.post("/api/start", json={**ok, "mode": "demo"}).json()
+        c.post("/api/reason", json={**st, "text": "claims get rejected"})
+        lasts = [c.post("/api/message", json={**st, "text": "not convinced"}).json().get("last") for _ in range(5)]
+        assert lasts[:4] == [False, False, False, True] and evs(st["pid"]).count("plan") == 1, lasts
+        assert c.post("/api/message", json={**st, "text": "more?"}).json() == {"done": True}
         # B0 twice ends with no claims
         u = c.post("/api/start", json=ok).json()
         assert c.post("/api/reason", json={**u, "text": "dunno"}).json() == {"follow_up": "What is your main reason?"}

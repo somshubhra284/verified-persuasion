@@ -15,7 +15,9 @@ BUCKET_NAMES = {"B1": "young / healthy", "B2": "employer covers me", "B3": "clai
                 "B7": "on a family member's policy"}
 REFUSAL = "I don't have a source for that, so I won't state it."
 FOLLOW_UP = "What makes you ask about that?"  # added when a refusal would otherwise be the whole message
-MAX_TURNS = 6  # one point per reply (16 Oct), so the journey needs more turns; "done" ends it any time
+MAX_TURNS = 10  # hard cap only: the conversation ends on a "wrap" move (argument landed, or stalled); "done" ends it any time
+STALL = 3  # this many non-positive stances in a row -> the code asks for a wrap-up
+NOT_MOVING = {"neutral", "resisting", "disengaged"}
 SCALE = 10  # belief score 0-10 (was 0-100 until 16 Oct)
 MAX_CARDS = 6  # brief arm: at most this many relevant fact cards
 LEDGER = json.loads((HERE / "data" / "ledger.json").read_text())["claims"]
@@ -30,12 +32,30 @@ def usable_claims():
     return [c for c in LEDGER if not c["status"].startswith("Hold")]
 
 
+def say_as(c):
+    """How a claim must be attributed, built from its status and source so the model can't promote an insurer's page
+    to 'IRDAI' or state an inference as a fact."""
+    s, src = c["status"], c["source"]
+    if s.startswith("Secondary") and "reported" not in src:
+        return f"As reported by {src}, ..."
+    if s.startswith("Inference"):
+        return f"Based on {src}, this means ... (say it as reasoning, not as something the document states)"
+    if s.startswith("Weak"):
+        return f"According to {src} (a vendor or sponsored source), ..."
+    return f"According to {src}, ..."
+
+
 def reason_claims(buckets):
     """Claims for the person's reasons: the primary bucket's plus the secondary's, in ledger order."""
     return [c for c in usable_claims() if set(c["buckets"]) & {b for b in buckets if b}]
 
+# feedback (16 Oct): "How do you feel about underwriting when you eventually switch?" - never ask about buying or migrating
+BANNED_QUESTION = re.compile(r"\b(buy\w*|purchas\w*|migrat\w*|switch\w*|port(ing|ability)?|which (insurer|plan|policy)|sign up)\b", re.I)
+
+
 def check_reply(raw, allowed_ids):
-    """Parse model output; return (reply, claim_ids, problem or None, premise or None, premise_claim or None)."""
+    """Parse model output; return (reply, claim_ids, problem or None, premise or None, premise_claim or None, meta).
+    meta = {stance, move, new_point}: how the person is responding and what the reply does (logged; drives the ending)."""
     try:
         out = json.loads(raw)
         reply, ids = out["reply"], list(out.get("claim_ids") or [])
@@ -46,7 +66,10 @@ def check_reply(raw, allowed_ids):
         unsupported_premise = premise and out.get("premise_claim") not in allowed_ids
         refused = out.get("refuse") or unsupported_premise
         if not reply.strip() and not refused:
-            return None, [], "empty reply", None, None
+            return None, [], "empty reply", None, None, {}
+        question = (re.findall(r"[^.?!]*\?", reply) or [""])[-1]
+        if BANNED_QUESTION.search(question):
+            return None, [], f"the question asks about buying/migrating/insurers: {question.strip()!r}", None, None, {}
         if refused and REFUSAL not in reply:
             # the model sometimes writes its own refusal too ("I don't have a source for that specific rate, but ..."): drop it
             own = re.match(r"I don[’']t have a source for that[^.,]*[.,]\s*(?:but\s+)?", reply.strip())
@@ -55,9 +78,10 @@ def check_reply(raw, allowed_ids):
             # never a dead end: the refusal always comes with something to answer
             reply = f"{REFUSAL} {rest or FOLLOW_UP}"
     except (ValueError, KeyError, TypeError, AttributeError):
-        return None, [], "unparseable reply", None, None
+        return None, [], "unparseable reply", None, None, {}
     bad = [i for i in ids if i not in allowed_ids]
-    return reply, ids, (f"cited claims outside this bucket: {bad}" if bad else None), premise, out.get("premise_claim")
+    meta = {k: out.get(k) for k in ("stance", "move", "new_point")}
+    return reply, ids, (f"cited claims outside this bucket: {bad}" if bad else None), premise, out.get("premise_claim"), meta
 
 
 def ask_score(prompt, hi=SCALE):
@@ -100,38 +124,89 @@ def secondary_of(primary, secondary):
     return secondary if secondary in BUCKET_NAMES and secondary != primary else None
 
 
-def system_prompt(bucket, reason, secondary=None):
-    fields = ("id", "claim", "figure", "source", "status", "care")
+FIELDS = ("id", "claim", "figure", "source", "status", "care")
+
+
+def dump_claims(cs):
+    return json.dumps([{**{k: x[k] for k in FIELDS}, "say_as": say_as(x)} for x in cs], ensure_ascii=False, indent=1)
+
+
+def make_plan(client, model, reason, bucket, secondary=None):
+    """One call before the conversation: the person's crux, a 3-4 claim chain toward it, and the conclusion.
+    Validated in code (usable IDs only, no repeats, <= 4); falls back to the bucket's first claims if it fails."""
+    usable = {c["id"] for c in usable_claims()}
+    buckets = ", ".join(f"{b} ({BUCKET_NAMES[b]})" for b in (bucket, secondary) if b)
+    prompt = ((HERE / "prompts" / "plan_prompt.md").read_text().replace("{reason}", reason)
+              .replace("{buckets}", buckets).replace("{claims}", dump_claims(usable_claims())))
+    try:
+        raw = client.chat.completions.create(model=model, temperature=0, response_format={"type": "json_object"},
+                                             messages=[{"role": "user", "content": prompt}]).choices[0].message.content
+        out = json.loads(raw)
+        chain, seen = [], set()
+        for link in out.get("chain") or []:
+            cid = (link or {}).get("claim_id")
+            if cid in usable and cid not in seen and len(chain) < 4:
+                chain.append({"claim_id": cid, "why": str(link.get("why") or "")}); seen.add(cid)
+        plan = {"crux": str(out.get("crux") or ""), "chain": chain, "conclusion": str(out.get("conclusion") or "")}
+    except (ValueError, KeyError, TypeError, AttributeError):
+        plan = {"crux": "", "chain": [], "conclusion": ""}
+    if not plan["chain"]:  # never converse without a plan
+        plan["chain"] = [{"claim_id": c["id"], "why": ""} for c in reason_claims([bucket, secondary])[:3]]
+        plan["fallback"] = True
+    return plan
+
+
+def plan_ids(plan):
+    return [x["claim_id"] for x in (plan or {}).get("chain", [])]
+
+
+def system_prompt(bucket, reason, secondary=None, plan=None):
     mine = reason_claims([bucket, secondary])
+    mine += [c for c in usable_claims() if c["id"] in plan_ids(plan) and c not in mine]  # e.g. C05 for "buy later"
     other = [c for c in usable_claims() if c not in mine]
-    dump = lambda cs: json.dumps([{k: x[k] for k in fields} for x in cs], ensure_ascii=False, indent=1)
     also = f" They also mentioned: {secondary} ({BUCKET_NAMES[secondary]})." if secondary else ""
+    plan_text = json.dumps(plan or {"crux": "", "chain": [], "conclusion": ""}, ensure_ascii=False, indent=1)
     return ((HERE / "prompts" / "conversation_prompt.md").read_text()
             .replace("{reason}", reason).replace("{bucket}", bucket).replace("{bucket_name}", BUCKET_NAMES[bucket])
-            .replace("{secondary_line}", also).replace("{claims}", dump(mine)).replace("{other_claims}", dump(other)))
+            .replace("{secondary_line}", also).replace("{plan}", plan_text)
+            .replace("{claims}", dump_claims(mine)).replace("{other_claims}", dump_claims(other)))
 
 
-def next_reply(client, model, system, history, bucket, turn, log, secondary=None):
-    """One assistant turn: call the model, enforce the claim rules (one retry, then refuse), log it. Returns (reply, ids)."""
+def should_wrap(stances, turn):
+    """The code ends the argument when it has stalled or hits the cap. Stances are the model's reading of each of the
+    person's messages; the first one reads their opening belief (resisting by definition), so it never counts."""
+    later = stances[1:]
+    return turn >= MAX_TURNS - 1 or (len(later) >= STALL and all(s in NOT_MOVING for s in later[-STALL:]))
+
+
+def next_reply(client, model, system, history, bucket, turn, log, secondary=None, plan=None, wrap_now=False):
+    """One assistant turn: call the model, enforce the claim rules (one retry, then refuse), log it.
+    Returns (reply, ids, done, stance): done = this reply wrapped up (the model chose "wrap", or the code asked);
+    stance = the model's reading of the person's last message (agrees/open/neutral/resisting/disengaged)."""
     ids = {x["id"] for x in usable_claims()}
-    mine = {x["id"] for x in reason_claims([bucket, secondary])}
+    mine = {x["id"] for x in reason_claims([bucket, secondary])} | set(plan_ids(plan))
     msgs = [{"role": "system", "content": system}] + history
+    if wrap_now:
+        msgs.append({"role": "user", "content": "(system) Wrap up now: move = \"wrap\". In 1-2 sentences connect only what "
+                     "you have already shown them, add no new fact, thank them, and ask no question."})
     for attempt in range(2):  # one retry with the problem spelled out, then refuse
         raw = client.chat.completions.create(model=model, temperature=0, response_format={"type": "json_object"},
                                              messages=msgs).choices[0].message.content
-        reply, cited, problem, premise, premise_claim = check_reply(raw, ids)
+        reply, cited, problem, premise, premise_claim, meta = check_reply(raw, ids)
         if not problem:
             break
         log("violation", raw, problem=problem, attempt=attempt)
         msgs = msgs + [{"role": "assistant", "content": raw},
                        {"role": "user", "content": f"(system) Invalid: {problem}. Use only the listed claims; reply as JSON."}]
     if problem:
-        reply, cited, premise, premise_claim = REFUSAL, [], None, None
+        reply, cited, premise, premise_claim, meta = REFUSAL, [], None, None, {}
+    done = wrap_now or meta.get("move") == "wrap"
     log("assistant", reply, claim_ids=cited, bucket=bucket, buckets=[b for b in (bucket, secondary) if b],
         question_claims=[i for i in cited if i not in mine],  # used only because the person asked directly
+        stance=meta.get("stance"), move=meta.get("move"), new_point=meta.get("new_point"), wrap_forced=wrap_now, done=done,
         model=model, provider=PROVIDER_TAG, turn=turn, fallback=bool(problem),
         premise=premise, premise_claim=premise_claim, raw=raw)  # raw model output: shows whether code added the refusal
-    return reply, cited
+    return reply, cited, done, meta.get("stance")
 
 
 def say(text):
@@ -188,13 +263,18 @@ def converse(pid):
         log("end", reason="unclassified", bucket=bucket)
         return
 
-    system = system_prompt(bucket, reason, secondary)
-    client, history = make_client(), [{"role": "user", "content": reason}]
+    client = make_client()
+    plan = make_plan(client, model, reason, bucket, secondary)
+    log("plan", plan["crux"], chain=plan["chain"], conclusion=plan["conclusion"], fallback=plan.get("fallback", False),
+        plan_extra=[i for i in plan_ids(plan) if i not in {c["id"] for c in reason_claims([bucket, secondary])}])
+    system, history, stances = system_prompt(bucket, reason, secondary, plan), [{"role": "user", "content": reason}], []
     for turn in range(MAX_TURNS):
-        reply, cited = next_reply(client, model, system, history, bucket, turn, log, secondary)
+        reply, cited, done, stance = next_reply(client, model, system, history, bucket, turn, log, secondary, plan,
+                                                wrap_now=should_wrap(stances, turn))
+        stances.append(stance)
         say(reply)
         history.append({"role": "assistant", "content": json.dumps({"reply": reply, "claim_ids": cited}, ensure_ascii=False)})
-        if turn == MAX_TURNS - 1:
+        if done:
             break
         user = input("You (type 'done' to finish): ").strip()
         if user.lower() == "done":
@@ -253,6 +333,28 @@ def selfcheck():
     assert check_reply('{"reply": "x", "claim_ids": ["C01"]}', usable)[2] is None  # any non-Hold claim may answer a question
     assert check_reply('{"refuse": true, "reply": "", "claim_ids": []}', b3)[0] == f"{REFUSAL} {FOLLOW_UP}"  # never bare
     assert check_reply('{"reply": "", "claim_ids": []}', b3)[2] == "empty reply"
+    # feedback 16 Oct: never ask about buying/migrating; harmless questions pass
+    assert "buying/migrating" in check_reply('{"reply": "Fair. How do you feel about underwriting when you eventually switch?", "claim_ids": []}', b3)[2]
+    assert check_reply('{"reply": "Fair. Do you trust insurers to pay?", "claim_ids": []}', b3)[2] is None
+    assert check_reply('{"stance": "open", "move": "advance", "reply": "Ok.", "claim_ids": []}', b3)[5]["move"] == "advance"
+    by = {c["id"]: c for c in LEDGER}
+    assert say_as(by["C11"]).startswith("As reported by Royal Sundaram")  # an insurer's page, never "IRDAI states"
+    assert say_as(by["C08"]).startswith("Based on IRDAI") and "reasoning" in say_as(by["C08"])  # Inference, as reasoning
+    assert say_as(by["C10"]).startswith("According to IRDAI Annual Report")
+    # ending: the opening stance never counts; 3 non-moving replies after it, or the cap, force a wrap
+    assert not should_wrap(["resisting", "resisting", "neutral"], 2)
+    assert should_wrap(["resisting", "resisting", "neutral", "disengaged"], 3)
+    assert not should_wrap(["resisting", "open", "neutral", "resisting"], 3)
+    assert should_wrap([], MAX_TURNS - 1)
+    # plan validation: Hold, unknown and repeated IDs dropped; bad JSON falls back to the bucket's claims
+    from types import SimpleNamespace as NS
+    fake = lambda content: NS(chat=NS(completions=NS(create=lambda **kw: NS(choices=[NS(message=NS(content=content))]))))
+    p = make_plan(fake(json.dumps({"crux": "x", "chain": [{"claim_id": i, "why": "w"} for i in
+                                    ["C25", "C99", "C06", "C06", "C08", "C05", "C11", "C26"]], "conclusion": "y"})), "m", "r", "B2", "B4")
+    assert plan_ids(p) == ["C06", "C08", "C05", "C11"] and not p.get("fallback")
+    assert make_plan(fake("not json"), "m", "r", "B2")["fallback"] and plan_ids(make_plan(fake("{}"), "m", "r", "B2"))
+    sp = system_prompt("B2", "r", "B4", p)
+    assert "{plan}" not in sp and "As reported by Royal Sundaram" in sp and '"C05"' in sp.split("Other checked claims")[0]
     dup = check_reply('{"refuse": true, "reply": "I don\u2019t have a source for that specific rate, but costs rose 13%.", "claim_ids": []}', b3)
     assert dup[0] == f"{REFUSAL} Costs rose 13%.", dup[0]
     assert check_reply('{"reply": "2024\\u0018-25 data", "claim_ids": []}', b3)[0] == "2024-25 data"
