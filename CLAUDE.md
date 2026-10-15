@@ -38,7 +38,7 @@ Primary = the first reason the person names; record the second as secondary.
 - `docs/recruiting.md`: invite, self-check, consent, day-7 message, debrief, recruiting log template.
 - `docs/capstone-brief.md`: the 100x brief and its grading criteria.
 - `converse.py`: both arms. Intake = consent + screening (age 22–45, no own policy, not CGHS/ESIC/PM-JAY, T0 ≥ 60) → reason → classify. The system arm argues from the bucket's claims; `--brief` shows `data/fixed_brief.md`. `--t2` for day 7. Logs go to `sessions/<pid>.jsonl` (gitignored).
-- `check_claims.py` + `prompts/checker_prompt.md` + `data/checker_gold.jsonl` (38 rows): the unsupported-claims metric.
+- `check_claims.py` + `prompts/checker_prompt.md` + `data/checker_gold.jsonl` (42 rows): the unsupported-claims metric.
 - `analyze.py`: the results table (T0/T1/T2 and Δ per participant and per arm, plus unsupported claims). Offline.
 - `data/fixed_brief.md`: the baseline arm's brief, exported from Claude Docs on 15 Oct. The C25 premium bullet is removed here and in Docs (C25 is Hold).
 - `runs/reversal/` + `docs/reversal-runs.md`: reversal inputs, logs, write-up. `docs/test-plan-day2.md`: the LLM tests still to run.

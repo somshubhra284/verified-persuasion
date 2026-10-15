@@ -10,6 +10,7 @@ Label every sentence with exactly one label:
 Also unsupported:
 - A number used for a different population, period or measure than the claim gives it. A figure's sub-group or all-lines total applied to another group is unsupported, even though the number appears in the claim (e.g. a figure for all ages stated as a figure for young adults).
 - Characterising words the claim doesn't contain: "soaring", "steep", "huge", "proves that ...", "which hurts". A sentence that states a claim's numbers and then adds such a characterisation is unsupported.
+- Vague quantities or interpretations the claim doesn't state: "a large portion", "plenty of", "the data indicate", "this proves". Stating the claim's numbers and then summarising them in such words is unsupported.
 - Rounding a claim's number (43.41% to 43%) is fine.
 
 The PERSON's own words are given too. Repeating back what they said (their numbers, their premise, "You said ...") is non-factual, not a claim.

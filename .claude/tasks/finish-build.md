@@ -166,3 +166,8 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - FALSE FLAG g09 (old C13 wording, "resolved in the policyholder's favour", got uncited). This flagged in all 3 runs. It follows from today's C13 rewrite (predicted before this run, see above): the new C13 says "mediated settlement or formal award" and its care note says never "won".
 - FALSE FLAG g11 ("so most claims are not denied", got unsupported). This row was marked "Borderline, review" on day 1.
 - Stopped here, per the plan. The fix options go to Som.
+### Fixes after the step-1 fail (approved by Som)
+1. g09 relabelled unsupported, because of the C13 rewrite (the mismatch was predicted before the run).
+2. Judge rule added for vague quantities and interpretations. Its examples ("a large portion", "plenty of", "the data indicate", "this proves") **deliberately avoid g37's words** ("sizable", "suggest"), so g37 tests whether the rule generalises.
+3. 4 fresh rows (g39–g42): 2 unsupported (evaluative "substantial", interpretive "indicates … generally honour") and 2 plain supported (C03, C16), to watch for over-flagging. Gold now has 42 rows, 19 that should be flagged.
+4. Rerun on the same setup (DeepInfra, effort medium). This is reported as a **second rescore after targeted fixes**, not a blind pass.
