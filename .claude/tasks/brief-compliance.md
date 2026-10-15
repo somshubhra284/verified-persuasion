@@ -74,3 +74,4 @@ The demo video and case study (next). Any change to the chatbot arm.
   - `docs/decision-rule.md` is written; CLAUDE.md, the README and learning log 15 are updated.
   - Selfchecks pass (8 cards, 32 facts, all sourced, no tags, deterministic, the same for a B3 person).
 - **Verified locally (Playwright, phone width):** 8 cards ('3 of 8' = all 6 employer facts with source lines), then the after-score, then the end screen ('Your answers have been saved', no scores). The log has brief_read.brochure_sha = 4cb7a95c0db3, matching the code. The chat arm is unchanged.
+- **Deployed and verified live (16 Oct):** Som re-uploaded index.html. The live API brief arm returns 8 cards, 32 facts, all sourced; brief_read logged brochure_sha 4cb7a95c0db3 (matches the code). Test pilot-1 and pilot-2 deleted; the DB is empty (0 events, 0 contacts), ready for the pilot.
