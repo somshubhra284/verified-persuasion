@@ -88,3 +88,12 @@ The brief arm (relevant cards), the 0–10 scale, the contacts table, the checke
 The demo video and case study. Ledger edits (C05 stays filed under B1; the plan can still use it, and that's logged). Changing the brief arm.
 
 ## Change log
+- **Built (16 Oct):**
+  - `make_plan` + `prompts/plan_prompt.md`. The plan is logged as a `plan` event with `plan_extra`.
+  - Moves, stance and new_point are logged per reply.
+  - `should_wrap` (the opening stance is excluded; 3 non-moving replies or the cap force a wrap).
+  - `say_as` attribution by status, with "(… copy)" stripped.
+  - `BANNED_QUESTION` code guard.
+  - `/api/t1` returns no scores, and the end screen shows none.
+  - Som's hand-review feedback is folded in (C11 attribution, the C08 Inference, the C07 add-on, the migrating question, the missed stated reasons).
+- **Re-validation took 4 rounds (see `runs/argument-flow/README.md`). The final version passes every row**, 0 violations in 87 replies, median 1.0 s.

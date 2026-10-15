@@ -50,7 +50,8 @@ def reason_claims(buckets):
     return [c for c in usable_claims() if set(c["buckets"]) & {b for b in buckets if b}]
 
 # feedback (16 Oct): "How do you feel about underwriting when you eventually switch?" - never ask about buying or migrating
-BANNED_QUESTION = re.compile(r"\b(buy\w*|purchas\w*|migrat\w*|switch\w*|port(ing|ability)?|which (insurer|plan|policy)|sign up)\b", re.I)
+BANNED_QUESTION = re.compile(r"\b(buy\w*|purchas\w*|migrat\w*|switch\w*|port(ing|ability)?|which (insurer|plan|policy)|sign up|"
+                             r"get (a |your own |personal )?(policy|cover(age)?|insurance)|decision to)\b", re.I)
 
 
 def check_reply(raw, allowed_ids):
@@ -336,6 +337,8 @@ def selfcheck():
     # feedback 16 Oct: never ask about buying/migrating; harmless questions pass
     assert "buying/migrating" in check_reply('{"reply": "Fair. How do you feel about underwriting when you eventually switch?", "claim_ids": []}', b3)[2]
     assert check_reply('{"reply": "Fair. Do you trust insurers to pay?", "claim_ids": []}', b3)[2] is None
+    assert check_reply('{"reply": "Ok. How would that affect your decision to get coverage later?", "claim_ids": []}', b3)[2]
+    assert check_reply('{"reply": "Ok. What would you do if you needed cover before marriage?", "claim_ids": []}', b3)[2] is None
     assert check_reply('{"stance": "open", "move": "advance", "reply": "Ok.", "claim_ids": []}', b3)[5]["move"] == "advance"
     by = {c["id"]: c for c in LEDGER}
     assert say_as(by["C11"]).startswith("As reported by Royal Sundaram")  # an insurer's page, never "IRDAI states"

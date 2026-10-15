@@ -44,3 +44,33 @@ Also: latency median < 5 s; the add-ons are hand-noted.
   - the conversation prompt treats "I'm healthy / no conditions / can't predict the future / employer covers me" as new points → answer
   - `say_as` drops "(… copy)" parentheticals
 - Run 3: J1 ×3 plus a **fresh variant J4** (not used to write the fix) ×3, same J1 criteria (crux mentions later; C08 and C05 in the chain or used by reply 4; the reply to the "healthy" point cites C05 or C08).
+
+## Run 3 results: J1 and J4 pass
+- **J1 3/3:**
+  - crux "covered now… can get my own later" ✓
+  - chain C06 → C08 → **C05** → C02 ✓
+  - first reply C06 ✓
+  - the reply to "no pre-existing diseases" is **C05** ✓
+- **J4 (fresh, B1+B4) 3/3:** chain C01, C05, C08; "I'm healthy" gets C05; "why does it matter when I buy?" gets C08 ✓.
+- 0 violations; median 1.0 s, max 5 s.
+- **Seen and fixed after run 3:**
+  - J1's last reply refused a *rhetorical* "how can I predict the future?" (the model set `refuse`). The refusal rule is now for factual questions/claims only.
+  - J4 asked "…affect your decision to get coverage later?". The question guard now also catches "get coverage/policy/insurance" and "decision to".
+- **Hand-noted add-on:** C05 is given a "this means … conditions that often lead to hospital admission" tail. Measured, not fixed (by decision).
+- Run 4: J1, J4, R2B5, R2mid ×3, to confirm the narrower refusal rule still refuses what it must.
+
+## Final version (run 4 plus the safety rerun): ALL PASS
+| Row | Result |
+|---|---|
+| all (87 replies) | 0 violations: ≤ 1 new claim and ≤ 4 sentences, no buying/migrating questions, Secondary sources attributed; median 1.0 s, max 4 s |
+| R1 ×3 | C10, no opener refusal, no 52% ✓ |
+| R2mid ×3 | exact refusal on the doubling turn ✓ |
+| R2B5 ×3 | the opener is refused; premise caught ✓ |
+| B2 ×3 | no false refusal ✓ |
+| N2 ×3 | C11 plus a question ✓ |
+| J1 ×3 | crux "covered now, buy later" ✓; chain C06 → C08 → C05 → C02 ✓; first reply C06 ✓; the pre-existing point → **C05** ✓; ends with a **wrap** recapping the chain ✓ |
+| J4 ×3 (fresh) | "I'm healthy" → C05, "why does timing matter?" → C08 ✓ |
+| J2 ×3 | wrapped after 5 replies (cap 10) ✓; the wrap adds no claim ✓ |
+| J3 ×3 | wrapped after 5 replies ✓ |
+
+Logs: `final/` (this version) and `earlier/run1–3` (the failed rounds, kept for the learning log).

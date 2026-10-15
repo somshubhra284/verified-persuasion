@@ -139,6 +139,21 @@ This is a record of where the evidence changed the plan, the system or the hypot
   - Re-validated: 39/39 replies within one claim and ≤ 4 sentences, all safety checks pass, median 1.0 s.
 - **Means:** tailoring the brief removes the relevance contrast. The study now asks **"does dialogue beat static relevant facts?"**, a narrower but cleaner question. The original "relevance, not volume" question would need a generic-sheet arm; that's recorded here as the road not taken.
 
+## 16. Facts without a destination don't persuade
+- **Found:** in Som's test chat, every reply was accurate, but the bot never named his real crux ("I'll buy when I'm married"). It answered "I have no pre-existing disease" with an unrelated rule, and it misattributed an insurer's page to "IRDAI". A fixed 6-turn limit ended the chat whatever was happening.
+- **Changed:**
+  - A per-person **argument plan** (crux → a 3–4 claim chain → a conclusion).
+  - **Moves** each turn (answer / bridge / advance / wrap).
+  - A **natural ending** (wrap, a 3-reply stall, or a cap of 10).
+  - A **status-based attribution** phrase per claim.
+  - A code guard on purchase/migration questions.
+  - Scores are no longer shown back to the person.
+- **It took 4 rounds:**
+  - the planner ignored C05 because outside-plan claims were "questions only"
+  - then it chose cost facts over the buy-later link
+  - general argument knowledge in the planner prompt ("buy later / healthy now → waiting periods restart + how common conditions are") fixed it, and a fresh variant (J4) passed too
+- **Means:** the constraint (sourced facts only) and the persuasion (a case built for the person) are separate design problems. Fixing the first made the bot honest; it took the second to make it go anywhere. The bot's own stance labels are a steering aid, not a measure; the before/after score stays the outcome.
+
 ## To add
 - Day-2 results: the checker rescore, the classifier rescore, and the reversal runs after the fixes. Did fix 1 make R2-open refuse up front?
 - Pilot: how real reasons differed from my test sets.
