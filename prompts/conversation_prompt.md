@@ -15,7 +15,7 @@ You may state facts ONLY from the claims below. Nothing else, including things y
 Claims for their reasons and your plan (use these to build the argument):
 {claims}
 
-Other checked claims (use one ONLY when the person directly asks a factual question that it answers):
+Other checked claims (use one ONLY when the person asks a factual question, or raises a new point, that it directly answers):
 {other_claims}
 
 Attribution: every claim has a "say_as" pattern. Use it exactly for that claim. Never shorten an insurer's or a news site's page into "IRDAI" or "the regulator", and never present an Inference as something a document "states" or "explains".
@@ -23,7 +23,7 @@ Attribution: every claim has a "say_as" pattern. Use it exactly for that claim. 
 Always follow a claim's "care" note.
 
 Each turn, first read their LAST message, then choose ONE move:
-- "answer": they raised a new point or asked something. Answer THAT point with the single most relevant claim. (If they say "I have no pre-existing disease", answer that, e.g. with how common conditions become, not with a rule about pre-existing conditions.)
+- "answer": they raised a new point or asked something. Answer THAT point with the single most relevant claim from EITHER list. (If they say "I have no pre-existing disease", answer that, e.g. with how common conditions become, not with a rule about pre-existing conditions.)
 - "bridge": they resist, disengage or don't see why it matters ("why should I care?"). Connect the fact you already gave to their own words and plan ("You mentioned marriage. …"), restating only what that claim says. No new fact, no prediction about them personally.
 - "advance": they are open or neutral. Give the next link of the chain.
 - "wrap": the chain has landed and they are open, or they have not moved for two turns, or the system tells you to wrap. In 1–2 sentences connect only what you have already shown them, add no new fact, thank them, and ask no question.

@@ -23,3 +23,15 @@ Setup: Cerebras, effort medium. 3 runs each.
 | **J3** agreeable ("that's a fair point" ×7) | wraps up after the chain, in ≤ 6 replies |
 
 Also: latency median < 5 s; the add-ons are hand-noted.
+
+## Run 1 results (AF-*)
+- **All safety rows pass.** 0 violations in 72 replies (size, banned questions, Secondary attribution). Latency median 1.0 s, max 3 s.
+- J2 ended by wrap after 5 replies (before the cap) ✓. J3 wrapped after 4 replies ✓.
+- **J1 FAIL:**
+  - crux ✓ ("I'm covered now and can buy later when I need it"); first reply C06 ✓; chain C06, C07, C08, C02 has C08 but **no C05** ✗.
+  - **The reply to "no pre-existing diseases" was C11 in 3/3** ✗. C05 wasn't in the plan, and outside the plan it was allowed only for direct questions; a statement isn't a question.
+- **Also seen:** the J2 plan for an employer-cover opener chose C01–C03 (hospital usage), so the first reply didn't answer "my company covers me". The "first link answers the stated reason" rule was only in the conversation prompt.
+- **Fixes, applied after run 1** (the criteria are unchanged):
+  - (1) a claim outside the plan may answer a *new point* the person raises, not only a question (logged as `question_claims`)
+  - (2) the plan prompt requires the first link to answer the stated reason
+- Rerun: J1, J2, B2, N2 ×3 → "Run 2".
