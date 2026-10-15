@@ -13,7 +13,7 @@ IDs: participants who pass screening get P01, P02, ... (odd = system arm, even =
 declined / screened-out get S01, S02, ...; try-outs get demo-N (always the system arm, never counted, capped per
 day); `?pilot=1` gives pilot-N (alternating arms, never counted).
 """
-import hashlib, hmac, json, os, ssl, sys, time, urllib.parse, urllib.request
+import hashlib, hmac, json, os, ssl, sys, time, urllib.parse, urllib.request  # hashlib: session tokens
 from pathlib import Path
 
 os.environ.setdefault("RATE_LIMIT_WAITS", "5,10,20,30")  # keeps one request under ~2 min, so the page doesn't look stuck
@@ -28,7 +28,6 @@ from classify_eval import HERE, DEFAULT_MODEL, PROVIDER_TAG, make_client, llm_cl
 MODEL = os.environ.get("MODEL", DEFAULT_MODEL)
 DEMO_CAP = int(os.environ.get("DEMO_DAILY_CAP", "40"))
 SECRET = os.environ.get("SESSION_SECRET") or ("" if os.environ.get("RENDER") else "dev-secret")
-BRIEF = (HERE / "data" / "fixed_brief.md").read_text()
 
 
 class FileStore:
@@ -45,6 +44,12 @@ class FileStore:
         f = self.dir / f"{pid}.jsonl"
         return [json.loads(l) for l in f.read_text().splitlines()] if f.exists() else []
 
+    def add_contact(self, pid, contact):
+        """Optional day-7 contact, kept apart from the session events (a .ndjson file, never read as a session)."""
+        self.dir.mkdir(exist_ok=True)
+        with (self.dir / "contacts.ndjson").open("a") as f:
+            f.write(json.dumps({"pid": pid, "contact": contact, "ts": time.strftime("%Y-%m-%dT%H:%M:%S")}) + "\n")
+
     def started(self, prefix, since=""):
         """Session ids with this prefix whose 'start' event is at or after `since`."""
         out = []
@@ -58,12 +63,12 @@ class FileStore:
 class SupabaseStore:
     """Production: rows in the `events` table via Supabase's REST API (stdlib only)."""
     def __init__(self, url, key):
-        self.base, self.key = url.rstrip("/") + "/rest/v1/events", key
+        self.root, self.key = url.rstrip("/") + "/rest/v1/", key
         import certifi  # installed with openai; python.org builds on macOS ship without root certificates
         self.tls = ssl.create_default_context(cafile=certifi.where())
 
-    def _call(self, method, query="", body=None):
-        req = urllib.request.Request(self.base + query, method=method, data=json.dumps(body).encode() if body else None,
+    def _call(self, method, query="", body=None, table="events"):
+        req = urllib.request.Request(self.root + table + query, method=method, data=json.dumps(body).encode() if body else None,
                                      headers={"apikey": self.key, "Authorization": f"Bearer {self.key}",
                                               "Content-Type": "application/json", "Prefer": "return=minimal"})
         with urllib.request.urlopen(req, timeout=20, context=self.tls) as r:
@@ -74,6 +79,10 @@ class SupabaseStore:
 
     def events(self, pid):
         return [r["data"] for r in self._call("GET", f"?select=data&pid=eq.{urllib.parse.quote(pid)}&order=id.asc")]
+
+    def add_contact(self, pid, contact):
+        """Optional day-7 contact, in its own `contacts` table (RLS on, no policies), never in `events`."""
+        self._call("POST", body={"pid": pid, "contact": contact}, table="contacts")
 
     def started(self, prefix, since=""):
         q = f"?select=pid&event=eq.start&pid=like.{urllib.parse.quote(prefix)}*&ts=gte.{urllib.parse.quote(since)}"
@@ -176,7 +185,7 @@ def start(s: Start):
         log("start", mode=mode)
         log("declined", arm=None)
         return {"status": "declined", "pid": pid}
-    if None in (s.age, s.own_policy, s.govt, s.t0) or not (0 <= s.age <= 120 and 0 <= s.t0 <= 100):
+    if None in (s.age, s.own_policy, s.govt, s.t0) or not (0 <= s.age <= 120 and 0 <= s.t0 <= cv.SCALE):
         raise HTTPException(422, "Please answer every question.")
     out = cv.screen(s.age, s.own_policy, s.govt, s.t0)
     pid, n = new_pid(mode, not out)
@@ -217,8 +226,8 @@ def reason(t: Turn):
             return {"follow_up": classes[-1].get("follow_up") or "If you had to name one reason, what would it be?"}
         log("end", reason="unclassified", bucket=bucket)
         return {"end": "unclassified"}
-    if arm == "brief":
-        return {"brief": BRIEF}
+    if arm == "brief":  # only the facts for their own reason(s), one card at a time on the page
+        return {"cards": [c["text"] for c in cv.brief_cards(bucket, cv.secondary_of(bucket, classes[-1].get("secondary")))]}
     reply = next((e for e in events if e["event"] == "assistant"), None)
     if reply:
         return {"reply": reply["text"], "sources": sources(reply["claim_ids"]), "last": cv.MAX_TURNS == 1}
@@ -257,24 +266,36 @@ def message(t: Turn):
 def brief_done(t: Turn):
     events, log = load(t.pid, t.token)
     if not first(events, "brief_read"):
-        log("brief_read", seconds=t.seconds or 0, brief_sha=hashlib.sha256(BRIEF.encode()).hexdigest()[:12])
+        c = [e for e in events if e["event"] == "classify"][-1]
+        shown = cv.brief_cards(c["primary"], cv.secondary_of(c["primary"], c.get("secondary")))
+        log("brief_read", seconds=t.seconds or 0, cards=[x["id"] for x in shown])
     return {"ok": True}
 
 
 @app.post("/api/t1")
 def t1(t: Turn):
     events, log = load(t.pid, t.token)
-    if t.score is None or not 0 <= t.score <= 100:
-        raise HTTPException(422, "Please give a number from 0 to 100.")
+    if t.score is None or not 0 <= t.score <= cv.SCALE:
+        raise HTTPException(422, f"Please choose a number from 0 to {cv.SCALE}.")
     if not first(events, "t1"):
         log("t1", score=t.score)
-    return {"code": t.pid}
+    return {"t0": first(events, "t0")["score"], "t1": t.score}  # the page shows "you started at X, now Y"
+
+
+@app.post("/api/contact")
+def contact(t: Turn):
+    """Optional phone/email for the day-7 question; stored apart from the answers."""
+    load(t.pid, t.token)
+    text = (t.text or "").strip()[:200]
+    if text:
+        STORE.add_contact(t.pid, text)
+    return {"ok": True}
 
 
 @app.post("/api/t2")
 def t2(t: Turn):
     events, log = load(t.pid, t.token)
-    if t.score is None or not 0 <= t.score <= 100 or t.looked not in ("yes", "no"):
+    if t.score is None or not 0 <= t.score <= cv.SCALE or t.looked not in ("yes", "no"):
         raise HTTPException(422, "Please answer both questions.")
     if not first(events, "t2"):
         log("t2", score=t.score, looked_into_policy=t.looked)
@@ -301,7 +322,7 @@ def selfcheck():
     with tempfile.TemporaryDirectory() as d:
         STORE = FileStore(d)
         c = TestClient(app)
-        ok = {"consent": True, "age": 30, "own_policy": False, "govt": False, "t0": 80}
+        ok = {"consent": True, "age": 30, "own_policy": False, "govt": False, "t0": 8}
         evs = lambda pid: [e["event"] for e in STORE.events(pid)]
         # P01: system arm, full conversation, with one "busy" retry that must not double-log the message
         s = c.post("/api/start", json=ok).json()
@@ -313,14 +334,20 @@ def selfcheck():
         assert c.post("/api/message", json={**s, "text": "really?"}).status_code == 503
         assert c.post("/api/message", json={**s, "text": "really?"}).json()["reply"]
         assert c.post("/api/message", json={**s, "done": True}).json() == {"done": True}
-        assert c.post("/api/t1", json={**s, "score": 50}).json() == {"code": "P01"}
+        assert c.post("/api/t1", json={**s, "score": 11}).status_code == 422  # 0-10 scale
+        assert c.post("/api/t1", json={**s, "score": 5}).json() == {"t0": 8, "t1": 5}
+        c.post("/api/contact", json={**s, "text": "friend@example.com"})
+        assert "friend@example.com" in (Path(d) / "contacts.ndjson").read_text()
+        assert "friend@example.com" not in json.dumps(STORE.events("P01"))  # contacts never go into the answers
         assert evs("P01") == ["start", "t0", "reason", "classify", "assistant", "user", "assistant", "t1"], evs("P01")
         # P02: brief arm
         s2 = c.post("/api/start", json=ok).json()
         assert (s2["pid"], s2["arm"]) == ("P02", "brief")
-        assert c.post("/api/reason", json={**s2, "text": "claims get rejected"}).json()["brief"] == BRIEF
+        cards = c.post("/api/reason", json={**s2, "text": "claims get rejected"}).json()["cards"]
+        assert cards == [x["text"] for x in cv.brief_cards("B3")] and len(cards) <= cv.MAX_CARDS and "[C" not in "".join(cards)
         c.post("/api/brief_done", json={**s2, "seconds": 95})
-        c.post("/api/t1", json={**s2, "score": 70})
+        assert next(e for e in STORE.events("P02") if e["event"] == "brief_read")["cards"][0] == "C10"
+        c.post("/api/t1", json={**s2, "score": 7})
         assert evs("P02") == ["start", "t0", "reason", "classify", "brief_read", "t1"]
         # screened out and declined take S numbers, never P numbers
         assert c.post("/api/start", json={**ok, "age": 50}).json() == {"status": "screened_out", "pid": "S01"}
@@ -344,7 +371,7 @@ def selfcheck():
         assert c.post("/api/reason", json={**u, "text": "dunno really"}).json() == {"end": "unclassified"}
         # tokens: a wrong token is refused; the day-7 link works with the right one
         assert c.post("/api/t1", json={**s, "token": "x", "score": 1}).status_code == 403
-        assert c.post("/api/t2", json={**s, "score": 40, "looked": "yes"}).json() == {"ok": True}
+        assert c.post("/api/t2", json={**s, "score": 4, "looked": "yes"}).json() == {"ok": True}
         assert evs("P01")[-1] == "t2"
         assert c.get("/").status_code == 200 and c.get("/api/health").json() == {"ok": True}
     print("selfcheck ok")

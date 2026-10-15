@@ -7,7 +7,7 @@
 
 Every event goes to sessions/<participant>.jsonl with the claim IDs behind each reply.
 """
-import hashlib, json, os, re, sys, time
+import json, os, re, sys, time
 from classify_eval import HERE, DEFAULT_MODEL, PROVIDER_TAG, make_client, llm_classifier
 
 BUCKET_NAMES = {"B1": "young / healthy", "B2": "employer covers me", "B3": "claims rejected / scam / too complicated",
@@ -15,7 +15,9 @@ BUCKET_NAMES = {"B1": "young / healthy", "B2": "employer covers me", "B3": "clai
                 "B7": "on a family member's policy"}
 REFUSAL = "I don't have a source for that, so I won't state it."
 FOLLOW_UP = "What makes you ask about that?"  # added when a refusal would otherwise be the whole message
-MAX_TURNS = 4
+MAX_TURNS = 6  # one point per reply (16 Oct), so the journey needs more turns; "done" ends it any time
+SCALE = 10  # belief score 0-10 (was 0-100 until 16 Oct)
+MAX_CARDS = 6  # brief arm: at most this many relevant fact cards
 LEDGER = json.loads((HERE / "data" / "ledger.json").read_text())["claims"]
 
 
@@ -58,12 +60,12 @@ def check_reply(raw, allowed_ids):
     return reply, ids, (f"cited claims outside this bucket: {bad}" if bad else None), premise, out.get("premise_claim")
 
 
-def ask_score(prompt):
+def ask_score(prompt, hi=SCALE):
     while True:
         s = input(prompt).strip()
-        if s.isdigit() and 0 <= int(s) <= 100:
+        if s.isdigit() and 0 <= int(s) <= hi:
             return int(s)
-        print("Please type a whole number from 0 to 100.")
+        print(f"Please type a whole number from 0 to {hi}.")
 
 
 def ask_yes(prompt):
@@ -91,7 +93,7 @@ def logger(pid, sink=file_sink):
 def screen(age, own_policy, govt, t0):
     """Screening reasons (CLAUDE.md criteria); empty list = eligible."""
     return [why for failed, why in [(not 22 <= age <= 45, f"age {age}"), (own_policy, "has own policy"),
-                                    (govt, "government scheme"), (t0 < 60, f"T0 {t0} < 60")] if failed]
+                                    (govt, "government scheme"), (t0 < 6, f"T0 {t0} < 6")] if failed]
 
 
 def secondary_of(primary, secondary):
@@ -145,11 +147,11 @@ def intake(log, arm):
         log("declined", arm=arm)
         say("No problem at all. Thank you for your time.")
         return None
-    age = ask_score("How old are you? ")  # ponytail: reuses the 0-100 number prompt; age is in range
+    age = ask_score("How old are you? ", hi=120)
     own = ask_yes("Do you have a health insurance policy in your own name (not through work or family)? (yes/no) ")
     govt = ask_yes("Are you covered by CGHS, ESIC or PM-JAY (Ayushman Bharat)? (yes/no) ")
     t0 = ask_score("How much do you agree with \"I don't need a health insurance policy of my own\", "
-                   "0 (not at all) to 100 (completely)? ")
+                   "0 (not at all) to 10 (completely)? ")
     log("t0", score=t0, arm=arm, age=age)
     out = screen(age, own, govt, t0)
     if out:
@@ -201,7 +203,17 @@ def converse(pid):
         history.append({"role": "user", "content": user})
 
     say("Thank you for talking with me.")
-    log("t1", score=ask_score("Now, how much do you agree: \"I don't need a health insurance policy of my own\"? (0-100) "))
+    log("t1", score=ask_score("Now, how much do you agree: \"I don't need a health insurance policy of my own\"? (0-10) "))
+
+
+def brief_cards(primary, secondary=None):
+    """Brief arm (16 Oct): only the fixed brief's facts for the person's reason(s), tags stripped, primary bucket first.
+    The wording is the brief's own (it names the source where needed); every bullet ends in exactly one [Cxx] tag."""
+    bullets = re.findall(r"^- (.*?) \[(C\d\d)\]$", (HERE / "data" / "fixed_brief.md").read_text(), flags=re.M)
+    by_id = {cid: text for text, cid in bullets}
+    order = [c["id"] for b in (primary, secondary) if b for c in reason_claims([b])]
+    ids = [cid for cid in dict.fromkeys(order) if cid in by_id][:MAX_CARDS]
+    return [{"id": cid, "text": by_id[cid]} for cid in ids]
 
 
 def brief_arm(pid):
@@ -209,19 +221,24 @@ def brief_arm(pid):
     reason = intake(log, "brief")
     if reason is None:
         return
-    classify_reason(log, reason, model)  # bucket recorded for comparison by bucket; the brief is the same for all
-    text = (HERE / "data" / "fixed_brief.md").read_text()
-    print("\n" + "=" * 70 + "\n" + text + "\n" + "=" * 70)
+    bucket, secondary, _ = classify_reason(log, reason, model)
+    if bucket not in BUCKET_NAMES:  # still B0: never guess a bucket (same as the system arm)
+        say("Thanks, that's really helpful. That's all I needed.")
+        log("end", reason="unclassified", bucket=bucket)
+        return
+    cards = brief_cards(bucket, secondary)
     start = time.time()
-    input("\nPress Enter when you've finished reading. ")
-    log("brief_read", seconds=round(time.time() - start), brief_sha=hashlib.sha256(text.encode()).hexdigest()[:12])
+    for i, c in enumerate(cards, 1):
+        print(f"\n[{i} of {len(cards)}] {c['text']}")
+        input("Press Enter for the next one. " if i < len(cards) else "Press Enter when you've finished reading. ")
+    log("brief_read", seconds=round(time.time() - start), cards=[c["id"] for c in cards])
     say("Thank you for reading.")
-    log("t1", score=ask_score("Now, how much do you agree: \"I don't need a health insurance policy of my own\"? (0-100) "))
+    log("t1", score=ask_score("Now, how much do you agree: \"I don't need a health insurance policy of my own\"? (0-10) "))
 
 
 def followup(pid):
     log = logger(pid)
-    log("t2", score=ask_score("Day 7: how much do you agree: \"I don't need a health insurance policy of my own\"? (0-100) "),
+    log("t2", score=ask_score("Day 7: how much do you agree: \"I don't need a health insurance policy of my own\"? (0-10) "),
         looked_into_policy=input("Did you look into a policy this week? (yes/no) ").strip().lower())
 
 
@@ -254,7 +271,11 @@ def selfcheck():
     assert check_reply('{"premise": "most claims rejected", "premise_claim": "C10", "reply": "87% settled.", '
                        '"claim_ids": ["C10"]}', b3)[0] == "87% settled."
     assert check_reply('{"premise": null, "reply": "Hi.", "claim_ids": []}', b3)[0] == "Hi."
-    assert screen(30, False, False, 80) == [] and screen(50, True, False, 40) == ["age 50", "has own policy", "T0 40 < 60"]
+    assert screen(30, False, False, 8) == [] and screen(50, True, False, 4) == ["age 50", "has own policy", "T0 4 < 6"]
+    cards = brief_cards("B2", "B5")
+    assert 1 <= len(cards) <= MAX_CARDS and all("[" not in c["text"] for c in cards)
+    assert {c["id"] for c in cards} <= {c["id"] for c in reason_claims(["B2", "B5"])} and cards[0]["id"] in {"C06", "C07", "C08", "C09", "C26", "C27"}
+    assert [c["id"] for c in brief_cards("B7")] == ["C32"]
     assert "{claims}" not in system_prompt("B3", "x") and "{secondary_line}" not in system_prompt("B3", "x")
     assert "C25" in (HERE / "data" / "ledger.json").read_text() and "C25" not in (HERE / "data" / "fixed_brief.md").read_text()
     print("selfcheck ok")

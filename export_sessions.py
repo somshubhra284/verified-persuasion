@@ -2,9 +2,10 @@
 
   .venv/bin/python export_sessions.py                  # all sessions -> sessions/*.jsonl
   .venv/bin/python export_sessions.py --t2-link P03    # print the day-7 link to send that participant
+  .venv/bin/python export_sessions.py --contacts       # who left an optional contact, with their day-7 links
   .venv/bin/python export_sessions.py --selfcheck      # offline
 
-Needs SUPABASE_URL, SUPABASE_SECRET_KEY, SESSION_SECRET (and APP_URL for links) in .env, the same values as on Vercel.
+Needs SUPABASE_URL, SUPABASE_SECRET_KEY, SESSION_SECRET (and APP_URL for links) in .env, the same values as on Render.
 Then: check_claims.py sessions/P0N.jsonl -> check_claims.py --review sessions/P0N.check.jsonl -> analyze.py
 """
 import json, os, sys, tempfile
@@ -44,7 +45,13 @@ def selfcheck():
 
 if __name__ == "__main__":
     selfcheck()
-    if "--t2-link" in sys.argv:
+    if "--contacts" in sys.argv:
+        from app import SupabaseStore, token
+        store = SupabaseStore(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SECRET_KEY"])
+        base = os.environ.get("APP_URL", "https://<your-app>").rstrip("/")
+        for r in store._call("GET", "?select=pid,contact,created_at&order=id.asc", table="contacts"):
+            print(f"{r['pid']}\t{r['contact']}\t{r['created_at'][:10]}\t{base}/?t2={r['pid']}&k={token(r['pid'])}")
+    elif "--t2-link" in sys.argv:
         from app import token
         pid = sys.argv[sys.argv.index("--t2-link") + 1]
         print(f"{os.environ.get('APP_URL', 'https://<your-app>.vercel.app').rstrip('/')}/?t2={pid}&k={token(pid)}")
