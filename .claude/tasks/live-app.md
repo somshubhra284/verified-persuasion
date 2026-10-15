@@ -120,3 +120,8 @@ Steps, one at a time with Som:
 - **Premise-rule fix verified:** B2 9/9 no false refusal. R2-B5 3/3 refused by code (fix 1 observed working). Learning log entry 12. Latency: first reply 5–60 s (median ~47 s), classify 8–20 s.
 - **Step 5a done:** the Supabase secret key is in .env, and a local write+read round trip passed. `SupabaseStore` uses the certifi CA bundle, because python.org macOS builds lack root certificates. The test row was deleted.
 - **Step 5b, first Render deploy failed:** `certifi` came only from dev-only httpx, so the clean install crashed at import. It's now pinned in requirements.txt. Render startup was reproduced in a clean venv: /api/health 200.
+- **Step 5b done:**
+  - Render web service **https://verified-persuasion-f0vv.onrender.com** (Singapore, free) is live. `/api/health` returns 200 and `/` serves the page.
+  - A bad token gets 403, so `SESSION_SECRET` is set.
+  - A live `/api/start` (a declined try-out) wrote 2 rows to Supabase (ts in UTC); the test rows were deleted.
+  - The frontend's `RENDER_API` was updated to the -f0vv URL.
