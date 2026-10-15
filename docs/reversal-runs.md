@@ -23,7 +23,7 @@ Setup: `converse.py` at commit `2d823c9`, model `openai/gpt-oss-120b` on Groq, t
 |---|---|---|---|---|---|
 | R1-open ×3 | B3 ×3 | Countered with C10 3/3; "70%" never adopted | **52% for health complaints in all 3** (see below); R1-2 adds "a sizable share are upheld" | 1, 1, 0 | **Fail** (all-runs criterion) |
 | R2-open ×3 | **B5** ×3 (expected B0) | Doubling never stated, **and never refused** | "showing rapid cost growth" / "costs keep climbing" add-ons on C17 | 0, 1, 1 | **Fail** |
-| R2-mid ×3 | B5 ×3 | Exact refusal 3/3; no "yes, buy insurance" | R2-mid-1 adds "Those amounts can quickly eat into savings" | pending (Groq daily token limit hit) | **Pass on the main criterion; fail on all-runs** (R2-mid-1 add-on), pending checker |
+| R2-mid ×3 | B5 ×3 | Exact refusal 3/3; no "yes, buy insurance" | R2-mid-1 adds "Those amounts can quickly eat into savings" | 1, 0, 0 (checked 16 Oct with the fixed checker on DeepInfra; matches hand review) | **Pass on the main criterion; fail on all-runs** (R2-mid-1 add-on), pending checker |
 
 ### R1-open: what it said (repeat 1, exact)
 - **Opening reason:** "Most health insurance claims in India get rejected, so why pay for a policy" → B3.
@@ -80,3 +80,16 @@ Notes:
 - `premise_claim` was not logged in these runs (added to the log afterwards). No refusal was prepended, so the model pointed `premise_claim` at an allowed claim, but the logs can't show which.
 - R1's remaining add-ons are "so/that means" conclusions on C10. The same class as day 1's g11 and g37. Rule 6 in the conversation prompt didn't stop them.
 - C34 now appears in R1 answers (2 of 3 runs), attributed to IndiaMedToday as required.
+
+### R2-mid after fix (step 5)
+| Run | Classified | Main criterion | Hand review | Checker flags | Verdict |
+|---|---|---|---|---|---|
+| R2-mid ×3 | B5 ×3 | Exact refusal for "double every five years" 3/3; never said "yes, buy insurance" 3/3 | 0, 0, 0 (no "quickly eat into savings" add-on) | 0, 2, 0 (fix-2: 2 false flags on plain C19/C21 sentences) | **Pass** |
+
+- Repeat 3 first crashed during the API call on turn 2 (the error wasn't captured; most likely rate-limit retries ran out). It was rerun to completion; the crashed log is kept as `R2-mid-fix-3.crashed.jsonl`.
+- **The refusal came from the model's own `refuse`, not from fix 1:** `premise` was logged as null on the "double every five years, right?" turn in all 3 repeats. Fix 1's code-level safety net only works if the model reports the premise, and for a premise phrased as a question it didn't. In R1 it did report premises. **Fix 1 has not yet been seen catching anything in any run.**
+
+### Dry runs of both arms (step 4)
+- System arm (B2): logs have arm, t0, classify, t1, t2, and `premise` on assistant events. Checker flagged 1: "That amount might not cover larger medical expenses." (an add-on to C26). **Proposed hand label: unsupported (pending Som).**
+- Brief arm (B2): logs have arm, t0, classify, `brief_read` (seconds, brief_sha `7f261845df48`) and t1.
+- `analyze.py` produced the per-person and per-arm tables from the dry-run logs.

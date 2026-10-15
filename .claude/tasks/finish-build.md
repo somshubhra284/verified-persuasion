@@ -204,3 +204,8 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - **R2-open: PASS 3/3**, via fix 4: classified B0, then the follow-up, then B0 again, ending with no claims. Fix 1 was never exercised. The Hinglish B5 path is untested.
 - **R1-open:** main criterion PASS 3/3 (C10, no refusal, no 70%, no 52%). All-runs "0 unsupported" **FAIL**. Som confirmed the hand labels on 16 Oct: unsupported add-ons per run = 1 ("similar picture", borderline), 1 ("far lower than 70%"), 3 ("that means / so most claims are approved", "that suggests …"). The checker flagged 0, 1 and 3, so it missed the borderline one.
 - `premise_claim` is now logged (it wasn't during these runs).
+### Steps 3–5 (DeepInfra, effort medium)
+- **Step 3:** day-1 R2-mid logs, fixed checker: 1, 0, 0. This matches the day-1 hand review ("quickly eat into savings" in R2-mid-1).
+- **Step 4: PASS** (structure). Both arms log as specified, `analyze.py` table OK. The system dry run had 1 add-on ("might not cover larger medical expenses"); the hand label is pending Som.
+- **Step 5: PASS.** Exact refusal 3/3, no add-ons on hand review. The checker made 2 false flags in fix-2. fix-3 crashed once (error not captured) and was rerun.
+- **Finding:** `premise` was null on the R2-mid "doubling" turn in 3/3 runs. The refusal came from the model's own flag, so fix 1 hasn't been observed working anywhere. The untested path is a false premise stated as a reason in a non-B0 bucket (e.g. the Hinglish h-50, which classifies B5).
