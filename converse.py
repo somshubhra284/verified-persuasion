@@ -7,7 +7,7 @@
 
 Every event goes to sessions/<participant>.jsonl with the claim IDs behind each reply.
 """
-import json, os, re, sys, time
+import hashlib, json, os, re, sys, time
 from classify_eval import HERE, DEFAULT_MODEL, PROVIDER_TAG, make_client, llm_classifier
 
 BUCKET_NAMES = {"B1": "young / healthy", "B2": "employer covers me", "B3": "claims rejected / scam / too complicated",
@@ -19,7 +19,6 @@ MAX_TURNS = 10  # hard cap only: the conversation ends on a "wrap" move (argumen
 STALL = 3  # this many non-positive stances in a row -> the code asks for a wrap-up
 NOT_MOVING = {"neutral", "resisting", "disengaged"}
 SCALE = 10  # belief score 0-10 (was 0-100 until 16 Oct)
-MAX_CARDS = 6  # brief arm: at most this many relevant fact cards
 LEDGER = json.loads((HERE / "data" / "ledger.json").read_text())["claims"]
 
 
@@ -32,10 +31,14 @@ def usable_claims():
     return [c for c in LEDGER if not c["status"].startswith("Hold")]
 
 
+def clean_source(c):
+    return re.sub(r"\s*\([^)]*cop(y|ies)[^)]*\)", "", c["source"])  # "(TaxGuru copy)" is for us, not the reader
+
+
 def say_as(c):
     """How a claim must be attributed, built from its status and source so the model can't promote an insurer's page
     to 'IRDAI' or state an inference as a fact."""
-    s, src = c["status"], re.sub(r"\s*\([^)]*cop(y|ies)[^)]*\)", "", c["source"])  # "(TaxGuru copy)" is for us, not them
+    s, src = c["status"], clean_source(c)
     if s.startswith("Secondary") and "reported" not in src:
         return f"As reported by {src}, ..."
     if s.startswith("Inference"):
@@ -287,14 +290,19 @@ def converse(pid):
     log("t1", score=ask_score("Now, how much do you agree: \"I don't need a health insurance policy of my own\"? (0-10) "))
 
 
-def brief_cards(primary, secondary=None):
-    """Brief arm (16 Oct): only the fixed brief's facts for the person's reason(s), tags stripped, primary bucket first.
-    The wording is the brief's own (it names the source where needed); every bullet ends in exactly one [Cxx] tag."""
-    bullets = re.findall(r"^- (.*?) \[(C\d\d)\]$", (HERE / "data" / "fixed_brief.md").read_text(), flags=re.M)
-    by_id = {cid: text for text, cid in bullets}
-    order = [c["id"] for b in (primary, secondary) if b for c in reason_claims([b])]
-    ids = [cid for cid in dict.fromkeys(order) if cid in by_id][:MAX_CARDS]
-    return [{"id": cid, "text": by_id[cid]} for cid in ids]
+def brochure():
+    """Brief arm: the capstone brief's "fixed dense brief, shown to everyone". Every fact of data/fixed_brief.md, one
+    card per section, in the same order for everyone, each fact with its named source (the [Cxx] tag is not shown).
+    Returns (cards, sha): sha fingerprints the exact content, logged so every brief-arm person provably saw the same."""
+    by_id, cards = {c["id"]: c for c in LEDGER}, []
+    for line in (HERE / "data" / "fixed_brief.md").read_text().splitlines():
+        if line.startswith("## ") and line[3:].strip() != "Sources":
+            cards.append({"title": line[3:].strip(), "facts": []})
+        m = re.match(r"^- (.*?) \[(C\d\d)\]$", line)
+        if m and cards:
+            cards[-1]["facts"].append({"text": m.group(1), "source": clean_source(by_id[m.group(2)])})
+    cards = [c for c in cards if c["facts"]]
+    return cards, hashlib.sha256(json.dumps(cards, ensure_ascii=False).encode()).hexdigest()[:12]
 
 
 def brief_arm(pid):
@@ -302,17 +310,15 @@ def brief_arm(pid):
     reason = intake(log, "brief")
     if reason is None:
         return
-    bucket, secondary, _ = classify_reason(log, reason, model)
-    if bucket not in BUCKET_NAMES:  # still B0: never guess a bucket (same as the system arm)
-        say("Thanks, that's really helpful. That's all I needed.")
-        log("end", reason="unclassified", bucket=bucket)
-        return
-    cards = brief_cards(bucket, secondary)
+    classify_reason(log, reason, model)  # recorded so arms can be compared by bucket; the brochure is the same for all
+    cards, sha = brochure()
     start = time.time()
     for i, c in enumerate(cards, 1):
-        print(f"\n[{i} of {len(cards)}] {c['text']}")
+        print(f"\n[{i} of {len(cards)}] {c['title']}")
+        for f in c["facts"]:
+            print(f"  - {f['text']}\n    Source: {f['source']}")
         input("Press Enter for the next one. " if i < len(cards) else "Press Enter when you've finished reading. ")
-    log("brief_read", seconds=round(time.time() - start), cards=[c["id"] for c in cards])
+    log("brief_read", seconds=round(time.time() - start), brochure_sha=sha)
     say("Thank you for reading.")
     log("t1", score=ask_score("Now, how much do you agree: \"I don't need a health insurance policy of my own\"? (0-10) "))
 
@@ -378,10 +384,10 @@ def selfcheck():
                        '"claim_ids": ["C10"]}', b3)[0] == "87% settled."
     assert check_reply('{"premise": null, "reply": "Hi.", "claim_ids": []}', b3)[0] == "Hi."
     assert screen(30, False, False, 8) == [] and screen(50, True, False, 4) == ["age 50", "has own policy", "T0 4 < 6"]
-    cards = brief_cards("B2", "B5")
-    assert 1 <= len(cards) <= MAX_CARDS and all("[" not in c["text"] for c in cards)
-    assert {c["id"] for c in cards} <= {c["id"] for c in reason_claims(["B2", "B5"])} and cards[0]["id"] in {"C06", "C07", "C08", "C09", "C26", "C27"}
-    assert [c["id"] for c in brief_cards("B7")] == ["C32"]
+    cards, sha = brochure()
+    facts = [f for c in cards for f in c["facts"]]
+    assert len(cards) == 8 and len(facts) == 32 and all(f["source"] and "[C" not in f["text"] for f in facts)
+    assert "TaxGuru" not in json.dumps(cards) and brochure() == (cards, sha)  # internal "(… copy)" notes hidden; deterministic
     assert "{claims}" not in system_prompt("B3", "x") and "{secondary_line}" not in system_prompt("B3", "x")
     assert "C25" in (HERE / "data" / "ledger.json").read_text() and "C25" not in (HERE / "data" / "fixed_brief.md").read_text()
     print("selfcheck ok")

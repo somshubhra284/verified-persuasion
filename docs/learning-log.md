@@ -138,6 +138,7 @@ This is a record of where the evidence changed the plan, the system or the hypot
   - The day-7 follow-up uses an optional, separately stored contact.
   - Re-validated: 39/39 replies within one claim and ≤ 4 sentences, all safety checks pass, median 1.0 s.
 - **Means:** tailoring the brief removes the relevance contrast. The study now asks **"does dialogue beat static relevant facts?"**, a narrower but cleaner question. The original "relevance, not volume" question would need a generic-sheet arm; that's recorded here as the road not taken.
+- **Reversed the same day, after checking the capstone brief:** it asks for "a fixed dense brief on the same belief, shown to everyone". Tailoring the brief had quietly removed the comparison the brief grades. The brochure arm is now all 32 facts in 8 themed cards, identical for everyone (logged by `brochure_sha`), each fact with its source. That keeps the readable card format Som asked for, without giving up the baseline. The decision rule was written and committed before the pilot (`docs/decision-rule.md`).
 
 ## 16. Facts without a destination don't persuade
 - **Found:** in Som's test chat, every reply was accurate, but the bot never named his real crux ("I'll buy when I'm married"). It answered "I have no pre-existing disease" with an unrelated rule, and it misattributed an insurer's page to "IRDAI". A fixed 6-turn limit ended the chat whatever was happening.

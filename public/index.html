@@ -73,7 +73,10 @@
   .scale button:hover { border-color: var(--accent); background: var(--accent-soft); }
   .scale button[aria-pressed=true] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
   .ends { display: flex; justify-content: space-between; color: var(--muted); font-size: .82rem; margin-top: 6px; }
-  .fact { font-size: 1.2rem; line-height: 1.5; padding: 22px 4px; min-height: 150px; }
+  .card-title { font-size: 1.25rem; margin: 2px 0 12px; }
+  .facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; min-height: 120px; }
+  .facts li { background: var(--bg2); border-radius: 12px; padding: 12px 14px; }
+  .facts .src { display: block; margin-top: 6px; font-size: .8rem; color: var(--muted); }
   .contact { display: flex; gap: 8px; } .contact input { flex: 1; font: inherit; color: var(--text); background: var(--bg2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
   /* chat */
   #chat { display: flex; flex-direction: column; height: calc(100dvh - 120px); min-height: 420px; padding: 0; overflow: hidden; }
@@ -185,7 +188,8 @@
   <section id="brief" class="card hidden" aria-live="polite">
     <div class="steps" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
     <p class="muted" id="card-count"></p>
-    <div class="fact" id="card-text"></div>
+    <h2 class="card-title" id="card-title"></h2>
+    <ul class="facts" id="card-facts"></ul>
     <div class="row"><button id="card-next" class="block">Next</button></div>
   </section>
 
@@ -333,9 +337,15 @@ $("chat-send").onclick = () => {
 };
 $("chat-done").onclick = () => handlers["/api/message"]({ ...session, done: true });
 let cards = [], cardAt = 0;
-function showCard() {
+function showCard() {  // the same fixed brochure for everyone: a themed card of facts, each with its named source
   $("card-count").textContent = `${cardAt + 1} of ${cards.length}`;
-  $("card-text").textContent = cards[cardAt];
+  $("card-title").textContent = cards[cardAt].title;
+  $("card-facts").replaceChildren(...cards[cardAt].facts.map((f) => {
+    const li = document.createElement("li"), src = document.createElement("span");
+    li.textContent = f.text; src.className = "src"; src.textContent = "Source: " + f.source;
+    li.appendChild(src); return li;
+  }));
+  window.scrollTo(0, 0);
   $("card-next").textContent = cardAt < cards.length - 1 ? "Next" : "I've finished reading";
 }
 $("card-next").onclick = async () => {

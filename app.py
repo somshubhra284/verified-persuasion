@@ -226,8 +226,8 @@ def reason(t: Turn):
             return {"follow_up": classes[-1].get("follow_up") or "If you had to name one reason, what would it be?"}
         log("end", reason="unclassified", bucket=bucket)
         return {"end": "unclassified"}
-    if arm == "brief":  # only the facts for their own reason(s), one card at a time on the page
-        return {"cards": [c["text"] for c in cv.brief_cards(bucket, cv.secondary_of(bucket, classes[-1].get("secondary")))]}
+    if arm == "brief":  # the bucket is recorded for analysis only; the brochure does not depend on it
+        return {"cards": cv.brochure()[0]}  # the same fixed brochure for everyone (capstone brief)
     reply = next((e for e in events if e["event"] == "assistant"), None)
     if reply:
         return {"reply": reply["text"], "sources": sources(reply["claim_ids"]), "last": bool(reply.get("done"))}
@@ -283,9 +283,7 @@ def message(t: Turn):
 def brief_done(t: Turn):
     events, log = load(t.pid, t.token)
     if not first(events, "brief_read"):
-        c = [e for e in events if e["event"] == "classify"][-1]
-        shown = cv.brief_cards(c["primary"], cv.secondary_of(c["primary"], c.get("secondary")))
-        log("brief_read", seconds=t.seconds or 0, cards=[x["id"] for x in shown])
+        log("brief_read", seconds=t.seconds or 0, brochure_sha=cv.brochure()[1])
     return {"ok": True}
 
 
@@ -368,9 +366,9 @@ def selfcheck():
         s2 = c.post("/api/start", json=ok).json()
         assert (s2["pid"], s2["arm"]) == ("P02", "brief")
         cards = c.post("/api/reason", json={**s2, "text": "claims get rejected"}).json()["cards"]
-        assert cards == [x["text"] for x in cv.brief_cards("B3")] and len(cards) <= cv.MAX_CARDS and "[C" not in "".join(cards)
+        assert cards == cv.brochure()[0] and len(cards) == 8  # same brochure whatever the reason (B3 here)
         c.post("/api/brief_done", json={**s2, "seconds": 95})
-        assert next(e for e in STORE.events("P02") if e["event"] == "brief_read")["cards"][0] == "C10"
+        assert next(e for e in STORE.events("P02") if e["event"] == "brief_read")["brochure_sha"] == cv.brochure()[1]
         c.post("/api/t1", json={**s2, "score": 7})
         assert evs("P02") == ["start", "t0", "reason", "classify", "brief_read", "t1"]
         # screened out and declined take S numbers, never P numbers
