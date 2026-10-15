@@ -37,7 +37,7 @@ Many working Indians rely on employer cover, a parent's policy, savings or a gov
 
 - The waiting period for a pre-existing condition you declare can be at most 3 years. [C11]
 - There is no longer a regulatory maximum age to buy health insurance, though an insurer can still decline an applicant. [C15]
-- Since Jan 2025, the regulator has capped yearly premium increases for policyholders over 60 at 10%. [C16]
+- Since Jan 2025, the regulator has capped yearly premium increases for policyholders aged 60 and over at 10%; a bigger rise needs prior consultation with the regulator. [C16]
 
 ## If you worry claims get rejected
 
@@ -46,8 +46,8 @@ Many working Indians rely on employer cover, a parent's policy, savings or a gov
 - The government says health claims are usually rejected under the policy's exclusion clauses, or because the treatment didn't need hospital admission. [C29]
 - After 5 years of continuous cover, an insurer can't reject a claim for non-disclosure or misrepresentation, except established fraud; policy exclusions still apply. [C12]
 - Insurers must decide cashless requests within 1 hour; from Aug 2024 to May 2025, 87% met that. [C14]
-- In 2024–25, about 4 in 10 health complaints taken to the Insurance Ombudsman were resolved in the policyholder's favour, as reported by Cafemutual. [C13]
-- When the Ombudsman issued a formal award on a health complaint in 2023–24, about 6 in 10 went for the policyholder. [C30]
+- In 2024–25, about 4 in 10 health complaints before the Insurance Ombudsman ended in a mediated settlement or a formal award for the policyholder. [C13]
+- When the Ombudsman issued a formal award on a health complaint in 2024–25, a little over half (about 56%) went for the policyholder. [C30]
 
 ## What cover costs now
 
@@ -72,10 +72,9 @@ Many working Indians rely on employer cover, a parent's policy, savings or a gov
 | C08, C12 | [IRDAI Master Circular on Health Insurance Business, 29 May 2024](https://irdai.gov.in/document-detail?documentId=4942918) |
 | C10, C21, C27 | [IRDAI Annual Report 2024–25](https://irdai.gov.in/document-detail?documentId=8375620) |
 | C11 | [Royal Sundaram notice on IRDAI's 2024 health regulations](https://royalsundaram.in/assets/Websiteupdate-Healthregulations.pdf) |
-| C13 | [Cafemutual, Jan 2026](https://cafemutual.com/news/industry/36635-41-of-health-insurance-complaints-were-resolved-in-favour-of-policyholders-in-fy25) |
 | C14 | [Lok Sabha Starred Question 20, 1 Dec 2025](https://eparlib.sansad.in/bitstream/123456789/3015516/1/AS20_AaaDVE.pdf) |
 | C15 | [IRDAI, as reported by Cafemutual](https://cafemutual.com/news/insurance/31889-no-age-limit-to-buy-a-health-plan-irdai) |
-| C16 | [IRDAI, as reported by Governance Now](https://www.governancenow.com/news/regular-story/irdai-caps-increase-in-insurance-premiums-for-senior-citizens-at-10) |
+| C16 | [IRDAI circular on senior-citizen premiums, 30 Jan 2025](https://irdai.gov.in/web/guest/document-detail?documentId=6639156) |
 | C17 | [Aon, 2026 Global Medical Trend Rates, India release, 11 Dec 2025](https://www.aon.com/apac/in-the-press/asia-newsroom/2025/india-outpaces-global-average-with-2026-medical-trend-at-11-5-percent-aon-reports) |
 | C18 | [National Health Accounts Estimates 2022–23, NHSRC/MoHFW](https://nhsrcindia.org/sites/default/files/2026-05/NHA%202022-23%20Report.pdf) |
 | C19 | [Department of Financial Services, GST exemption on individual insurance](https://financialservices.gov.in/node/3332) |
@@ -84,7 +83,7 @@ Many working Indians rely on employer cover, a parent's policy, savings or a gov
 | C23 | [National Health Authority press release, Sep 2024](https://nha.gov.in/img/resources/Press_Release.pdf) |
 | C26 | [Plum report, as reported by Outlook Money, Nov 2023](https://www.outlookmoney.com/personal-finance/company-healthcare-plans-not-so-popular-with-employees-few-companies-offer-comprehensive-plans-research) |
 | C29 | [Lok Sabha Unstarred Question 5816, 30 Mar 2026](https://taxguru.in/?p=1035064) |
-| C30 | [Council for Insurance Ombudsmen, Annual Report 2023–24](https://cioins.co.in/annualreports/AnnualReport2023-2024.pdf) |
+| C13, C30 | [Council for Insurance Ombudsmen, Annual Report 2024–25](https://cioins.co.in/annualreports/AnnualReport2024-2025.pdf) |
 | C32 | [Business Standard (Tata AIG sponsored), Aug 2025](https://www.business-standard.com/content/specials/how-long-can-a-child-stay-on-parents-health-insurance-policy-in-india-125081901561_1.html) |
 | C33 | [PM-JAY package rates, Nagaland CMHIS copy](https://cmhis.nagaland.gov.in/storage/pageFiles/381.pdf) |
 | C34 | [IndiaMedToday, on IRDAI health claims data](https://indiamedtoday.com/record-health-insurance-claims-settled-in-fy25-average-payout-per-claim-declines/) |

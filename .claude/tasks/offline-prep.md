@@ -95,7 +95,7 @@ Page refs below are PDF page numbers (printed page in brackets).
   - The brief's `brief_sha` changes again.
 - Installed `poppler` (brew), so the scanned PDFs (C13, C16) can now be rendered for checking.
 
-### Item 1, part 2: the scanned PDFs (15 Oct, after installing poppler) — PROPOSED, not applied
+### Item 1, part 2: the scanned PDFs (15 Oct, after installing poppler) — APPROVED and APPLIED, plus C30 → 2024–25
 Pages were read as images (`pdftoppm`; `pillow` was added to `.venv` for contact sheets and cropping, as a checking tool only).
 
 | Claim | Verdict | Evidence | Proposed change |
@@ -110,3 +110,20 @@ Knock-on if approved:
 - Gold rows g08 and g09 are real past outputs with their old attributions ("as reported by …"). They stay as they are: the judge rates content, not attribution wording.
 
 Optional, not proposed: the same table gives the 2024–25 formal-award split for health, 6,129 vs 4,898 (about 55% for the policyholder). C30 currently uses 2023–24 (about 6 in 10). Updating C30 to 2024–25 is Som's call.
+
+#### Applied 15 Oct (Som approved C13, C16 and the C30 update)
+- `data/ledger.json`:
+  - C13 and C16 as proposed.
+  - C30 now reads: "When the Insurance Ombudsman issued a formal award on a health complaint in 2024–25, a little over half (about 56%) went for the policyholder." Its figure is "Health only: 6,129 awards for complainant, 4,898 for insurer (about 56%); 9,418 mediated". Source: CIO AR 2024–25, Statement H2. C30 and C13 now come from the same year and the same table.
+- Both brief copies: the C13, C16 and C30 bullets are reworded.
+  - Sources: the C13 row (Cafemutual) is merged into the C30 row ("C13, C30" → CIO AR 2024–25), and the C16 row now links to the IRDAI circular.
+  - `brief_sha` changes.
+- `data/checker_gold.jsonl`:
+  - g27 and g32 are now the 2024–25 wording ("a little over half" / "about 56%"), still supported. They were our own variants, and keeping them at 2023–24 would have made them wrong.
+  - g31's note is updated. It stays unsupported (52% attached to health).
+- Ledger doc:
+  - claim rows for C13, C16 and C30
+  - the C30 caveat (all-lines 52% was 2023–24)
+  - the Sources list (all five documents now checked)
+  - a changelog row
+- Selfchecks pass. **All five primary documents are now checked; item 1 is done.**
