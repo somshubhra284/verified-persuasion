@@ -1,17 +1,23 @@
 """Score reason classifiers against reasons_testset.jsonl.
 
-  python classify_eval.py            # keyword baseline (no API, no deps)
-  python classify_eval.py --llm      # LLM classifier via any OpenAI-compatible API
+  python3 classify_eval.py                   # keyword baseline (no API, no deps)
+  .venv/bin/python classify_eval.py --llm    # LLM classifier via any OpenAI-compatible API
   add --heldout to either to score the harder held-out set instead
 
-LLM mode needs `pip install openai` and an API key. Defaults to Groq's free tier:
-  GROQ_API_KEY=...   [MODEL=llama-3.3-70b-versatile]   [BASE_URL=https://api.groq.com/openai/v1]
+LLM mode needs `openai` (installed in .venv) and an API key in .env or the environment. Defaults to Groq's free tier:
+  GROQ_API_KEY=...   [MODEL=openai/gpt-oss-120b]   [BASE_URL=https://api.groq.com/openai/v1]
 """
 import json, os, re, sys
 from collections import Counter
 from pathlib import Path
 
 HERE = Path(__file__).parent
+DEFAULT_MODEL = "openai/gpt-oss-120b"  # llama-3.3-70b-versatile was shut down on Groq free tier, 16 Aug 2026
+# ponytail: minimal .env reader (KEY=VALUE lines); real environment wins. python-dotenv if quoting is ever needed.
+for line in (HERE / ".env").read_text().splitlines() if (HERE / ".env").exists() else []:
+    if "=" in line and not line.lstrip().startswith("#"):
+        k, v = line.split("=", 1)
+        os.environ.setdefault(k.strip(), v.strip())
 BUCKETS = {f"B{i}" for i in range(8)}
 
 # ponytail: substring keywords with first-match-wins ordering. Ceiling: no negation or context ("not young").
@@ -44,15 +50,20 @@ def keyword_classify(text):
     return {"primary": ranked[0] if ranked else "B0", "secondary": ranked[1] if len(ranked) > 1 else None}
 
 
-def llm_classifier():
+def make_client():
     from openai import OpenAI
-    client = OpenAI(api_key=os.environ.get("GROQ_API_KEY") or os.environ["OPENAI_API_KEY"],
-                    base_url=os.environ.get("BASE_URL", "https://api.groq.com/openai/v1"))
-    model = os.environ.get("MODEL", "llama-3.3-70b-versatile")
+    return OpenAI(api_key=os.environ.get("GROQ_API_KEY") or os.environ["OPENAI_API_KEY"],
+                  base_url=os.environ.get("BASE_URL", "https://api.groq.com/openai/v1"),
+                  max_retries=4)  # SDK backs off on 429; free tier is ~8K tokens/min
+
+
+def llm_classifier():
+    client = make_client()
+    model = os.environ.get("MODEL", DEFAULT_MODEL)
     system = (HERE / "prompts" / "classifier_prompt.md").read_text()
 
     def classify(text):
-        r = client.chat.completions.create(model=model, temperature=0, messages=[
+        r = client.chat.completions.create(model=model, temperature=0, response_format={"type": "json_object"}, messages=[
             {"role": "system", "content": system}, {"role": "user", "content": f"Answer: {text}"}])
         raw = r.choices[0].message.content.strip()
         try:
@@ -100,5 +111,5 @@ if __name__ == "__main__":
     assert keyword_classify("benefits are solid")["primary"] == "B0"  # 'fit' must not match inside 'benefits'
 
     use_llm = "--llm" in sys.argv
-    print("Classifier:", "LLM " + os.environ.get("MODEL", "llama-3.3-70b-versatile") if use_llm else "keyword baseline")
+    print("Classifier:", "LLM " + os.environ.get("MODEL", DEFAULT_MODEL) if use_llm else "keyword baseline")
     evaluate(rows, llm_classifier() if use_llm else keyword_classify)
