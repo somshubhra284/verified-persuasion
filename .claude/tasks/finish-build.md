@@ -177,3 +177,5 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - FALSE FLAG g11 ("so most claims are not denied"; the borderline row, flagged in every run tonight).
 - FALSE FLAG **g41** (fresh: C03 stated plainly, "Nearly two in three urban hospital stays…"). Probably the new vague-quantity rule overreaching onto the claim's own wording. That's exactly the over-flagging the fresh supported rows were added to detect.
 - Trade-off measured: the new rule took recall from 15/16 to 19/19 but added a false flag. Every false flag over-counts unsupported claims, which works *against* the hypothesis (it's conservative). Stopped; options go to Som.
+### Narrow fix (Som chose: one fix, then one rerun; if it still fails only on false flags, switch to hand review)
+- The judge rule gains: "Wording that appears in the claim itself (its own 'about', 'nearly', 'most', '4 in 10') is not vague: it is supported." The examples don't use g41's phrase "two in three".
