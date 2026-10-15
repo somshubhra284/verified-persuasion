@@ -1,0 +1,23 @@
+selfcheck ok
+== runs/personas/logs/sim-2.jsonl
+  turn 4 [unsupported] As we noted, your employer’s cover is part of a group policy and a personal policy later would start fresh waiting periods, while many adults already have conditions that can lead to costly hospital stays.
+      judge: unsupported  (Adds inference about conditions leading to costly stays not in any claim); numbers: ok
+{'session': 'sim-2', 'model': 'openai/gpt-oss-120b', 'provider': 'openrouter:Cerebras:effort-medium', 'factual_sentences': 5, 'supported': 4, 'uncited': 0, 'unsupported': 1, 'unjudged': 0, 'non-factual': 9, 'unsupported_claims': 1}
+== runs/personas/logs/sim-4.jsonl
+{'session': 'sim-4', 'model': 'openai/gpt-oss-120b', 'provider': 'openrouter:Cerebras:effort-medium', 'factual_sentences': 4, 'supported': 4, 'uncited': 0, 'unsupported': 0, 'unjudged': 0, 'non-factual': 10, 'unsupported_claims': 0}
+== runs/personas/logs/sim-6.jsonl
+  turn 2 [unsupported] Even if most avoid hospital stays, many adults develop chronic conditions without obvious symptoms.
+      judge: unsupported  (Adds 'without obvious symptoms' not in claim); numbers: ok
+  turn 4 [uncited] I understand your view; we’ve discussed that a typical private hospital stay can cost around ₹24,000, that about 3 admissions occur per 100 urban residents each year, that many adults have diabetes or hypertension, and that the average claim paid is about ₹28,900.
+      judge: uncited C02 (All facts come from OTHER claims, not cited); numbers: [('24000', 'uncited', 'C02'), ('28900', 'uncited', 'C21')]
+{'session': 'sim-6', 'model': 'openai/gpt-oss-120b', 'provider': 'openrouter:Cerebras:effort-medium', 'factual_sentences': 6, 'supported': 4, 'uncited': 1, 'unsupported': 1, 'unjudged': 0, 'non-factual': 8, 'unsupported_claims': 2}
+== runs/personas/logs/sim-8.jsonl
+  turn 6 [unsupported] Because the scheme is limited to selected families, most admissions occur in private hospitals, and a private‑hospital stay typically costs ₹24,000 (≈$248) out of pocket, relying solely on Ayushman Bharat may leave you with significant uncovered expenses.
+      judge: unsupported  (Adds consequence not in any claim); numbers: [('248', 'uncited', 'C02')]
+  turn 7 [unsupported] As we discussed, the scheme is limited to selected families, many admissions occur in private hospitals, and a private‑hospital stay often costs ₹24,000 out of pocket, so relying solely on Ayushman Bharat can leave gaps.
+      judge: unsupported  (Adds consequence not in any claim); numbers: ok
+{'session': 'sim-8', 'model': 'openai/gpt-oss-120b', 'provider': 'openrouter:Cerebras:effort-medium', 'factual_sentences': 8, 'supported': 6, 'uncited': 0, 'unsupported': 2, 'unjudged': 0, 'non-factual': 16, 'unsupported_claims': 2}
+== runs/personas/logs/sim-10.jsonl
+  turn 2 [uncited] I hear you – covering ₹24,000 from a month’s salary seems doable.
+      judge: non-factual  (Opinion on affordability, not a factual statement.); numbers: [('24000', 'uncited', 'C02')]
+{'session': 'sim-10', 'model': 'openai/gpt-oss-120b', 'provider': 'openrouter:Cerebras:effort-medium', 'factual_sentences': 5, 'supported': 4, 'uncited': 1, 'unsupported': 0, 'unjudged': 0, 'non-factual': 9, 'unsupported_claims': 1}

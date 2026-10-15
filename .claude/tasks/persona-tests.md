@@ -70,3 +70,7 @@ Changing the chatbot or the brochure during the runs. Counting any sim as study 
 
 ## Change log
 - **Built:** sim mode in app.py (arm and label chosen, sim-N ids, screening applies, shares the try-out cap; selfcheck) and `sim.py` (a live-API driver: start/say/done/t1/show; tokens kept in the scratchpad).
+- **Ran (16 Oct):** all 10 personas on the live stack (sim-2 … sim-11; sim-1 was a declined probe). Every persona reply approved by Som; every T1 from Som. Simulated ΔT1: chatbot −0.4 (n=5), brochure −0.75 (n=4); SIM10 screened out at T0 5 before any LLM call.
+- **`sim.py`:** reads retry on Supabase HTTP 555 (seen twice mid-run).
+- **Stored:** `runs/personas/` — SIM01–SIM10.md (rendered from the logs + `notes.json`), README.md (summary table + 11 cross-persona findings), `logs/` (raw sim-2…sim-11 JSONL, checker `.check.jsonl` and `checker-output.txt`). Checker first pass on the 5 chatbot sims: 1, 0, 2, 2, 1 flags (SIM09's is a user echo).
+- **Open:** delete sim rows from Supabase (needs Som's OK); fixes proposed in README findings 1–10, to plan separately.

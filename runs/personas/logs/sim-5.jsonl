@@ -1,0 +1,6 @@
+{"ts": "2026-10-15T23:35:32", "pid": "sim-5", "mode": "sim", "text": null, "event": "start", "label": "SIM04"}
+{"ts": "2026-10-15T23:35:32", "age": 34, "arm": "brief", "pid": "sim-5", "text": null, "event": "t0", "score": 8}
+{"ts": "2026-10-15T23:35:33", "pid": "sim-5", "text": "I'm planning to buy one around 40, no point paying for 6 extra years now when nothing is going to happen.", "event": "reason"}
+{"ts": "2026-10-15T23:35:34", "pid": "sim-5", "text": "I'm planning to buy one around 40, no point paying for 6 extra years now when nothing is going to happen.", "event": "classify", "model": "openai/gpt-oss-120b", "primary": "B4", "provider": "openrouter:Cerebras:effort-medium", "secondary": null}
+{"ts": "2026-10-15T23:35:35", "pid": "sim-5", "text": null, "event": "brief_read", "seconds": 0, "brochure_sha": "4cb7a95c0db3"}
+{"ts": "2026-10-15T23:37:20", "pid": "sim-5", "text": null, "event": "t1", "score": 7}

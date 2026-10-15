@@ -1,0 +1,6 @@
+{"ts": "2026-10-15T23:28:54", "pid": "sim-3", "mode": "sim", "text": null, "event": "start", "label": "SIM02"}
+{"ts": "2026-10-15T23:28:54", "age": 24, "arm": "brief", "pid": "sim-3", "text": null, "event": "t0", "score": 8}
+{"ts": "2026-10-15T23:28:55", "pid": "sim-3", "text": "I'm on my dad's family health insurance, so I'm already covered. Papa handles all that.", "event": "reason"}
+{"ts": "2026-10-15T23:28:56", "pid": "sim-3", "text": "I'm on my dad's family health insurance, so I'm already covered. Papa handles all that.", "event": "classify", "model": "openai/gpt-oss-120b", "primary": "B7", "provider": "openrouter:Cerebras:effort-medium", "secondary": null}
+{"ts": "2026-10-15T23:28:56", "pid": "sim-3", "text": null, "event": "brief_read", "seconds": 0, "brochure_sha": "4cb7a95c0db3"}
+{"ts": "2026-10-15T23:30:49", "pid": "sim-3", "text": null, "event": "t1", "score": 6}

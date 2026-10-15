@@ -1,0 +1,6 @@
+{"ts": "2026-10-15T23:42:11", "pid": "sim-7", "mode": "sim", "text": null, "event": "start", "label": "SIM06"}
+{"ts": "2026-10-15T23:42:11", "age": 27, "arm": "brief", "pid": "sim-7", "text": null, "event": "t0", "score": 8}
+{"ts": "2026-10-15T23:42:12", "pid": "sim-7", "text": "I'm 27 and I've literally never been to a hospital. Plus freelance income is up and down, I can't commit to a yearly premium for something I won't use.", "event": "reason"}
+{"ts": "2026-10-15T23:42:13", "pid": "sim-7", "text": "I'm 27 and I've literally never been to a hospital. Plus freelance income is up and down, I can't commit to a yearly premium for something I won't use.", "event": "classify", "model": "openai/gpt-oss-120b", "primary": "B1", "provider": "openrouter:Cerebras:effort-medium", "secondary": "B5"}
+{"ts": "2026-10-15T23:42:13", "pid": "sim-7", "text": null, "event": "brief_read", "seconds": 0, "brochure_sha": "4cb7a95c0db3"}
+{"ts": "2026-10-15T23:43:21", "pid": "sim-7", "text": null, "event": "t1", "score": 8}

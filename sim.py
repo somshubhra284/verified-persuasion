@@ -31,7 +31,14 @@ def state():
 
 
 def events(pid):
-    return SupabaseStore(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SECRET_KEY"]).events(pid)
+    import time
+    for attempt in range(4):  # Supabase occasionally answers HTTP 555 on reads (seen twice on 16 Oct); retry
+        try:
+            return SupabaseStore(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SECRET_KEY"]).events(pid)
+        except Exception:
+            if attempt == 3:
+                raise
+            time.sleep(2 * (attempt + 1))
 
 
 def show_last(pid):
