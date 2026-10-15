@@ -209,3 +209,7 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - **Step 4: PASS** (structure). Both arms log as specified, `analyze.py` table OK. The system dry run had 1 add-on ("might not cover larger medical expenses"); the hand label is pending Som.
 - **Step 5: PASS.** Exact refusal 3/3, no add-ons on hand review. The checker made 2 false flags in fix-2. fix-3 crashed once (error not captured) and was rerun.
 - **Finding:** `premise` was null on the R2-mid "doubling" turn in 3/3 runs. The refusal came from the model's own flag, so fix 1 hasn't been observed working anywhere. The untested path is a false premise stated as a reason in a non-B0 bucket (e.g. the Hinglish h-50, which classifies B5).
+### Hand-label tooling (16 Oct)
+- `check_claims.py --review <pid>.check.jsonl`: an offline walk-through of every sentence. Enter keeps the checker's label; n/s/c/u overrides it, and an "unjudged" row needs a letter. Each row gets a `hand` label. The summary gains `hand_factual`, `hand_unsupported` and `checker_agreement` (flag vs no-flag, k/n).
+- `analyze.py` reports the **hand** count and checker agreement. An unreviewed session shows "unreviewed", never the checker's count.
+- Selfchecks cover both. Tested end to end on the system dry run (hand 1, agreement 6/6; Som confirmed the add-on label).

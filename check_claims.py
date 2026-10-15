@@ -3,6 +3,10 @@
   .venv/bin/python check_claims.py sessions/P01.jsonl [...]   # writes sessions/P01.check.jsonl
   .venv/bin/python check_claims.py --gold                     # score the checker on data/checker_gold.jsonl
   .venv/bin/python check_claims.py --selfcheck                # offline asserts, no API
+  .venv/bin/python check_claims.py --review sessions/P01.check.jsonl   # Som hand-labels every sentence (offline)
+
+Since 16 Oct the checker is a first pass: the hand labels from --review are the unsupported-claims metric,
+and the summary records how often the checker agreed with them.
 
 Layer 1 (deterministic): every number in a reply must appear in a cited claim's claim/figure/source.
 Layer 2 (LLM judge): every sentence is non-factual / supported / uncited / unsupported against the claims.
@@ -117,6 +121,27 @@ def check_session(path, client, model):
     return summary
 
 
+HAND_KEYS = {"n": "non-factual", "s": "supported", "c": "uncited", "u": "unsupported"}
+
+
+def review(path, ask=input):
+    """Hand review: every sentence gets a human label (Enter keeps the checker's). Adds 'hand' per row and hand totals."""
+    rows = [json.loads(l) for l in Path(path).read_text().splitlines()]
+    body, summary = rows[:-1], rows[-1]["summary"]
+    for r in body:
+        while True:
+            a = ask(f"\nturn {r['turn']}  cited {r['cited']}\n  {r['sentence']}\n  checker: {r['label']} ({r.get('why')})"
+                    "\n  Enter = keep, or n(on-factual) / s(upported) / c (uncited) / u(nsupported): ").strip().lower()
+            if a in HAND_KEYS or (a == "" and r["label"] in HAND_KEYS.values()):  # an 'unjudged' row needs a letter
+                r["hand"] = HAND_KEYS.get(a, r["label"])
+                break
+    flagged = lambda r: r["hand"] in ("uncited", "unsupported")
+    summary.update(hand_factual=sum(r["hand"] != "non-factual" for r in body), hand_unsupported=sum(map(flagged, body)),
+                   checker_agreement=f"{sum((r['label'] in FLAGS) == flagged(r) for r in body)}/{len(body)}")
+    Path(path).write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in body + [{"summary": summary}]))
+    return summary
+
+
 def score_gold(client, model):
     rows = [json.loads(l) for l in (HERE / "data" / "checker_gold.jsonl").read_text().splitlines() if l.strip()]
     missed, false_flags, exact = [], [], 0
@@ -159,13 +184,25 @@ def selfcheck():
             pin(bad, "Groq")(model="m"); raise AssertionError("pin let a wrong host/model through")
         except RuntimeError:
             pass
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        f = Path(d, "x.check.jsonl")
+        rows = [{"turn": 0, "cited": ["C10"], "sentence": s, "label": l} for s, l in
+                [("87% paid.", "supported"), ("So most are approved.", "supported"), ("Hi?", "non-factual"), ("x", "unjudged")]]
+        f.write_text("".join(json.dumps(r) + "\n" for r in rows + [{"summary": {"session": "x"}}]))
+        answers = iter(["", "u", "", "", "s"])  # the blank for the unjudged row is refused, then 's'
+        s = review(f, ask=lambda _: next(answers))
+        assert s["hand_unsupported"] == 1 and s["hand_factual"] == 3 and s["checker_agreement"] == "2/4", s
     print("selfcheck ok")
 
 
 if __name__ == "__main__":
     selfcheck()
     args = [a for a in sys.argv[1:] if a != "--selfcheck"]
-    if args:
+    if args[:1] == ["--review"]:
+        for p in args[1:]:
+            print(review(p))
+    elif args:
         client, model = make_client(), os.environ.get("MODEL", DEFAULT_MODEL)
         if args == ["--gold"]:
             score_gold(client, model)
