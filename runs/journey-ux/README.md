@@ -17,3 +17,14 @@ Setup: Cerebras, effort medium. 3 runs each (CLI with the 0–10 intake).
 | N2 | the diseases question answered with a related claim (e.g. C11) plus a question; never a bare refusal |
 
 Also: median reply latency < 5 s, and the add-ons hand-noted.
+
+## Results (16 Oct): all pass
+- **Every reply ≤ 1 claim and ≤ 4 sentences: 39/39.**
+- R1 3/3 (C10, no opener refusal, no 52%). R2mid 3/3 (exact refusal). R2B5 3/3 (refusal, premise caught). B2 3/3 (no false refusal). N1 3/3 (a B5 claim by reply 3). N2 3/3 (C11 plus a question).
+- Latency: median 1.0 s, max 2 s.
+- **Brief arm (Playwright, a B2 person):**
+  - 6 cards, all employer-cover facts (C06, C07, C08, C09, C26, C27), no tags.
+  - The log records `cards` and `seconds`.
+  - The end screen shows 8/10 → 5/10.
+  - The contact is stored in `contacts.ndjson` only (absent from the session log).
+- Observed, not pass/fail: R1 repeats C10 in all 3 turns, because the person keeps pushing the same point. The add-ons are milder with one fact per reply.

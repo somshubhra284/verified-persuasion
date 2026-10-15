@@ -74,3 +74,11 @@ Push (Render redeploys), create the `contacts` table through Supabase, then Som 
 The demo video and case study. Changes to the ledger. Removing the full brief file (it stays as the card source).
 
 ## Change log
+- **Built and verified (16 Oct):**
+  - `brief_cards()` in converse.py; the CLI brief arm shows cards.
+  - The app returns `cards`, logs `brief_read.cards`, validates 0–10, and `/api/t1` returns `{t0, t1}`.
+  - `/api/contact` writes to `contacts` (Supabase table created, RLS on) or `contacts.ndjson` locally.
+  - The prompt is one point per reply; `MAX_TURNS` 6. The page has a 0–10 button scale, cards, no chips, and the before→after + contact end screen.
+  - `export_sessions.py --contacts`. The reversal inputs are now 0–10.
+  - Re-validation all passes: see `runs/journey-ux/README.md`.
+  - Docs (CLAUDE.md, README, recruiting.md, learning log 15) record the design change.

@@ -128,6 +128,17 @@ This is a record of where the evidence changed the plan, the system or the hypot
   - Re-validated: a B5 claim within 2 replies 6/6; the diseases question answered with C11 6/6.
 - **Means:** the "bucket only" rule was a proxy for relevance. The person's own question is a stronger signal of relevance than the bucket, so the rule now follows it, and the log keeps it countable.
 
+## 15. The first real user found the design boring, and that changed the comparison
+- **Found:** Som took part as a test participant (brief arm). The full 32-fact sheet, with [C01] tags and a sources table, felt like information overload. The "copy your code" end screen felt irrelevant.
+- **Changed (Som, before any participant data):**
+  - The chat is one point per reply (an acknowledgement, one fact, a question), up to 6 turns.
+  - The brief arm is ≤ 6 fact cards *for the person's own reason*.
+  - The scale is 0–10.
+  - The end screen shows "X/10 → Y/10".
+  - The day-7 follow-up uses an optional, separately stored contact.
+  - Re-validated: 39/39 replies within one claim and ≤ 4 sentences, all safety checks pass, median 1.0 s.
+- **Means:** tailoring the brief removes the relevance contrast. The study now asks **"does dialogue beat static relevant facts?"**, a narrower but cleaner question. The original "relevance, not volume" question would need a generic-sheet arm; that's recorded here as the road not taken.
+
 ## To add
 - Day-2 results: the checker rescore, the classifier rescore, and the reversal runs after the fixes. Did fix 1 make R2-open refuse up front?
 - Pilot: how real reasons differed from my test sets.

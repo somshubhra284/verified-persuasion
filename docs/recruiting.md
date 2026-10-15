@@ -5,7 +5,7 @@ Copy and paste into WhatsApp or DMs. Don't mention the hypothesis, the two versi
 Arm assignment is fixed in CLAUDE.md: alternate in recruitment order (P01 system, P02 brief, …). Screened-out and declined people don't take a number.
 
 ## 1. Invite
-> Hi! I'm doing a small study for my course and need 10 minutes of your time. You'd chat with a computer program about one belief on health insurance, and give a 0–100 score before and after. A week later I'll send one short follow-up link (1 minute). Nothing to buy and no one will sell you anything. Your name isn't saved with your answers. Interested?
+> Hi! I'm doing a small study for my course and need 10 minutes of your time. You'd chat with a computer program about one belief on health insurance, and give a 0–10 score before and after. A week later I'll send one short follow-up link (1 minute). Nothing to buy and no one will sell you anything. Your name isn't saved with your answers. Interested?
 
 When they say yes (and pass the self-check): send **https://somshubhra-verified-persuasion.static.hf.space** and say "choose *I'm taking part in Som's study*". Pilot friends get **https://somshubhra-verified-persuasion.static.hf.space/?pilot=1** instead.
 
@@ -19,7 +19,7 @@ When they say yes (and pass the self-check): send **https://somshubhra-verified-
 If any is false: "Thanks so much! This one needs a narrow group, so I'll skip you this time." The program asks these again and logs any screen-out.
 
 ## 3. Consent (the same words the website shows; send beforehand so nothing is a surprise)
-> You're talking to a computer program, not a person. It wants to understand one belief: "I don't need a health insurance policy of my own." This is not financial advice. Your answers are saved without your name and used only for a study project. You can stop at any time by closing this page.
+> You're talking to a computer program, not a person. It wants to understand one belief: "I don't need a health insurance policy of my own." This is not financial advice. Your answers are saved without your name and used only for a study project. You can stop at any time by closing this page. At the end you can choose to leave a contact for a short 7-day follow-up; it's stored apart from your answers.
 
 A session that's stopped partway is saved and counted as incomplete.
 
@@ -32,7 +32,7 @@ A session that's stopped partway is saved and counted as incomplete.
   - Participants who pass screening get P01, P02, … in order, alternating system and brief arms, so the CLAUDE.md rule is applied automatically.
   - Screened-out or declined people get S01, S02, ….
   - Pilots get pilot-1 (system) and pilot-2 (brief). Try-outs get demo-N.
-  - At the end, participants see their code (e.g. **P03**) and are asked to send it to you. Write it in your recruiting log next to their name, so you know whom to message on day 7.
+  - At the end, participants see their before→after score and can **optionally** leave a phone/email for the day-7 question. It's stored in a separate `contacts` table, never with their answers.
 - **Before a session day:**
   - Open the link yourself about a minute early. The free server sleeps after 15 minutes idle and takes about a minute to wake.
   - Check your OpenRouter credit.
@@ -51,11 +51,11 @@ A session that's stopped partway is saved and counted as incomplete.
 **After the pilot only:** add both pilots' "why" answers to `data/reasons_heldout.jsonl` as new rows (h-51, h-52, …). Write your bucket label **before** looking at what the classifier said. If the pilot shows something that needs a change, change it before P01, never mid-study.
 
 ## 5. Day-7 message (T2)
-1. Make that participant's personal link: `.venv/bin/python export_sessions.py --t2-link P0N`
+1. List who left a contact, with each person's personal day-7 link: `.venv/bin/python export_sessions.py --contacts`
 2. Send it:
 > Hi! Last step from the study last week, 1 minute: <their link>
 
-The link opens a two-question page (the 0–100 score and "Did you look into a policy this week?"), and the answers are saved to their session. Each link only works for that participant's code.
+The link opens a two-question page (the 0–10 score and "Did you look into a policy this week?"), and the answers are saved to their session. Each link only works for that participant.
 
 ## 6. Debrief (after T2)
 > Thank you! What the study tested: whether a program that only states facts it can source, chosen to answer *your* reason, changes this belief as much as a fixed information sheet. Half the people got the program and half got the sheet. Neither is financial advice, and I'm not recommending any insurer. Happy to share the results when they're written up.

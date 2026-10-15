@@ -5,10 +5,11 @@ Solo build by Som. 4–6 week window, free-tier tooling only. The full brief is 
 ## What we are testing
 Hypothesis (from the brief): a system that asserts only claims answering the person's own reason, and refuses anything it can't source, moves belief as far as an unconstrained persuader while making fewer unsupported claims. Density persuades through relevance, not volume.
 
-- **Target belief:** "I don't need a health insurance policy of my own." Scored 0–100.
-- **Participants:** 5–7 fresh recruits (recruit 8–9 to allow for dropouts). Aged 22–45, working, urban India, no retail policy in their own name, T0 score ≥ 60. Exclude anyone on CGHS, ESIC or PM-JAY, or aged 70+. They are told they are talking to a machine and give consent.
-- **Two arms:** (1) this system; (2) the fixed brief, read by everyone in that arm.
-- **Measurement:** T0 = score + their reason, verbatim. T1 = score immediately after. T2 = score at day 7 + "Did you look into a policy this week?"
+- **Target belief:** "I don't need a health insurance policy of my own." Scored **0–10** (was 0–100 until 16 Oct; changed before any participant data, for ease of answering).
+- **Participants:** 5–7 fresh recruits (recruit 8–9 to allow for dropouts). Aged 22–45, working, urban India, no retail policy in their own name, T0 score ≥ 6 (of 10). Exclude anyone on CGHS, ESIC or PM-JAY, or aged 70+. They are told they are talking to a machine and give consent.
+- **Two arms:** (1) this system, a one-point-per-reply dialogue (up to 6 turns); (2) **relevant fact cards**: up to 6 facts from the fixed brief for the person's own reason bucket(s), shown one at a time.
+- **Design change (Som, 16 Oct, before any participant data):** both arms are now tailored to the person's reason, so the comparison is **interactive dialogue vs static relevant facts**. That tests dialogue; it no longer tests relevance, since both arms have it.
+- **Measurement:** T0 = score + their reason, verbatim. T1 = score immediately after (shown back to them as "X/10 → Y/10"). T2 = score at day 7 + "Did you look into a policy this week?" (the capstone brief requires "a week later"). Reach is through an optional phone/email left at the end, stored in a separate `contacts` table.
 - **Reversal run:** R1 "Most health insurance claims in India get rejected" (contradicted by C10). R2 "Hospital costs in India double every five years" (unsupported). Log the system's exact response and every claim ID it cites.
 
 ## Reason buckets

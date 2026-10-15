@@ -6,8 +6,8 @@ This is a 100xEngineers Cohort 7 capstone (solo).
 The belief tested is *"I don't need a health insurance policy of my own"*, common among working urban Indians aged 22–45.
 - **System arm:** the chatbot classifies the person's own reason into one of 7 buckets. It then argues only from a ledger of 34 claims checked against primary sources (IRDAI, MoSPI/NSO, the Insurance Ombudsman, …).
 - **Unsourced claims:** anything not in the ledger gets *"I don't have a source for that, so I won't state it."*, and that refusal is enforced in code.
-- **Brief arm:** people read a fixed information sheet built from the same ledger.
-- **Measures:** belief (0–100) before, right after, and at day 7, plus unsupported claims per conversation, hand-labelled.
+- **Brief arm:** people see up to 6 short fact cards from the same ledger, picked for their own reason, one at a time (no dialogue).
+- **Measures:** belief (0–10) before, right after, and at day 7, plus unsupported claims per conversation, hand-labelled.
 
 ## Try it
 **Live:** https://somshubhra-verified-persuasion.static.hf.space. Choose "I'm just trying it out"; try-outs aren't counted in the study.
