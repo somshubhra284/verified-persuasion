@@ -3,8 +3,9 @@
   .venv/bin/uvicorn app:app --reload        # local: events go to sessions/<pid>.jsonl, exactly like the CLI
   .venv/bin/python app.py --selfcheck       # offline: full flows with a fake model, no API
 
-On Vercel, set SUPABASE_URL + SUPABASE_SECRET_KEY (events go to the `events` table), SESSION_SECRET and
-OPENROUTER_API_KEY. Session state is rebuilt from each session's own event log, so nothing lives in memory
+Hosting: the page (public/index.html) is a static Hugging Face Space; this API runs on Render
+(`uvicorn app:app --host 0.0.0.0 --port $PORT`). On Render set SUPABASE_URL + SUPABASE_SECRET_KEY (events go to the
+`events` table), SESSION_SECRET, OPENROUTER_API_KEY and ALLOWED_ORIGIN (the Space's https://...hf.space origin). Session state is rebuilt from each session's own event log, so nothing lives in memory
 between requests. Event records have the same shape as converse.py's, so export_sessions.py + check_claims.py
 + analyze.py work unchanged.
 
@@ -15,8 +16,9 @@ day); `?pilot=1` gives pilot-N (alternating arms, never counted).
 import hashlib, hmac, json, os, sys, time, urllib.parse, urllib.request
 from pathlib import Path
 
-os.environ.setdefault("RATE_LIMIT_WAITS", "5,10,20,30")  # keeps one request under Vercel's 300 s function limit
+os.environ.setdefault("RATE_LIMIT_WAITS", "5,10,20,30")  # keeps one request under ~2 min, so the page doesn't look stuck
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from openai import RateLimitError
@@ -25,7 +27,7 @@ from classify_eval import HERE, DEFAULT_MODEL, PROVIDER_TAG, make_client, llm_cl
 
 MODEL = os.environ.get("MODEL", DEFAULT_MODEL)
 DEMO_CAP = int(os.environ.get("DEMO_DAILY_CAP", "40"))
-SECRET = os.environ.get("SESSION_SECRET") or ("" if os.environ.get("VERCEL") else "dev-secret")
+SECRET = os.environ.get("SESSION_SECRET") or ("" if os.environ.get("RENDER") else "dev-secret")
 BRIEF = (HERE / "data" / "fixed_brief.md").read_text()
 
 
@@ -79,6 +81,10 @@ class SupabaseStore:
 STORE = (SupabaseStore(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SECRET_KEY"])
          if os.environ.get("SUPABASE_URL") else FileStore(os.environ.get("SESSIONS_DIR", HERE / "sessions")))
 app = FastAPI(title="Verified Persuasion")
+# The page lives on Hugging Face Spaces and calls this API on Render: allow only that origin (comma-separated list).
+ALLOWED = [o.strip() for o in os.environ.get("ALLOWED_ORIGIN", "").split(",") if o.strip()]
+if ALLOWED:
+    app.add_middleware(CORSMiddleware, allow_origins=ALLOWED, allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
 
 def token(pid):
@@ -137,6 +143,12 @@ class Turn(BaseModel):
 @app.get("/")
 def index():
     return FileResponse(HERE / "public" / "index.html")
+
+
+@app.get("/api/health")
+def health():
+    """Called when the page loads, so a sleeping free Render instance starts waking while the person reads."""
+    return {"ok": True}
 
 
 @app.post("/api/start")
@@ -307,7 +319,7 @@ def selfcheck():
         assert c.post("/api/t1", json={**s, "token": "x", "score": 1}).status_code == 403
         assert c.post("/api/t2", json={**s, "score": 40, "looked": "yes"}).json() == {"ok": True}
         assert evs("P01")[-1] == "t2"
-        assert c.get("/").status_code == 200
+        assert c.get("/").status_code == 200 and c.get("/api/health").json() == {"ok": True}
     print("selfcheck ok")
 
 

@@ -108,3 +108,12 @@ Steps, one at a time with Som:
 6. HF Space plus upload.
 7. End-to-end test on the live links.
 - **Step 1 decisions (Som):** a new Supabase project `verified-persuasion` in ap-south-1. Render in Singapore. Names `verified-persuasion` everywhere. Som already has HF and Render accounts.
+- **Step 2 done:**
+  - Supabase project `verified-persuasion` (ref `ykireedojkbfucxkjcxp`, ap-south-1, created at $0).
+  - Table `public.events` (id identity, pid, ts text, event, data jsonb, created_at), indexed on pid and (event, pid). RLS is on with no policies.
+  - The docs confirm the `apikey` + `Authorization: Bearer` headers that `SupabaseStore` sends.
+- **Step 3 done:**
+  - CORS limited to `ALLOWED_ORIGIN` (tested: the allowed origin is echoed back, others get nothing).
+  - `GET /api/health`.
+  - The page uses `RENDER_API` (https://verified-persuasion.onrender.com) when served from hf.space or huggingface.co, else same-origin. It pings health on load and says "Starting up the server…" until the first response.
+  - `requirements.txt` gains uvicorn. `SESSION_SECRET` is required when `RENDER` is set.
