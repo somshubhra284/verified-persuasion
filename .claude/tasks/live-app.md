@@ -119,3 +119,4 @@ Steps, one at a time with Som:
   - `requirements.txt` gains uvicorn. `SESSION_SECRET` is required when `RENDER` is set.
 - **Premise-rule fix verified:** B2 9/9 no false refusal. R2-B5 3/3 refused by code (fix 1 observed working). Learning log entry 12. Latency: first reply 5–60 s (median ~47 s), classify 8–20 s.
 - **Step 5a done:** the Supabase secret key is in .env, and a local write+read round trip passed. `SupabaseStore` uses the certifi CA bundle, because python.org macOS builds lack root certificates. The test row was deleted.
+- **Step 5b, first Render deploy failed:** `certifi` came only from dev-only httpx, so the clean install crashed at import. It's now pinned in requirements.txt. Render startup was reproduced in a clean venv: /api/health 200.
