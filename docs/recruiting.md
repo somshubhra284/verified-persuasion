@@ -36,12 +36,12 @@ A session that's stopped partway is saved and counted as incomplete.
 - **Before a session day:**
   - Open the link yourself about a minute early. The free server sleeps after 15 minutes idle and takes about a minute to wake.
   - Check your OpenRouter credit.
-- **Replies take 5–60 seconds;** the page says so.
+- **Replies take about 1–5 seconds**, longer only on the very first request after the server has slept.
 - **Stack:**
   - page on Hugging Face Spaces
   - API on Render (https://verified-persuasion-f0vv.onrender.com)
   - data in Supabase (`events` table)
-  - model `openai/gpt-oss-120b` via OpenRouter → DeepInfra, effort medium
+  - model `openai/gpt-oss-120b` via OpenRouter → Cerebras, effort medium
 
 **After sessions (on your laptop):**
 1. `.venv/bin/python export_sessions.py` copies all sessions from Supabase into `sessions/`.

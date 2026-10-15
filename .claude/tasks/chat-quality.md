@@ -90,3 +90,7 @@ The demo video and case study. Changes to the ledger. Tuning away the add-ons (t
 - Re-validation criteria are written in `runs/chat-quality/README.md`.
 - **Re-validation on Cerebras:** see `runs/chat-quality/README.md`. Everything passes after the history-encoding fix; median latency 1.0 s. The duplicate-refusal cleanup was added in code.
 - **Store selection fix:** local UI tests had written demo-2…5 to the live Supabase (the .env Supabase keys won over SESSIONS_DIR). An explicit `SESSIONS_DIR` now always wins. Som's own test session P01 (DeepInfra, unfinished) is in the live DB: ask before deleting.
+- **Deployed and verified (16 Oct):**
+  - Som uploaded the new `index.html` to the Space.
+  - A live try-out on the Space link showed the new UI, Cerebras replies with source chips, and the diseases question answered with C11 plus a question.
+  - With Som's OK, all test data was deleted from Supabase (P01 = Som's earlier test, plus demo-1…6 and the final live try-out). The study starts clean at P01.
