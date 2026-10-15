@@ -97,3 +97,4 @@ The demo video and case study. Ledger edits (C05 stays filed under B1; the plan 
   - `/api/t1` returns no scores, and the end screen shows none.
   - Som's hand-review feedback is folded in (C11 attribution, the C08 Inference, the C07 add-on, the migrating question, the missed stated reasons).
 - **Re-validation took 4 rounds (see `runs/argument-flow/README.md`). The final version passes every row**, 0 violations in 87 replies, median 1.0 s.
+- **Deployed and verified live (16 Oct):** Som re-uploaded index.html. A live API test: the first reply is C06 (employer cover); 'no pre-existing diseases' → C05; `/api/t1` returns {ok: true}, so no scores are shown. Test data deleted (P03 = Som's test, demo-1). The DB is empty (0 events, 0 contacts), ready for the pilot.
