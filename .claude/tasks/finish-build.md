@@ -123,3 +123,4 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - Fixed brief (Claude Docs): removed the C25 premium bullet and its Sources row, so Docs now matches `data/fixed_brief.md` (that file is unchanged, so `brief_sha` is unchanged).
 - Selfchecks: converse, check_claims and analyze all pass.
 - Ledger doc bucket table: B2 "C06–C09, C25–C27" → "C06–C09, C26, C27 (C25 on hold)"; B4 "C08, C11, C15, C16, C25" → "C08, C11, C15, C16 (C25 on hold)", following the existing "(C31 on hold)" style.
+- Ledger doc bucket table, B4 "What actually needs answering": "Waiting periods, the moratorium clock, and how premiums rise with age" → "Waiting periods, underwriting when buying later, and the cap on premium rises after 60", to match B4's claims (C08, C11, C15, C16). The moratorium (C12) is B3-only, and nothing in B4 covers premiums rising with age now that C25 is on Hold.
