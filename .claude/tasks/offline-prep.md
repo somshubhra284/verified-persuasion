@@ -64,7 +64,7 @@ All five are in `sources/` (gitignored). Each was checked to be the right docume
 - The two scanned files need page images to verify. `sips` renders only page 1, so use `brew install poppler` (which also lets the Read tool show PDF pages).
 - Next: verify each claim against its PDF and propose ledger changes for Som's approval.
 
-### Item 1: verification of the text-readable PDFs (15 Oct) — PROPOSED, not applied
+### Item 1: verification of the text-readable PDFs (15 Oct) — APPROVED and APPLIED (see below)
 Also downloaded `sources/IRDAI-Master-Circular-Health-29-May-2024-Annexures.pdf` (46 pp), for Annexure-6, the list of circulars it repeals.
 Page refs below are PDF page numbers (printed page in brackets).
 
@@ -78,3 +78,14 @@ Page refs below are PDF page numbers (printed page in brackets).
 | C12 | Core confirmed; two figure details unsourced | MC para 13, p.8: not contestable on non-disclosure/misrepresentation, except established fraud, after "60 months of continuous coverage"; ported/migrated credits count. "(was 96)" and "on the original sum insured" are not in it. | Status → Primary; figure → "60 months of continuous coverage; ported and migrated credits count". Claim text unchanged ("exclusions still apply" follows because para 13 only bars non-disclosure challenges). |
 | C03 | Confirmed | NSS Report 596, p.47 [21], section 2.3.2: hospitalisation cases (excluding childbirth), private hospital incl. govt-empanelled: urban 64.6%, rural 57.9%. | Status → Primary; source → NSS Report 596, section 2.3.2. care: "Excludes childbirth; private includes government-empanelled hospitals." |
 | C28 | Confirmed | NSS Report 596, p.50 [24]: any scheme, urban 19.1 (2017–18) → 44.3 (2025); rural 14.1 → 47.4. | No change (already Primary via the press note); optionally add the report as a second source. |
+
+#### Applied 15 Oct (Som approved; C10's FY24 "down from 11%" dropped, per Claude's recommendation, since Som didn't choose)
+- `data/ledger.json`: every change in the table above. Edited field by field, because the file is hand-formatted. C28 is unchanged.
+- `data/fixed_brief.md` and the Claude Docs brief now have the same four bullets reworded (C03, C10, C21, C27). The C03, C08/C12 and C10/C21/C27 source links point to the primaries, and the separate C27 sources row was merged into the C10/C21 row. **`brief_sha` changes**: no participant has seen the old brief yet.
+- `data/checker_gold.jsonl` g22: the sentence now says "lives covered … were under individually bought policies", to match C27's new wording. The label (supported) is unchanged.
+- Ledger doc (Claude Docs):
+  - The claim table rows for C03, C07, C08, C10, C12, C21 and C27 are updated.
+  - The Sources "still missing" list now shows the status of each of the five documents.
+  - There's a new changelog row.
+- Selfchecks pass.
+- Still to do: C13 (CIO 2024–25) and C16 (senior-citizen circular). Both are scans and need `brew install poppler` to render the pages.
