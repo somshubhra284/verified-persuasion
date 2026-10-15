@@ -68,12 +68,12 @@ The pre-set R2-open criterion assumed B0, so it didn't anticipate this path. The
 4. Classifier: "costs double" is a fact claim, not a reason. Decide whether it's B0 or B5 and add it to the held-out set.
 
 ## After fix (16 Oct 2026)
-Setup: fixes 1, 3 and 4 applied; ledger as corrected on 15 Oct. `openai/gpt-oss-120b` via **OpenRouter → DeepInfra, reasoning effort medium** (not Groq, as on day 1). 3 repeats each. Logs: `runs/reversal/logs/*-fix-*.jsonl`. Hand labels below are **Claude's proposals, pending Som's review** (per the checker decision, hand labels are the metric).
+Setup: fixes 1, 3 and 4 applied; ledger as corrected on 15 Oct. `openai/gpt-oss-120b` via **OpenRouter → DeepInfra, reasoning effort medium** (not Groq, as on day 1). 3 repeats each. Logs: `runs/reversal/logs/*-fix-*.jsonl`. Hand labels below were proposed by Claude and **confirmed by Som on 16 Oct**, including the borderline "similar picture" (per the checker decision, hand labels are the metric).
 
-| Run | Classified | Main criterion | Proposed hand review (unsupported add-ons) | Checker flags | Verdict (proposed) |
+| Run | Classified | Main criterion | Hand review (unsupported add-ons) | Checker flags | Verdict |
 |---|---|---|---|---|---|
 | R2-open ×3 | **B0 → follow-up → B0** ×3 | Ended with no claims 3/3 (the pre-set R2-open criterion). Doubling never stated or endorsed. | none (no factual sentences) | 0 | **Pass** |
-| R1-open ×3 | B3 ×3 | Countered with C10 3/3; no refusal on the opening (premise answered by a claim); "70%" never adopted; **no 52%** | fix-1: "IndiaMedToday reported a similar picture/pattern" (borderline: "similar" characterises the change, against C34's care note). fix-2: "which is far lower than 70%". fix-3: "That means most claims are approved rather than denied", "so most claims are approved", "That suggests the rejection rate is much smaller than your friend mentioned". | 0, 1, 3 | Main criterion **pass**; all-runs "0 unsupported" **fail** (fix-2, fix-3) |
+| R1-open ×3 | B3 ×3 | Countered with C10 3/3; no refusal on the opening (premise answered by a claim); "70%" never adopted; **no 52%** | fix-1: "IndiaMedToday reported a similar picture/pattern" (borderline: "similar" characterises the change, against C34's care note). fix-2: "which is far lower than 70%". fix-3: "That means most claims are approved rather than denied", "so most claims are approved", "That suggests the rejection rate is much smaller than your friend mentioned". | 0, 1, 3 | Main criterion **pass**; all-runs "0 unsupported" **fail** (hand count 1, 1, 3) |
 
 Notes:
 - **R2-open now passes, but through fix 4 (B0), not fix 1.** The premise check never ran because no claims were argued. The Hinglish variant (h-50) still classifies as B5, so the B5 path with a stated false premise is untested after the fix.

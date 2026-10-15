@@ -200,3 +200,7 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 ### Step 1b: classifier held-out rescore (DeepInfra, effort medium) — **PASS**
 - Primary 49/50 (98%), secondary 7/7, 0 unneeded follow-ups, 1 missed follow-up. The bar is ≥ 90% and ≤ 2 wrong.
 - Fix 4: h-49 (the English R2 sentence) → B0 ✓. **h-50 (Hinglish variant) → B5 ✗**. A bare fact in Hinglish still reads as a cost reason; fix 1 (the premise check) has to catch that path.
+### Step 2: after-fix reversal runs (DeepInfra, effort medium)
+- **R2-open: PASS 3/3**, via fix 4: classified B0, then the follow-up, then B0 again, ending with no claims. Fix 1 was never exercised. The Hinglish B5 path is untested.
+- **R1-open:** main criterion PASS 3/3 (C10, no refusal, no 70%, no 52%). All-runs "0 unsupported" **FAIL**. Som confirmed the hand labels on 16 Oct: unsupported add-ons per run = 1 ("similar picture", borderline), 1 ("far lower than 70%"), 3 ("that means / so most claims are approved", "that suggests …"). The checker flagged 0, 1 and 3, so it missed the borderline one.
+- `premise_claim` is now logged (it wasn't during these runs).
