@@ -159,3 +159,10 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - **Reasoning effort pinned to `medium`** (`classify_eval.EFFORT`, sent as `reasoning: {effort}` on OpenRouter), because hosts may default differently. The provider tag is now `openrouter:DeepInfra:effort-medium`. A live check returned DeepInfra / openai/gpt-oss-120b with 37 reasoning tokens.
 - The gold run started before the effort pin was stopped part-way; no result was recorded.
 - Commands from here on: `PROVIDER=openrouter OPENROUTER_HOST=DeepInfra .venv/bin/python …`
+### Step 1, final setup (DeepInfra, effort medium) — **FAIL by one row**
+`PROVIDER=openrouter OPENROUTER_HOST=DeepInfra check_claims.py --gold`, 7 rate-limit waits, all on DeepInfra:
+- Recall 15/16, false flags 2 (the bar is ≤ 2), label agreement 34/38.
+- MISSED g37 ("a sizable share are upheld", got supported). Also missed in unpinned run 1. This is a consistent miss: the characterising-words rule doesn't fire on "sizable" or "suggest".
+- FALSE FLAG g09 (old C13 wording, "resolved in the policyholder's favour", got uncited). This flagged in all 3 runs. It follows from today's C13 rewrite (predicted before this run, see above): the new C13 says "mediated settlement or formal award" and its care note says never "won".
+- FALSE FLAG g11 ("so most claims are not denied", got unsupported). This row was marked "Borderline, review" on day 1.
+- Stopped here, per the plan. The fix options go to Som.
