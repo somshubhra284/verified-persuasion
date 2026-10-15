@@ -45,6 +45,7 @@ The human-readable versions live in Claude Docs: the belief spec and ledger (wit
 - Conversation loop built and dry-run (`converse.py` + `prompts/conversation_prompt.md`; plan and change log in `.claude/tasks/conversation-loop.md`). B3 and B0 are clean; the exact refusal and the disclaimer are enforced in code. Known leak in B2: a reply used C08's content while citing only C06/C09, and Inference claims often lack a named source. The step-3 checker must catch content-vs-cited-ID mismatches.
 - Claim checker (`check_claims.py`: numbers check + LLM judge) **passes its pre-set bar on `data/checker_gold.jsonl`**: 12/12 flagged sentences caught, 2 false flags (bar ≤ 2). Both false flags over-count: a user-echoed number ("5 lakh") and a restating "so most claims are not denied". Dry runs: B2 has 1 real leak (C08 content cited as C06/C09), B3 has 0. Plan and log: `.claude/tasks/claim-checker.md`.
 - C25 set to Hold on 15 Oct (quotes premiums, against the hard rules); it leaves B2 and B4. Mirror this in the Claude Docs ledger changelog.
+- Reversal runs (15 Oct; `docs/reversal-runs.md`, logs in `runs/reversal/`): R1 countered with C10 3/3. R2 mid-conversation got the exact refusal 3/3. **R2 as the opening reason failed 3/3**: it was classified B5, never refused, and C17 was spun into "rapid cost growth". All 3 R1 runs said "52% of health complaints" (C30's all-lines figure; health is 6 in 10), and the checker missed it. Fixes are proposed in the doc, not applied. The R2-mid checker counts are pending (Groq daily limit).
 - Five primary documents still need manual download (IRDAI and Ombudsman sites block bots). The list is in the Sources section of the ledger doc.
 
 ## Next steps, in order
@@ -58,4 +59,5 @@ The human-readable versions live in Claude Docs: the belief spec and ledger (wit
 - Show money in both INR and USD (≈ ₹96.8 per $1, rate as of 10 Oct 2026).
 - Keep it small: the brief says one conversation that moved a real belief beats six components without receipts.
 - API key lives in `.env` (never commit it; scripts read it themselves). Default model `openai/gpt-oss-120b` on Groq's free tier. Use `.venv/bin/python` (`python` isn't on PATH).
+- Groq free tier: 200K tokens/day (rolling). The 9 reversal runs plus checks used about a day's budget. Plan participant sessions and checker runs on separate days if needed.
 - Commands: `.venv/bin/python classify_eval.py [--heldout] [--llm]` · `.venv/bin/python converse.py <pid> [--t2]` · `converse.py --selfcheck` · `.venv/bin/python check_claims.py sessions/<pid>.jsonl` · `check_claims.py --gold`
