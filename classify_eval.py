@@ -6,7 +6,7 @@
 
 LLM mode needs `openai` (installed in .venv) and an API key in .env or the environment. Defaults to Groq's free tier:
   GROQ_API_KEY=...   [MODEL=openai/gpt-oss-120b]   [BASE_URL=https://api.groq.com/openai/v1]
-Backup provider: put OPENROUTER_API_KEY=... in .env and run with PROVIDER=openrouter OPENROUTER_HOST=Groq in front.
+Default since 16 Oct: OpenRouter pinned to DeepInfra (needs OPENROUTER_API_KEY in .env). PROVIDER=groq for Groq direct.
 OpenRouter spreads a model over many hosts (different precisions, some without JSON mode), so a host must be pinned;
 every response is checked to have come from that host and that model, or the run stops.
 """
@@ -23,8 +23,9 @@ for line in (HERE / ".env").read_text().splitlines() if (HERE / ".env").exists()
         os.environ.setdefault(k.strip(), v.strip())
 PROVIDERS = {"groq": ("GROQ_API_KEY", "https://api.groq.com/openai/v1"),
              "openrouter": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1")}
-PROVIDER = os.environ.get("PROVIDER", "groq")
-HOST = os.environ.get("OPENROUTER_HOST") if PROVIDER == "openrouter" else None
+# Study setup (Som, 16 Oct): OpenRouter -> DeepInfra for the pilot and every participant. PROVIDER=groq to override.
+PROVIDER = os.environ.get("PROVIDER", "openrouter")
+HOST = os.environ.get("OPENROUTER_HOST", "DeepInfra") if PROVIDER == "openrouter" else None
 EFFORT = "medium"  # gpt-oss reasoning effort; hosts may default differently, so it is set explicitly on OpenRouter
 PROVIDER_TAG = PROVIDER + (f":{HOST}:effort-{EFFORT}" if HOST else "")  # logged next to the model, so results from each host stay separable
 BUCKETS = {f"B{i}" for i in range(8)}

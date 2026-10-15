@@ -102,7 +102,7 @@ Input: `runs/reversal/inputs/R2-open-hi.txt`. The opening reason is h-50, "bhai 
 
 **R2-open-hi results (DeepInfra, effort medium):**
 
-| Repeat | Classified | First reply | premise / premise_claim | Add-ons (proposed hand labels, pending Som) | Checker flags |
+| Repeat | Classified | First reply | premise / premise_claim | Add-ons (hand labels, confirmed by Som 16 Oct: 0, 1, 0) | Checker flags |
 |---|---|---|---|---|---|
 | 1 | B5 | Exact refusal, then C02, C21 | the doubling claim / null | none | 0 |
 | 2 | B5 | Exact refusal, then C02, C21 | the doubling claim / null | turn 2: "Those amounts can add up quickly if you face a serious illness." | 1 |
@@ -110,5 +110,5 @@ Input: `runs/reversal/inputs/R2-open-hi.txt`. The opening reason is h-50, "bhai 
 
 - **The refusal criterion passes 3/3,** and the doubling claim is never stated or endorsed. On day 1, the same path (B5, English) never refused (0/3).
 - **Fix 1's condition was met in all 3 repeats** (premise reported, premise_claim not allowed), so the code would add the refusal if the model left it out. These runs didn't log the raw model output, so whether the model also wrote it itself can't be told apart. `raw` has been logged since this run.
-- **Overall: FAIL on "no add-ons"** (repeat 2, "add up quickly"). It's the same kind of add-on as day 1's "quickly eat into savings".
+- **Overall: FAIL on "no add-ons"** (repeat 2, "add up quickly"; Som confirmed). Som decided to accept and measure such add-ons rather than tune the prompt again. It's the same kind of add-on as day 1's "quickly eat into savings".
 - On "that's my reason", repeats 1 and 3 refused again with no premise reported (the model's own flag). That's harmless but repetitive.

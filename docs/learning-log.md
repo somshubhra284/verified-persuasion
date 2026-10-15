@@ -89,6 +89,15 @@ This is a record of where the evidence changed the plan, the system or the hypot
 - **Changed:** the checker became a first pass. Every factual sentence in the system arm is labelled by hand, and those labels are the metric. Checker-vs-hand agreement is reported. This is a recorded change from the bar set beforehand.
 - **Means:** an LLM judge is useful for screening, but on its own it wasn't reliable enough to be the measurement. Small n makes full hand review affordable here; at larger scale it wouldn't be.
 
+## 11. The refusal now holds where it failed, but persuasive add-ons persist
+- **Expected:** fix 1 (report the premise, and the code adds the refusal) would make a false premise stated as the reason get refused.
+- **Found** (after-fix runs on DeepInfra, effort medium):
+  - The English R2 opener now classifies B0 and the session ends with no claims (fix 4).
+  - The Hinglish version still classifies B5, and there the refusal came first in **3/3** runs with the premise reported (day 1, same path: 0/3).
+  - But small persuasive add-ons kept appearing across scripts: "that means most claims are approved", "far lower than 70%", "add up quickly". They appeared despite a prompt rule against them.
+- **Changed:** nothing in the prompt. These add-ons are accepted and measured by hand review, because a prompt rule already failed to stop them.
+- **Means:** the constraint controls *which facts* are stated. It doesn't fully control the *framing around* them. That's the part of the "fewer unsupported claims" comparison the hypothesis has to survive.
+
 ## To add
 - Day-2 results: the checker rescore, the classifier rescore, and the reversal runs after the fixes. Did fix 1 make R2-open refuse up front?
 - Pilot: how real reasons differed from my test sets.

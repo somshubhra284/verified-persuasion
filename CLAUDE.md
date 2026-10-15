@@ -62,20 +62,22 @@ The human-readable versions live in Claude Docs: the belief spec and ledger (wit
   - R2-mid PASS 3/3 (exact refusal, no add-ons).
   - Both arms dry-run OK.
   - **Fix 1 not yet observed working:** `premise` stays null when the false premise is phrased as a question, and R2-open never reached it.
-  - Open: hand-label tooling for the metric; an h-50-style B5 premise test; the add-ons on C10 ("that means …").
+  - Then: hand-review tooling built (`--review`). R2-open-hi (Hinglish, B5): refusal 3/3 with premise reported (fix 1's condition met; day 1 was 0/3), and 1 add-on ("add up quickly"; Som-confirmed hand labels 0, 1, 0).
+  - **Decision (Som, 16 Oct):** persuasive add-ons ("that means…", "quickly") are accepted and **measured**, not tuned away; they're what the hand-reviewed metric counts.
 
 ## Next steps, in order
 1. ~~Run the LLM classifier~~ (done, see Status).
 2. ~~Conversation loop~~ (built and dry-run, see Status).
 3. ~~Post-hoc checker~~ (done, see Status). Optional: give the judge the user's words to fix echo false flags, then rescore on gold.
-4. ~~Reversal runs~~ (done; after-fix reruns in the day-2 test plan). Run `docs/test-plan-day2.md`. Then pilot with 1–2 friends (one per arm) and add their real answers to the held-out set.
-5. Run participants and collect T0/T1/T2 scores. Write up honestly, including a null result. Keep a log of where evidence changed the hypothesis, since the brief's Learning criterion rewards it.
+4. ~~Reversal runs and day-2 tests~~ (done 16 Oct; see Status).
+5. **Pilot next:** `pilot-1` (system) and `pilot-2` (brief), following `docs/recruiting.md` §4. Add their "why" answers to the held-out set (label first). Fix anything before P01.
+6. Run participants and collect T0/T1/T2 scores. Hand-review every system-arm session (`--review`). Write up honestly, including a null result. Keep a log of where evidence changed the hypothesis, since the brief's Learning criterion rewards it.
 
 ## Conventions
 - Show money in both INR and USD (≈ ₹96.8 per $1, rate as of 10 Oct 2026).
 - Keep it small: the brief says one conversation that moved a real belief beats six components without receipts.
 - API key lives in `.env` (never commit it; scripts read it themselves). Default model `openai/gpt-oss-120b` on Groq's free tier. Use `.venv/bin/python` (`python` isn't on PATH).
-- Backup provider: put `OPENROUTER_API_KEY` in `.env` and prefix any command with `PROVIDER=openrouter OPENROUTER_HOST=DeepInfra` (day-2 tests ran on DeepInfra). The code pins that host, sets reasoning effort to medium, retries 429s on the same host, and stops if any other host or model answers. Every log records `provider`; don't pool results across providers without saying so.
+- **Study provider (Som, 16 Oct): OpenRouter → DeepInfra, reasoning effort medium, for the pilot and every participant.** This is the code default (needs `OPENROUTER_API_KEY` in `.env`); `PROVIDER=groq` overrides it. The code pins the host, retries 429s on the same host, and stops if any other host or model answers. `analyze.py` warns if sessions ran on different providers. Every log records `provider`; don't pool results across providers without saying so.
 - Groq free tier: 200K tokens/day (rolling). The 9 reversal runs plus checks used about a day's budget. Plan participant sessions and checker runs on separate days if needed.
-- **Arm assignment (fixed before recruiting):** alternate in recruitment order: P01 system, P02 brief, P03 system… Screened-out or declined people don't take a number.
+- **Arm assignment (fixed before recruiting):** alternate in recruitment order: P01 system, P02 brief, P03 system… Screened-out or declined people don't take a number. The pilot (`pilot-1` system, `pilot-2` brief) is separate and never counted; participants start at P01.
 - Commands: `.venv/bin/python classify_eval.py [--heldout] [--llm]` · `.venv/bin/python converse.py <pid> [--brief] [--t2]` · `python3 analyze.py` · `converse.py --selfcheck` · `.venv/bin/python check_claims.py sessions/<pid>.jsonl` · `check_claims.py --review sessions/<pid>.check.jsonl` (hand labels = the metric) · `check_claims.py --gold`

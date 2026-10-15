@@ -217,3 +217,10 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - Refusal 3/3 with premise = the doubling claim and premise_claim null, so fix 1's condition held. Never endorsed. Day 1 on this path was 0/3.
 - FAIL on "no add-ons": repeat 2 said "add up quickly" (hand label pending Som).
 - `raw` model output is now logged on assistant events, so future runs can show whether the code or the model added the refusal.
+
+### Pre-pilot setup (Som, 16 Oct)
+- Hand labels for R2-open-hi confirmed (0, 1, 0). **Add-ons are accepted and measured, not tuned.**
+- **Study provider = OpenRouter → DeepInfra, effort medium, now the code default** (`PROVIDER=groq` overrides). `analyze.py` counts only `P\d+` IDs and warns when sessions ran on different providers; selfcheck covers both.
+- **The pilot is separate:** `pilot-1` (system), `pilot-2` (brief), never counted; participants start at P01. The pilot reasons go to held-out (h-51+), labelled before looking at the classifier output.
+- `docs/recruiting.md` §4 is now the run-sheet: preflight (selfchecks plus a host ping), session commands, post-session check plus `--review`, and the pilot steps.
+- Learning log entry 11 added.

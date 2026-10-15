@@ -7,7 +7,7 @@
 Lower score = less agreement with "I don't need a health insurance policy of my own", so a negative delta is the
 belief moving. No significance tests: n is 5-7; report the numbers and say so.
 """
-import json, sys, tempfile
+import json, re, sys, tempfile
 from pathlib import Path
 from statistics import mean
 
@@ -17,7 +17,7 @@ HERE = Path(__file__).parent
 def load(path):
     """One participant: arm, status, bucket, scores, checker summary."""
     p = {"pid": path.stem, "arm": None, "status": "incomplete", "bucket": None, "t0": None, "t1": None, "t2": None,
-         "looked": None, "factual": None, "unsupported": None, "agreement": None}
+         "looked": None, "factual": None, "unsupported": None, "agreement": None, "provider": None}
     for e in map(json.loads, path.read_text().splitlines()):
         ev = e["event"]
         if ev in ("declined", "screened_out"):
@@ -25,7 +25,7 @@ def load(path):
         elif ev == "t0":
             p["t0"], p["arm"] = e["score"], e.get("arm")
         elif ev == "classify":
-            p["bucket"] = e.get("primary")
+            p["bucket"], p["provider"] = e.get("primary"), e.get("provider") or p["provider"]
         elif ev == "end" and e.get("reason") == "unclassified":
             p["status"] = "unclassified"
         elif ev == "t1":
@@ -51,7 +51,8 @@ def fmt(x):
 
 
 def report(folder):
-    people = [load(f) for f in sorted(Path(folder).glob("P*.jsonl")) if not f.name.endswith(".check.jsonl")]
+    # participants only (P01, P02, ...): pilot-1, test-*, reversal runs are never counted
+    people = [load(f) for f in sorted(Path(folder).glob("*.jsonl")) if re.fullmatch(r"P\d+\.jsonl", f.name)]
     done = [p for p in people if p["status"] == "complete"]
     lines = ["| pid | arm | bucket | T0 | T1 | T2 | ΔT1 | ΔT2 | looked into policy | factual sentences | unsupported claims (hand) | checker agreed |",
              "|---|---|---|---|---|---|---|---|---|---|---|---|"]
@@ -72,6 +73,9 @@ def report(folder):
         lines.append(f"| {arm} | {s['n']} | {fmt(s['d1'])} | {fmt(s['d2'])} ({s['n2']}) | {s['looked']}/{s['n']} | "
                      f"{fmt(s['unsup'])} |")
     others = {st: sum(p["status"] == st for p in people) for st in ("declined", "screened_out", "unclassified", "incomplete")}
+    providers = {p["provider"] for p in people if p["provider"]}
+    if len(providers) > 1:
+        lines += ["", f"**WARNING: sessions ran on different providers: {sorted(providers)}**"]
     lines += ["", "Not in the table: " + ", ".join(f"{k} {v}" for k, v in others.items()) + f" (of {len(people)} sessions)."]
     return "\n".join(lines), summary
 
@@ -80,17 +84,19 @@ def selfcheck():
     with tempfile.TemporaryDirectory() as d:
         def write(name, events):
             Path(d, name).write_text("\n".join(json.dumps(e) for e in events) + "\n")
-        write("P01.jsonl", [{"event": "t0", "score": 80, "arm": "system"}, {"event": "classify", "primary": "B3"},
+        write("pilot-1.jsonl", [{"event": "t0", "score": 90, "arm": "system"}, {"event": "t1", "score": 10}])  # never counted
+        write("P01.jsonl", [{"event": "t0", "score": 80, "arm": "system"}, {"event": "classify", "primary": "B3", "provider": "a"},
                             {"event": "t1", "score": 50}, {"event": "t2", "score": 60, "looked_into_policy": "yes"}])
         write("P01.check.jsonl", [{"summary": {"factual_sentences": 6, "unsupported_claims": 3, "hand_factual": 6,
                                                "hand_unsupported": 1, "checker_agreement": "4/6"}}])
-        write("P02.jsonl", [{"event": "t0", "score": 70, "arm": "brief"}, {"event": "classify", "primary": "B2"},
+        write("P02.jsonl", [{"event": "t0", "score": 70, "arm": "brief"}, {"event": "classify", "primary": "B2", "provider": "b"},
                             {"event": "t1", "score": 65}])
         write("P03.jsonl", [{"event": "t0", "score": 40, "arm": "brief"}, {"event": "screened_out", "arm": "brief"}])
         write("P04.jsonl", [{"event": "declined", "arm": "system"}])
         text, s = report(d)
     assert s["system"]["n"] == 1 and s["system"]["d1"] == -30 and s["system"]["d2"] == -20 and s["system"]["unsup"] == 1
     assert s["brief"]["n"] == 1 and s["brief"]["d1"] == -5 and s["brief"]["d2"] is None and s["brief"]["unsup"] is None
+    assert "different providers" in text and "pilot" not in text
     assert "screened_out 1" in text and "declined 1" in text and "| P01 | system | B3 | 80 | 50 | 60 | -30 | -20 | yes | 6 | 1 | 4/6 |" in text
     print("selfcheck ok")
 
