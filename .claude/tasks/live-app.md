@@ -86,3 +86,25 @@ The demo video and case study (later, after the participants). Accounts, logins 
 - **Local live test (DeepInfra, browser at phone width):** the full try-out flow works. Two findings:
   1. **Fix 1 false positive.** Reason "my company gives me 5 lakh group cover…": the model reported the person's *own situation* as `premise`, with `premise_claim` null and `refuse` false. The **code** prepended the refusal. That's the first time fix 1 visibly acted, and it was wrong; it would hit most B2 participants. A conversation-logic change goes to Som.
   2. **Latency:** classify took 9 s and the first reply 55 s. No rate-limit waits were printed, though the SDK's own silent 429 retries are possible.
+
+## Hosting revised by Som (16 Oct): frontend on Hugging Face Spaces (static), backend on Render, database Supabase
+Replaces Vercel. What changes:
+- **Frontend:** `public/index.html` deploys as a **static** HF Space (free; static Spaces need no paid plan). It calls the API at an absolute `API_BASE` (the Render URL), set in one place in the page.
+- **Backend:** `app.py` on a Render free web service from the GitHub repo.
+  - Build: `pip install -r requirements.txt`. Start: `uvicorn app:app --host 0.0.0.0 --port $PORT`.
+  - `requirements.txt` gains uvicorn. `vercel.json` is removed.
+  - Render has no short request timeout, so the default rate-limit waits are fine.
+- **CORS:** FastAPI allows only the Space's origin (`ALLOWED_ORIGIN` env).
+- **Cold start (free Render sleeps after 15 min, ~1 min wake):** the page calls `GET /api/health` on load, so the backend wakes while the person reads the consent text. If the first real call is slow, the page says "starting up".
+- **Day-7 links** point to the Space URL (`APP_URL`).
+- Supabase (free) is unchanged: the `events` table, written with the server-side secret key, with RLS on and no policies.
+
+Steps, one at a time with Som:
+1. Decisions (Supabase project, regions, names).
+2. Supabase table.
+3. Code changes (CORS, health, `API_BASE`) plus selfchecks.
+4. GitHub repo (public, after a secret scan).
+5. Render service plus env vars.
+6. HF Space plus upload.
+7. End-to-end test on the live links.
+- **Step 1 decisions (Som):** a new Supabase project `verified-persuasion` in ap-south-1. Render in Singapore. Names `verified-persuasion` everywhere. Som already has HF and Render accounts.
