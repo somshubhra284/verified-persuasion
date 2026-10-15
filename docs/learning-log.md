@@ -98,6 +98,12 @@ This is a record of where the evidence changed the plan, the system or the hypot
 - **Changed:** nothing in the prompt. These add-ons are accepted and measured by hand review, because a prompt rule already failed to stop them.
 - **Means:** the constraint controls *which facts* are stated. It doesn't fully control the *framing around* them. That's the part of the "fewer unsupported claims" comparison the hypothesis has to survive.
 
+## 12. The safeguard's first real action was a false positive
+- **Found:** in the first live web test, "my company gives me 5 lakh group cover…" got "I don't have a source for that". The model had logged the person's *own situation* as a factual premise. No claim covers someone's own circumstances, so the code added the refusal. It would have hit most B2 participants.
+- **Changed:** the premise rule now excludes the person's own situation (job, cover amount, age, family). A premise is a general claim about the world. The rule's examples deliberately differ from the test sentences.
+- **Retest:** 9/9 employer-cover openers were answered without a refusal. A false premise inside a real reason ("costs double every five years, so I'd rather keep my savings", B5) was refused by the code in 3/3.
+- **Means:** a code-level guard is only as precise as the model's report it acts on. Testing only the cases it should catch (R2) missed the cases it shouldn't. Both directions need a test.
+
 ## To add
 - Day-2 results: the checker rescore, the classifier rescore, and the reversal runs after the fixes. Did fix 1 make R2-open refuse up front?
 - Pilot: how real reasons differed from my test sets.
