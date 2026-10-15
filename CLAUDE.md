@@ -34,6 +34,7 @@ Primary = the first reason the person names; record the second as secondary.
 - `data/reasons_testset.jsonl` (110 answers) and `data/reasons_heldout.jsonl` (50 harder answers; h-49/h-50 added after the reversal runs): labelled "why" answers.
 - `prompts/classifier_prompt.md`: the reason classifier prompt.
 - `classify_eval.py`: scores classifiers (keyword baseline or LLM) on either set.
+- `docs/learning-log.md`: where evidence changed the plan or the hypothesis (draft; add day-2 and participant results).
 - `docs/recruiting.md`: invite, self-check, consent, day-7 message, debrief, recruiting log template.
 - `docs/capstone-brief.md`: the 100x brief and its grading criteria.
 - `converse.py`: both arms. Intake = consent + screening (age 22–45, no own policy, not CGHS/ESIC/PM-JAY, T0 ≥ 60) → reason → classify. The system arm argues from the bucket's claims; `--brief` shows `data/fixed_brief.md`. `--t2` for day 7. Logs go to `sessions/<pid>.jsonl` (gitignored).
@@ -65,6 +66,7 @@ The human-readable versions live in Claude Docs: the belief spec and ledger (wit
 - Show money in both INR and USD (≈ ₹96.8 per $1, rate as of 10 Oct 2026).
 - Keep it small: the brief says one conversation that moved a real belief beats six components without receipts.
 - API key lives in `.env` (never commit it; scripts read it themselves). Default model `openai/gpt-oss-120b` on Groq's free tier. Use `.venv/bin/python` (`python` isn't on PATH).
+- Backup provider: put `OPENROUTER_API_KEY` in `.env` and prefix any command with `PROVIDER=openrouter`. Every log records `provider`; don't pool results across providers without saying so.
 - Groq free tier: 200K tokens/day (rolling). The 9 reversal runs plus checks used about a day's budget. Plan participant sessions and checker runs on separate days if needed.
 - **Arm assignment (fixed before recruiting):** alternate in recruitment order: P01 system, P02 brief, P03 system… Screened-out or declined people don't take a number.
 - Commands: `.venv/bin/python classify_eval.py [--heldout] [--llm]` · `.venv/bin/python converse.py <pid> [--brief] [--t2]` · `python3 analyze.py` · `converse.py --selfcheck` · `.venv/bin/python check_claims.py sessions/<pid>.jsonl` · `check_claims.py --gold`

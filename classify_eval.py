@@ -6,6 +6,7 @@
 
 LLM mode needs `openai` (installed in .venv) and an API key in .env or the environment. Defaults to Groq's free tier:
   GROQ_API_KEY=...   [MODEL=openai/gpt-oss-120b]   [BASE_URL=https://api.groq.com/openai/v1]
+Backup provider: put OPENROUTER_API_KEY=... in .env and run with PROVIDER=openrouter in front of the command.
 """
 import json, os, re, sys
 from collections import Counter
@@ -18,6 +19,9 @@ for line in (HERE / ".env").read_text().splitlines() if (HERE / ".env").exists()
     if "=" in line and not line.lstrip().startswith("#"):
         k, v = line.split("=", 1)
         os.environ.setdefault(k.strip(), v.strip())
+PROVIDERS = {"groq": ("GROQ_API_KEY", "https://api.groq.com/openai/v1"),
+             "openrouter": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1")}
+PROVIDER = os.environ.get("PROVIDER", "groq")  # logged next to the model, so results from each host stay separable
 BUCKETS = {f"B{i}" for i in range(8)}
 
 # ponytail: substring keywords with first-match-wins ordering. Ceiling: no negation or context ("not young").
@@ -52,8 +56,9 @@ def keyword_classify(text):
 
 def make_client():
     from openai import OpenAI
-    return OpenAI(api_key=os.environ.get("GROQ_API_KEY") or os.environ["OPENAI_API_KEY"],
-                  base_url=os.environ.get("BASE_URL", "https://api.groq.com/openai/v1"),
+    key_var, url = PROVIDERS[PROVIDER]
+    return OpenAI(api_key=os.environ.get(key_var) or os.environ["OPENAI_API_KEY"],
+                  base_url=os.environ.get("BASE_URL", url),
                   max_retries=4)  # SDK backs off on 429; free tier is ~8K tokens/min
 
 
@@ -111,5 +116,5 @@ if __name__ == "__main__":
     assert keyword_classify("benefits are solid")["primary"] == "B0"  # 'fit' must not match inside 'benefits'
 
     use_llm = "--llm" in sys.argv
-    print("Classifier:", "LLM " + os.environ.get("MODEL", DEFAULT_MODEL) if use_llm else "keyword baseline")
+    print("Classifier:", f"LLM {os.environ.get('MODEL', DEFAULT_MODEL)} via {PROVIDER}" if use_llm else "keyword baseline")
     evaluate(rows, llm_classifier() if use_llm else keyword_classify)

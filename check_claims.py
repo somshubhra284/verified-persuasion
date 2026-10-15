@@ -10,7 +10,7 @@ A sentence takes the worse of the two layers. Unsupported claims = uncited + uns
 """
 import json, os, re, sys
 from pathlib import Path
-from classify_eval import HERE, DEFAULT_MODEL, make_client
+from classify_eval import HERE, DEFAULT_MODEL, PROVIDER, make_client
 from converse import LEDGER, allowed_claims
 
 BY_ID = {c["id"]: c for c in LEDGER}
@@ -108,7 +108,7 @@ def check_session(path, client, model):
                 print(f"  turn {r['turn']} [{r['label']}] {r['sentence']}\n      judge: {r['judge']} {r['claim_id'] or ''} "
                       f"({r['why']}); numbers: {r['num_flags'] or 'ok'}")
     factual = sum(v for k, v in totals.items() if k != "non-factual")
-    summary = {"session": Path(path).stem, "factual_sentences": factual, **totals,
+    summary = {"session": Path(path).stem, "model": model, "provider": PROVIDER, "factual_sentences": factual, **totals,
                "unsupported_claims": totals["uncited"] + totals["unsupported"] + totals["unjudged"]}
     with open(Path(path).with_suffix(".check.jsonl"), "w") as f:
         for r in out_rows + [{"summary": summary}]:
@@ -129,7 +129,7 @@ def score_gold(client, model):
         elif g["label"] not in FLAGS and got in FLAGS:
             false_flags.append((g["id"], g["label"], got, g["sentence"]))
     n_flag = sum(g["label"] in FLAGS for g in rows)
-    print(f"Gold: {len(rows)} sentences, {n_flag} should be flagged")
+    print(f"Gold: {len(rows)} sentences, {n_flag} should be flagged ({model} via {PROVIDER})")
     print(f"Recall on flagged: {n_flag - len(missed)}/{n_flag}   False flags: {len(false_flags)}   "
           f"Label agreement: {exact}/{len(rows)}")
     for kind, lst in (("MISSED", missed), ("FALSE FLAG", false_flags)):
