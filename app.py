@@ -129,7 +129,7 @@ def first(events, name):
 
 
 def new_pid(mode, eligible):
-    prefix = {"demo": "demo-", "pilot": "pilot-"}.get(mode) or ("P" if eligible else "S")
+    prefix = {"demo": "demo-", "pilot": "pilot-", "sim": "sim-"}.get(mode) or ("P" if eligible else "S")
     # highest existing number + 1 (not a count: after rows are deleted, a count would reuse an id and merge two sessions)
     taken = [int(p[len(prefix):]) for p in STORE.started(prefix) if p[len(prefix):].isdigit()]
     n = max(taken, default=0) + 1  # ponytail: read-then-write race is fine at ~20 sessions; a DB sequence if it grows
@@ -145,8 +145,10 @@ def llm(fn):
 
 
 class Start(BaseModel):
-    mode: str = "study"  # study | demo | pilot
+    mode: str = "study"  # study | demo | pilot | sim (simulated personas: arm chosen, never counted)
     consent: bool
+    arm: str | None = None  # sim mode only
+    label: str | None = None  # sim mode only: persona name
     age: int | None = None
     own_policy: bool | None = None
     govt: bool | None = None
@@ -176,8 +178,8 @@ def health():
 
 @app.post("/api/start")
 def start(s: Start):
-    mode = s.mode if s.mode in ("study", "demo", "pilot") else "study"
-    if mode == "demo" and len(STORE.started("demo-", since=time.strftime("%Y-%m-%d"))) >= DEMO_CAP:
+    mode = s.mode if s.mode in ("study", "demo", "pilot", "sim") else "study"
+    if mode in ("demo", "sim") and len(STORE.started(mode + "-", since=time.strftime("%Y-%m-%d"))) >= DEMO_CAP:
         raise HTTPException(429, "The try-out limit for today has been reached. Please come back tomorrow.")
     if not s.consent:
         pid, _ = new_pid(mode, False)
@@ -190,8 +192,10 @@ def start(s: Start):
     out = cv.screen(s.age, s.own_policy, s.govt, s.t0)
     pid, n = new_pid(mode, not out)
     arm = "system" if mode == "demo" or n % 2 else "brief"
+    if mode == "sim" and s.arm in ("system", "brief"):
+        arm = s.arm  # persona tests pick their arm; sim-N ids are never counted by analyze.py
     log = cv.logger(pid, sink=STORE.append)
-    log("start", mode=mode)
+    log("start", mode=mode, **({"label": (s.label or "")[:40]} if mode == "sim" else {}))
     if out and mode != "demo":  # try-outs are never screened out: graders get to see the system whoever they are
         log("t0", score=s.t0, arm=None, age=s.age)
         log("screened_out", arm=None, reasons=out)
@@ -395,6 +399,12 @@ def selfcheck():
         lasts = [c.post("/api/message", json={**st, "text": "not convinced"}).json().get("last") for _ in range(5)]
         assert lasts[:4] == [False, False, False, True] and evs(st["pid"]).count("plan") == 1, lasts
         assert c.post("/api/message", json={**st, "text": "more?"}).json() == {"done": True}
+        # sim mode: the requested arm, its own id series, screening still applies, never counted by analyze.py
+        sm = c.post("/api/start", json={**ok, "mode": "sim", "arm": "brief", "label": "Riya"}).json()
+        assert sm["pid"].startswith("sim-") and sm["arm"] == "brief" and STORE.events(sm["pid"])[0]["label"] == "Riya"
+        assert c.post("/api/start", json={**ok, "mode": "sim", "arm": "system", "t0": 5}).json()["status"] == "screened_out"
+        st2 = c.post("/api/start", json={**ok, "arm": "brief", "label": "x"}).json()  # study mode ignores arm and label
+        assert st2["arm"] == ("system" if int(st2["pid"][1:]) % 2 else "brief") and "label" not in STORE.events(st2["pid"])[0]
         # B0 twice ends with no claims
         u = c.post("/api/start", json=ok).json()
         assert c.post("/api/reason", json={**u, "text": "dunno"}).json() == {"follow_up": "What is your main reason?"}
