@@ -121,7 +121,9 @@ def first(events, name):
 
 def new_pid(mode, eligible):
     prefix = {"demo": "demo-", "pilot": "pilot-"}.get(mode) or ("P" if eligible else "S")
-    n = len(STORE.started(prefix)) + 1  # ponytail: count-then-write race is fine at ~20 sessions; a DB sequence if it grows
+    # highest existing number + 1 (not a count: after rows are deleted, a count would reuse an id and merge two sessions)
+    taken = [int(p[len(prefix):]) for p in STORE.started(prefix) if p[len(prefix):].isdigit()]
+    n = max(taken, default=0) + 1  # ponytail: read-then-write race is fine at ~20 sessions; a DB sequence if it grows
     return (f"{prefix}{n:02d}" if prefix in ("P", "S") else f"{prefix}{n}"), n
 
 
@@ -324,6 +326,8 @@ def selfcheck():
         assert c.post("/api/start", json={**ok, "age": 50}).json() == {"status": "screened_out", "pid": "S01"}
         assert c.post("/api/start", json={"consent": False}).json() == {"status": "declined", "pid": "S02"}
         assert c.post("/api/start", json=ok).json()["pid"] == "P03"
+        (Path(STORE.dir) / "P02.jsonl").unlink()  # a deleted session must not free its number for reuse
+        assert c.post("/api/start", json=ok).json()["pid"] == "P04"
         # try-out: never screened out, always the system arm; pilot alternates from pilot-1
         d1 = c.post("/api/start", json={**ok, "mode": "demo", "age": 60}).json()
         assert (d1["pid"], d1["arm"], d1["status"]) == ("demo-1", "system", "ok")

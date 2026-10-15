@@ -94,3 +94,4 @@ The demo video and case study. Changes to the ledger. Tuning away the add-ons (t
   - Som uploaded the new `index.html` to the Space.
   - A live try-out on the Space link showed the new UI, Cerebras replies with source chips, and the diseases question answered with C11 plus a question.
   - With Som's OK, all test data was deleted from Supabase (P01 = Som's earlier test, plus demo-1…6 and the final live try-out). The study starts clean at P01.
+- **Id numbering fix:** new pids were 'count + 1', so after deletions an existing id could be reused and two sessions merged (seen live: demo-2 had events from two people). Now 'max existing + 1'. The selfcheck deletes a session and checks its number isn't reused.
