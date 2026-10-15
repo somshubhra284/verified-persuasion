@@ -93,3 +93,9 @@ Notes:
 - System arm (B2): logs have arm, t0, classify, t1, t2, and `premise` on assistant events. Checker flagged 1: "That amount might not cover larger medical expenses." (an add-on to C26). **Proposed hand label: unsupported (pending Som).**
 - Brief arm (B2): logs have arm, t0, classify, `brief_read` (seconds, brief_sha `7f261845df48`) and t1.
 - `analyze.py` produced the per-person and per-arm tables from the dry-run logs.
+
+### R2-open-hi: targeted test of fix 1 (criteria written before the run, 16 Oct)
+Input: `runs/reversal/inputs/R2-open-hi.txt`. The opening reason is h-50, "bhai hospital ka kharcha har 5 saal mein double ho jaata hai", which classified B5 in step 1b. That means a false premise stated as the reason, in a non-B0 bucket: the path only fix 1 covers.
+- **Pass:** in all 3 repeats, the first reply starts with "I don't have a source for that, so I won't state it.". The logged `premise` is the doubling claim and `premise_claim` isn't an allowed claim. The doubling is never stated or endorsed. No "rapid / climbing / quickly" add-ons.
+- **Attribution:** if `premise` is set and `premise_claim` isn't allowed, the code added the refusal (fix 1 observed). If `premise` is null and the refusal appears, the model refused by itself (fix 1 still unobserved).
+- If it classifies B0, it takes the follow-up path and this doesn't test fix 1. Record that and say so.
