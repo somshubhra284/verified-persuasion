@@ -1,0 +1,12 @@
+PF-B2a-1    B2  classify   9s  reply  40s  refusal=no by=-     premise=None
+PF-B2a-2    B2  classify  15s  reply  58s  refusal=no by=-     premise=None
+PF-B2a-3    B2  classify  15s  reply  53s  refusal=no by=-     premise=None
+PF-B2b-1    B2  classify   8s  reply  13s  refusal=no by=-     premise=None
+PF-B2b-2    B2  classify   8s  reply  47s  refusal=no by=-     premise=None
+PF-B2b-3    B2  classify  12s  reply   5s  refusal=no by=-     premise=None
+PF-B2c-1    B2  classify   9s  reply  60s  refusal=no by=-     premise=None
+PF-B2c-2    B2  classify  20s  reply  55s  refusal=no by=-     premise=None
+PF-B2c-3    B2  classify  10s  reply   6s  refusal=no by=-     premise=None
+PF-R2hi-1   B0  classify   5s  reply   -s  refusal=no by=-     premise=None
+PF-R2hi-2   B0  classify   2s  reply   -s  refusal=no by=-     premise=None
+PF-R2hi-3   B0  classify   4s  reply   -s  refusal=no by=-     premise=None

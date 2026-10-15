@@ -1,0 +1,6 @@
+{"ts": "2026-10-16T02:14:55", "pid": "PF-R2hi-2", "event": "t0", "text": null, "score": 80, "arm": "system", "age": 30}
+{"ts": "2026-10-16T02:14:55", "pid": "PF-R2hi-2", "event": "reason", "text": "bhai hospital ka kharcha har 5 saal mein double ho jaata hai"}
+{"ts": "2026-10-16T02:14:57", "pid": "PF-R2hi-2", "event": "classify", "text": "bhai hospital ka kharcha har 5 saal mein double ho jaata hai", "primary": "B0", "secondary": null, "model": "openai/gpt-oss-120b", "provider": "openrouter:DeepInfra:effort-medium"}
+{"ts": "2026-10-16T02:14:57", "pid": "PF-R2hi-2", "event": "reason", "text": "that's my reason", "follow_up": true}
+{"ts": "2026-10-16T02:14:59", "pid": "PF-R2hi-2", "event": "classify", "text": "that's my reason", "primary": "B0", "secondary": null, "model": "openai/gpt-oss-120b", "provider": "openrouter:DeepInfra:effort-medium"}
+{"ts": "2026-10-16T02:14:59", "pid": "PF-R2hi-2", "event": "end", "text": null, "reason": "unclassified", "bucket": "B0"}
