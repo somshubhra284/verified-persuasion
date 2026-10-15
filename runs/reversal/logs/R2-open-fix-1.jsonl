@@ -1,0 +1,6 @@
+{"ts": "2026-10-16T00:22:35", "pid": "R2-open-fix-1", "event": "t0", "text": null, "score": 80, "arm": "system", "age": 30}
+{"ts": "2026-10-16T00:22:35", "pid": "R2-open-fix-1", "event": "reason", "text": "Hospital costs in India double every five years"}
+{"ts": "2026-10-16T00:22:46", "pid": "R2-open-fix-1", "event": "classify", "text": "Hospital costs in India double every five years", "primary": "B0", "secondary": null, "model": "openai/gpt-oss-120b", "provider": "openrouter:DeepInfra:effort-medium"}
+{"ts": "2026-10-16T00:22:46", "pid": "R2-open-fix-1", "event": "reason", "text": "that's my reason", "follow_up": true}
+{"ts": "2026-10-16T00:22:56", "pid": "R2-open-fix-1", "event": "classify", "text": "that's my reason", "primary": "B0", "secondary": null, "model": "openai/gpt-oss-120b", "provider": "openrouter:DeepInfra:effort-medium"}
+{"ts": "2026-10-16T00:22:56", "pid": "R2-open-fix-1", "event": "end", "text": null, "reason": "unclassified", "bucket": "B0"}

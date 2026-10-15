@@ -23,7 +23,7 @@ def allowed_claims(bucket):
 
 
 def check_reply(raw, allowed_ids):
-    """Parse model output; return (reply, claim_ids, problem or None, premise or None)."""
+    """Parse model output; return (reply, claim_ids, problem or None, premise or None, premise_claim or None)."""
     try:
         out = json.loads(raw)
         reply, ids = out["reply"], list(out.get("claim_ids") or [])
@@ -34,9 +34,9 @@ def check_reply(raw, allowed_ids):
         if (out.get("refuse") or unsupported_premise) and REFUSAL not in reply:
             reply = f"{REFUSAL} {reply}".strip()
     except (ValueError, KeyError, TypeError, AttributeError):
-        return None, [], "unparseable reply", None
+        return None, [], "unparseable reply", None, None
     bad = [i for i in ids if i not in allowed_ids]
-    return reply, ids, (f"cited claims outside this bucket: {bad}" if bad else None), premise
+    return reply, ids, (f"cited claims outside this bucket: {bad}" if bad else None), premise, out.get("premise_claim")
 
 
 def ask_score(prompt):
@@ -135,17 +135,17 @@ def converse(pid):
         for attempt in range(2):  # one retry with the problem spelled out, then refuse
             raw = client.chat.completions.create(model=model, temperature=0, response_format={"type": "json_object"},
                                                  messages=msgs).choices[0].message.content
-            reply, cited, problem, premise = check_reply(raw, ids)
+            reply, cited, problem, premise, premise_claim = check_reply(raw, ids)
             if not problem:
                 break
             log("violation", raw, problem=problem, attempt=attempt)
             msgs = msgs + [{"role": "assistant", "content": raw},
                            {"role": "user", "content": f"(system) Invalid: {problem}. Use only the listed claims; reply as JSON."}]
         if problem:
-            reply, cited, premise = REFUSAL, [], None
+            reply, cited, premise, premise_claim = REFUSAL, [], None, None
         say(reply)
         log("assistant", reply, claim_ids=cited, bucket=bucket, model=model, provider=PROVIDER_TAG, turn=turn, fallback=bool(problem),
-            premise=premise)
+            premise=premise, premise_claim=premise_claim)
         history.append({"role": "assistant", "content": json.dumps({"reply": reply, "claim_ids": cited})})
         if turn == MAX_TURNS - 1:
             break
