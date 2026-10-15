@@ -65,7 +65,8 @@ def pin(create, host):
     def pinned(**kw):
         import time
         from openai import RateLimitError
-        for wait in (15, 30, 45, 60, 90, None):  # ponytail: fixed backoff on shared-pool 429s; never falls back to another host
+        waits = [int(w) for w in os.environ.get("RATE_LIMIT_WAITS", "15,30,45,60,90").split(",")]  # web app sets shorter ones
+        for wait in waits + [None]:  # ponytail: fixed backoff on shared-pool 429s; never falls back to another host
             try:
                 r = create(**kw, extra_body={"provider": {"order": [host], "allow_fallbacks": False, "require_parameters": True},
                                              "reasoning": {"effort": EFFORT}})

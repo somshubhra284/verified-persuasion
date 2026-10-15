@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verified Persuasion</title>
+<meta name="description" content="A study on whether a chatbot that states only sourced facts can change a belief about health insurance.">
+<style>
+  :root { --bg:#f7f7f5; --card:#fff; --text:#1d1d1f; --muted:#6b6b70; --line:#e3e3e0; --accent:#1f5f8b; --accent-text:#fff;
+          --bot:#eef3f7; --me:#1f5f8b; --me-text:#fff; --warn:#8a4b00; --warn-bg:#fff4e5; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#141416; --card:#1e1e21; --text:#ececee; --muted:#a0a0a8; --line:#2f2f34; --accent:#6aa8d6; --accent-text:#0b1620;
+            --bot:#232a31; --me:#2f6f9c; --me-text:#fff; --warn:#ffb866; --warn-bg:#33261a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; }
+  header h1 { font-size: 1.35rem; margin: 0 0 4px; }
+  header p { margin: 0 0 20px; color: var(--muted); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:16px; }
+  .hidden { display:none; }
+  label { display:block; margin: 14px 0 6px; font-weight: 600; }
+  input[type=number], textarea { width:100%; padding:10px 12px; font:inherit; color:var(--text); background:var(--bg);
+          border:1px solid var(--line); border-radius:8px; }
+  textarea { min-height: 90px; resize: vertical; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; margin-top: 16px; }
+  button { font:inherit; padding:10px 16px; border-radius:8px; border:1px solid var(--accent); cursor:pointer;
+           background:var(--accent); color:var(--accent-text); }
+  button.secondary { background:transparent; color:var(--accent); }
+  button:disabled { opacity:.5; cursor:default; }
+  .choice { display:flex; gap:16px; } .choice label { font-weight:400; margin:0; display:flex; gap:6px; align-items:center; }
+  .muted { color: var(--muted); font-size: .92rem; }
+  .msgs { display:flex; flex-direction:column; gap:10px; }
+  .msg { padding:10px 14px; border-radius:12px; max-width: 88%; white-space: pre-wrap; }
+  .bot { background:var(--bot); align-self:flex-start; }
+  .me { background:var(--me); color:var(--me-text); align-self:flex-end; }
+  .thinking { color: var(--muted); font-style: italic; }
+  .error { background:var(--warn-bg); color:var(--warn); padding:10px 14px; border-radius:8px; margin-top:12px; }
+  .brief { overflow-wrap: anywhere; } .brief table { border-collapse: collapse; width: 100%; font-size: .9rem; display:block; overflow-x:auto; }
+  .brief td, .brief th { border:1px solid var(--line); padding: 4px 8px; text-align:left; }
+  .brief a { color: var(--accent); }
+  .code { font-size: 1.6rem; font-weight: 700; letter-spacing: .05em; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Verified Persuasion</h1>
+    <p>Can a chatbot that only states facts it can source change a belief, as well as a plain information sheet can?</p>
+  </header>
+
+  <section id="landing" class="card">
+    <p>This is a small study for the 100xEngineers capstone. It looks at one belief many working Indians hold:
+      <b>"I don't need a health insurance policy of my own."</b></p>
+    <p>The chatbot answers <i>your</i> reason using only claims from a checked list of official sources, and says
+      "I don't have a source for that" when it can't back something up. It takes about 10 minutes.</p>
+    <div class="row" id="landing-buttons">
+      <button data-mode="study">I'm taking part in Som's study</button>
+      <button class="secondary" data-mode="demo">I'm just trying it out</button>
+    </div>
+    <p class="muted" id="landing-note">Trying it out? Your answers aren't counted in the study.</p>
+  </section>
+
+  <section id="consent" class="card hidden">
+    <p>You're talking to a computer program, not a person. It wants to understand one belief:
+      "I don't need a health insurance policy of my own." <b>This is not financial advice.</b>
+      Your answers are saved without your name and used only for a study project. You can stop at any time by closing this page.</p>
+    <p><b>Are you happy to take part?</b></p>
+    <div class="row"><button id="consent-yes">Yes</button><button class="secondary" id="consent-no">No</button></div>
+  </section>
+
+  <section id="screening" class="card hidden">
+    <label for="age">How old are you?</label>
+    <input id="age" type="number" min="0" max="120" inputmode="numeric">
+    <label>Do you have a health insurance policy in your own name (not through work or family)?</label>
+    <div class="choice"><label><input type="radio" name="own" value="yes"> Yes</label><label><input type="radio" name="own" value="no"> No</label></div>
+    <label>Are you covered by CGHS, ESIC or PM-JAY (Ayushman Bharat)?</label>
+    <div class="choice"><label><input type="radio" name="govt" value="yes"> Yes</label><label><input type="radio" name="govt" value="no"> No</label></div>
+    <label for="t0">How much do you agree with "I don't need a health insurance policy of my own"? 0 = not at all, 100 = completely.</label>
+    <input id="t0" type="number" min="0" max="100" inputmode="numeric">
+    <div class="row"><button id="screen-next">Continue</button></div>
+  </section>
+
+  <section id="reason" class="card hidden">
+    <label for="reason-text" id="reason-label">In your own words, why do you feel you don't need your own policy?</label>
+    <textarea id="reason-text"></textarea>
+    <div class="row"><button id="reason-send">Send</button></div>
+  </section>
+
+  <section id="chat" class="card hidden">
+    <div class="msgs" id="msgs"></div>
+    <div id="chat-input">
+      <label for="chat-text" class="hidden">Your message</label>
+      <textarea id="chat-text" placeholder="Type your reply…"></textarea>
+      <div class="row"><button id="chat-send">Send</button><button class="secondary" id="chat-done">I'm done</button></div>
+    </div>
+  </section>
+
+  <section id="brief" class="card hidden">
+    <div class="brief" id="brief-body"></div>
+    <div class="row"><button id="brief-done">I've finished reading</button></div>
+  </section>
+
+  <section id="after" class="card hidden">
+    <label for="t1">Now, how much do you agree: "I don't need a health insurance policy of my own"? (0–100)</label>
+    <input id="t1" type="number" min="0" max="100" inputmode="numeric">
+    <div class="row"><button id="t1-send">Submit</button></div>
+  </section>
+
+  <section id="followup" class="card hidden">
+    <p><b>Day 7 follow-up.</b> Thank you for coming back.</p>
+    <label for="t2">How much do you agree: "I don't need a health insurance policy of my own"? (0–100)</label>
+    <input id="t2" type="number" min="0" max="100" inputmode="numeric">
+    <label>Did you look into a policy this week?</label>
+    <div class="choice"><label><input type="radio" name="looked" value="yes"> Yes</label><label><input type="radio" name="looked" value="no"> No</label></div>
+    <div class="row"><button id="t2-send">Submit</button></div>
+  </section>
+
+  <section id="end" class="card hidden"><div id="end-body"></div></section>
+
+  <p id="working" class="muted thinking hidden" role="status">Working… this can take up to a minute.</p>
+  <div id="error" class="error hidden" role="alert"><span id="error-text"></span>
+    <div class="row"><button id="retry" class="secondary hidden">Try again</button></div></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+let mode = params.get("pilot") ? "pilot" : "study", session = null, lastCall = null, briefStart = 0;
+
+function show(id) {
+  for (const s of document.querySelectorAll("main > section")) s.classList.add("hidden");
+  $(id).classList.remove("hidden");
+  window.scrollTo(0, 0);
+}
+function end(html) { $("end-body").innerHTML = html; show("end"); }
+function bubble(text, who) {
+  const d = document.createElement("div");
+  d.className = "msg " + who; d.textContent = text;  // model text is never inserted as HTML
+  $("msgs").appendChild(d); d.scrollIntoView({ block: "end" });
+  return d;
+}
+function setBusy(on) {
+  for (const b of document.querySelectorAll("button")) b.disabled = on;
+  $("working").classList.toggle("hidden", !on);
+}
+
+async function call(path, body) {
+  lastCall = [path, body];
+  $("error").classList.add("hidden");
+  setBusy(true);
+  try {
+    const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw Object.assign(new Error(data.detail || "Something went wrong."), { retry: r.status === 503 || r.status >= 500 });
+    return data;
+  } catch (e) {
+    $("error-text").textContent = e.message === "Failed to fetch" ? "Connection problem. Please check your internet." : e.message;
+    $("retry").classList.toggle("hidden", !(e.retry || e.message === "Failed to fetch"));
+    $("error").classList.remove("hidden");
+    throw e;
+  } finally { setBusy(false); }
+}
+$("retry").onclick = () => lastCall && handlers[lastCall[0]] && handlers[lastCall[0]](lastCall[1]);
+
+const num = (id) => { const v = $(id).value.trim(); return /^\d+$/.test(v) ? parseInt(v, 10) : null; };
+const radio = (name) => { const r = document.querySelector(`input[name=${name}]:checked`); return r ? r.value : null; };
+
+// ----- flow -----
+if (mode === "pilot") {
+  $("landing-buttons").innerHTML = '<button data-mode="pilot">Start</button>';
+  $("landing-note").textContent = "Pilot session: thank you for helping test the study.";
+}
+document.querySelectorAll("#landing-buttons button").forEach(b => b.onclick = () => { mode = b.dataset.mode; show("consent"); });
+$("consent-no").onclick = async () => {
+  try { await call("/api/start", { mode, consent: false }); } catch (e) { return; }
+  end("<p>No problem at all. Thank you for your time.</p>");
+};
+$("consent-yes").onclick = () => show("screening");
+
+$("screen-next").onclick = () => handlers["/api/start"]({
+  mode, consent: true, age: num("age"), own_policy: radio("own") === "yes", govt: radio("govt") === "yes", t0: num("t0"),
+  _ok: num("age") !== null && radio("own") && radio("govt") && num("t0") !== null && num("t0") <= 100 });
+
+$("reason-send").onclick = () => {
+  const text = $("reason-text").value.trim();
+  if (text) handlers["/api/reason"]({ ...session, text });
+};
+$("chat-send").onclick = () => {
+  const text = $("chat-text").value.trim();
+  if (!text) return;
+  bubble(text, "me"); $("chat-text").value = "";
+  handlers["/api/message"]({ ...session, text });
+};
+$("chat-done").onclick = () => handlers["/api/message"]({ ...session, done: true });
+$("brief-done").onclick = async () => {
+  try { await call("/api/brief_done", { ...session, seconds: Math.round((Date.now() - briefStart) / 1000) }); } catch (e) { return; }
+  show("after");
+};
+$("t1-send").onclick = () => {
+  const score = num("t1");
+  if (score === null || score > 100) return alert("Please type a whole number from 0 to 100.");
+  handlers["/api/t1"]({ ...session, score });
+};
+$("t2-send").onclick = async () => {
+  const score = num("t2"), looked = radio("looked");
+  if (score === null || score > 100 || !looked) return alert("Please answer both questions.");
+  try { await call("/api/t2", { pid: params.get("t2"), token: params.get("k"), score, looked }); } catch (e) { return; }
+  end("<p>Thank you! That's everything. Your answers have been saved.</p>");
+};
+
+const handlers = {
+  "/api/start": async (body) => {
+    if (body._ok === false) return alert("Please answer every question (numbers from 0 to 100).");
+    const { _ok, ...payload } = body;
+    let r; try { r = await call("/api/start", payload); } catch (e) { return; }
+    if (r.status !== "ok") return end("<p>Thank you, that's all I need from you today. You've been very helpful.</p>");
+    session = { pid: r.pid, token: r.token };
+    show("reason");
+  },
+  "/api/reason": async (body) => {
+    let r; try { r = await call("/api/reason", body); } catch (e) { return; }
+    if (r.follow_up) { $("reason-label").textContent = r.follow_up; $("reason-text").value = ""; return; }
+    if (r.end) return end("<p>Thanks, that's really helpful. That's all I needed.</p>");
+    if (r.brief) {
+      $("brief-body").innerHTML = marked.parse(r.brief);
+      $("brief-body").querySelectorAll("a").forEach(a => { a.target = "_blank"; a.rel = "noopener"; });
+      briefStart = Date.now(); return show("brief");
+    }
+    show("chat"); bubble(body.text, "me"); bubble(r.reply, "bot");
+    if (r.last) finishChat();
+  },
+  "/api/message": async (body) => {
+    const t = body.done ? null : bubble("Thinking…", "bot thinking");
+    let r; try { r = await call("/api/message", body); } catch (e) { t && t.remove(); return; }
+    t && t.remove();
+    if (r.done) return finishChat();
+    bubble(r.reply, "bot");
+    if (r.last) finishChat();
+  },
+  "/api/t1": async (body) => {
+    let r; try { r = await call("/api/t1", body); } catch (e) { return; }
+    end(mode === "demo"
+      ? "<p>Thanks for trying it! This try-out isn't counted in the study.</p>"
+      : `<p>Thank you! Your study code is</p><p class="code">${r.code}</p>
+         <p>Please send this code to Som. Som will message you in 7 days with one last short question.</p>`);
+  },
+};
+function finishChat() { bubble("Thank you for talking with me.", "bot"); $("chat-input").classList.add("hidden"); setTimeout(() => show("after"), 1500); }
+
+if (params.get("t2")) show("followup");
+</script>
+</body>
+</html>

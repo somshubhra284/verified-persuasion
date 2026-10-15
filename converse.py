@@ -55,15 +55,52 @@ def ask_yes(prompt):
         print("Please type yes or no.")
 
 
-def logger(pid):
-    path = HERE / "sessions" / f"{pid}.jsonl"
+def file_sink(rec):
+    path = HERE / "sessions" / f"{rec['pid']}.jsonl"
     path.parent.mkdir(exist_ok=True)
+    with path.open("a") as f:
+        f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
+
+def logger(pid, sink=file_sink):
+    """sink(rec) stores one event; the web app passes its own (Supabase) sink. Same record shape everywhere."""
     def log(event, text=None, **extra):
-        rec = {"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "pid": pid, "event": event, "text": text, **extra}
-        with path.open("a") as f:
-            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+        sink({"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "pid": pid, "event": event, "text": text, **extra})
     return log
+
+
+def screen(age, own_policy, govt, t0):
+    """Screening reasons (CLAUDE.md criteria); empty list = eligible."""
+    return [why for failed, why in [(not 22 <= age <= 45, f"age {age}"), (own_policy, "has own policy"),
+                                    (govt, "government scheme"), (t0 < 60, f"T0 {t0} < 60")] if failed]
+
+
+def system_prompt(bucket, reason):
+    claims = allowed_claims(bucket)
+    return ((HERE / "prompts" / "conversation_prompt.md").read_text()
+            .replace("{reason}", reason).replace("{bucket}", bucket).replace("{bucket_name}", BUCKET_NAMES[bucket])
+            .replace("{claims}", json.dumps([{k: x[k] for k in ("id", "claim", "figure", "source", "status", "care")}
+                                             for x in claims], ensure_ascii=False, indent=1)))
+
+
+def next_reply(client, model, system, history, bucket, turn, log):
+    """One assistant turn: call the model, enforce the claim rules (one retry, then refuse), log it. Returns (reply, ids)."""
+    ids = {x["id"] for x in allowed_claims(bucket)}
+    msgs = [{"role": "system", "content": system}] + history
+    for attempt in range(2):  # one retry with the problem spelled out, then refuse
+        raw = client.chat.completions.create(model=model, temperature=0, response_format={"type": "json_object"},
+                                             messages=msgs).choices[0].message.content
+        reply, cited, problem, premise, premise_claim = check_reply(raw, ids)
+        if not problem:
+            break
+        log("violation", raw, problem=problem, attempt=attempt)
+        msgs = msgs + [{"role": "assistant", "content": raw},
+                       {"role": "user", "content": f"(system) Invalid: {problem}. Use only the listed claims; reply as JSON."}]
+    if problem:
+        reply, cited, premise, premise_claim = REFUSAL, [], None, None
+    log("assistant", reply, claim_ids=cited, bucket=bucket, model=model, provider=PROVIDER_TAG, turn=turn, fallback=bool(problem),
+        premise=premise, premise_claim=premise_claim, raw=raw)  # raw model output: shows whether code added the refusal
+    return reply, cited
 
 
 def say(text):
@@ -80,15 +117,12 @@ def intake(log, arm):
         say("No problem at all. Thank you for your time.")
         return None
     age = ask_score("How old are you? ")  # ponytail: reuses the 0-100 number prompt; age is in range
-    screens = [(not 22 <= age <= 45, f"age {age}"),
-               (ask_yes("Do you have a health insurance policy in your own name (not through work or family)? (yes/no) "),
-                "has own policy"),
-               (ask_yes("Are you covered by CGHS, ESIC or PM-JAY (Ayushman Bharat)? (yes/no) "), "government scheme")]
+    own = ask_yes("Do you have a health insurance policy in your own name (not through work or family)? (yes/no) ")
+    govt = ask_yes("Are you covered by CGHS, ESIC or PM-JAY (Ayushman Bharat)? (yes/no) ")
     t0 = ask_score("How much do you agree with \"I don't need a health insurance policy of my own\", "
                    "0 (not at all) to 100 (completely)? ")
-    screens.append((t0 < 60, f"T0 {t0} < 60"))
     log("t0", score=t0, arm=arm, age=age)
-    out = [why for failed, why in screens if failed]
+    out = screen(age, own, govt, t0)
     if out:
         log("screened_out", arm=arm, reasons=out)
         say("Thank you, that's all I need from you today. You've been very helpful.")
@@ -123,29 +157,11 @@ def converse(pid):
         log("end", reason="unclassified", bucket=bucket)
         return
 
-    claims = allowed_claims(bucket)
-    ids = {x["id"] for x in claims}
-    system = ((HERE / "prompts" / "conversation_prompt.md").read_text()
-              .replace("{reason}", reason).replace("{bucket}", bucket).replace("{bucket_name}", BUCKET_NAMES[bucket])
-              .replace("{claims}", json.dumps([{k: x[k] for k in ("id", "claim", "figure", "source", "status", "care")}
-                                               for x in claims], ensure_ascii=False, indent=1)))
+    system = system_prompt(bucket, reason)
     client, history = make_client(), [{"role": "user", "content": reason}]
     for turn in range(MAX_TURNS):
-        msgs = [{"role": "system", "content": system}] + history
-        for attempt in range(2):  # one retry with the problem spelled out, then refuse
-            raw = client.chat.completions.create(model=model, temperature=0, response_format={"type": "json_object"},
-                                                 messages=msgs).choices[0].message.content
-            reply, cited, problem, premise, premise_claim = check_reply(raw, ids)
-            if not problem:
-                break
-            log("violation", raw, problem=problem, attempt=attempt)
-            msgs = msgs + [{"role": "assistant", "content": raw},
-                           {"role": "user", "content": f"(system) Invalid: {problem}. Use only the listed claims; reply as JSON."}]
-        if problem:
-            reply, cited, premise, premise_claim = REFUSAL, [], None, None
+        reply, cited = next_reply(client, model, system, history, bucket, turn, log)
         say(reply)
-        log("assistant", reply, claim_ids=cited, bucket=bucket, model=model, provider=PROVIDER_TAG, turn=turn, fallback=bool(problem),
-            premise=premise, premise_claim=premise_claim, raw=raw)  # raw model output: shows whether code added the refusal
         history.append({"role": "assistant", "content": json.dumps({"reply": reply, "claim_ids": cited})})
         if turn == MAX_TURNS - 1:
             break
@@ -197,6 +213,8 @@ def selfcheck():
     assert check_reply('{"premise": "most claims rejected", "premise_claim": "C10", "reply": "87% settled.", '
                        '"claim_ids": ["C10"]}', b3)[0] == "87% settled."
     assert check_reply('{"premise": null, "reply": "Hi.", "claim_ids": []}', b3)[0] == "Hi."
+    assert screen(30, False, False, 80) == [] and screen(50, True, False, 40) == ["age 50", "has own policy", "T0 40 < 60"]
+    assert "{claims}" not in system_prompt("B3", "x") and '"C10"' in system_prompt("B3", "x")
     assert "C25" in (HERE / "data" / "ledger.json").read_text() and "C25" not in (HERE / "data" / "fixed_brief.md").read_text()
     print("selfcheck ok")
 

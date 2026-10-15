@@ -51,8 +51,8 @@ def fmt(x):
 
 
 def report(folder):
-    # participants only (P01, P02, ...): pilot-1, test-*, reversal runs are never counted
-    people = [load(f) for f in sorted(Path(folder).glob("*.jsonl")) if re.fullmatch(r"P\d+\.jsonl", f.name)]
+    # participants only: P01.. (and S01.. = declined / screened out on the website); pilot-, demo-, test-, reversal never count
+    people = [load(f) for f in sorted(Path(folder).glob("*.jsonl")) if re.fullmatch(r"[PS]\d+\.jsonl", f.name)]
     done = [p for p in people if p["status"] == "complete"]
     lines = ["| pid | arm | bucket | T0 | T1 | T2 | ΔT1 | ΔT2 | looked into policy | factual sentences | unsupported claims (hand) | checker agreed |",
              "|---|---|---|---|---|---|---|---|---|---|---|---|"]
@@ -93,11 +93,13 @@ def selfcheck():
                             {"event": "t1", "score": 65}])
         write("P03.jsonl", [{"event": "t0", "score": 40, "arm": "brief"}, {"event": "screened_out", "arm": "brief"}])
         write("P04.jsonl", [{"event": "declined", "arm": "system"}])
+        write("S01.jsonl", [{"event": "start"}, {"event": "t0", "score": 40}, {"event": "screened_out", "arm": None}])
+        write("demo-1.jsonl", [{"event": "t0", "score": 90, "arm": "system"}, {"event": "t1", "score": 10}])
         text, s = report(d)
     assert s["system"]["n"] == 1 and s["system"]["d1"] == -30 and s["system"]["d2"] == -20 and s["system"]["unsup"] == 1
     assert s["brief"]["n"] == 1 and s["brief"]["d1"] == -5 and s["brief"]["d2"] is None and s["brief"]["unsup"] is None
     assert "different providers" in text and "pilot" not in text
-    assert "screened_out 1" in text and "declined 1" in text and "| P01 | system | B3 | 80 | 50 | 60 | -30 | -20 | yes | 6 | 1 | 4/6 |" in text
+    assert "screened_out 2" in text and "demo" not in text and "declined 1" in text and "| P01 | system | B3 | 80 | 50 | 60 | -30 | -20 | yes | 6 | 1 | 4/6 |" in text
     print("selfcheck ok")
 
 
