@@ -63,3 +63,18 @@ All five are in `sources/` (gitignored). Each was checked to be the right docume
 - Added `pypdf` to `.venv` for text extraction. It's a checking tool only; the scripts don't import it.
 - The two scanned files need page images to verify. `sips` renders only page 1, so use `brew install poppler` (which also lets the Read tool show PDF pages).
 - Next: verify each claim against its PDF and propose ledger changes for Som's approval.
+
+### Item 1: verification of the text-readable PDFs (15 Oct) — PROPOSED, not applied
+Also downloaded `sources/IRDAI-Master-Circular-Health-29-May-2024-Annexures.pdf` (46 pp), for Annexure-6, the list of circulars it repeals.
+Page refs below are PDF page numbers (printed page in brackets).
+
+| Claim | Verdict | Evidence | Proposed change |
+|---|---|---|---|
+| C10 | **Wording error + unverifiable part** | IRDAI AR 24–25 p.274 [42], para I.6.5.6 and Table I.29 (p.275): 372.58 lakh claims in total; 326.01 lakh paid (87.50%), 29.51 lakh repudiated (7.92%), 17.07 lakh pending (4.58%). **3.26 crore is the number settled, not the total.** FY24 (83/11/6) isn't in this report. | claim: "Of about 3.7 crore health claims handled in 2024–25, 87% were paid, 8% were repudiated and about 5% were still pending at year end." figure: "372.58 lakh claims; 326.01 lakh paid (87.5%), 29.51 lakh repudiated (7.9%), 17.07 lakh pending (4.6%)". Status → Primary; source → IRDAI AR 2024–25, para I.6.5.6 and Table I.29. **Drop "down from 11%"** (or keep it as a separate Secondary claim, Som's call). |
+| C21 | Confirmed | p.274 [42], para I.6.5.5: "average amount paid per claim was ₹28,910". FY24 ₹31,086 isn't in this report. | Status → Primary; figure → "₹28,910 per claim paid"; drop the FY24 figure. |
+| C27 | Confirmed (unit: lives) | p.272, Table I.26 and para I.6.5.3: lives covered 5,806.47 lakh; group 2,751.01 lakh (47.4%); individual 601.46 lakh (10.3%); government 2,454.00 lakh (42.3%). | Status → Primary. claim: "people" → "lives covered" (a person on two policies counts twice). |
+| C07 | Still copy-only, but not repealed | The 2024 Master Circular has no group-to-individual underwriting rule. Its Annexure-6 repeal list **does not include** IRDAI/HLT/REG/CIR/003/01/2020. | Keep Primary copy. care: replace "the 2024 Master Circular may supersede this" with "Not in the 2024 Master Circular's repeal list (Annexure-6)". Upgrading needs the 2020 circular itself from irdai.gov.in. |
+| C08 | Confirmed as inference | MC paras 11 (migration, explicitly "including … group insurance policies") and 12d (portability) are the only routes for credits to transfer, pp.7–8. | Status stays Inference; source/url → the IRDAI original (document-detail?documentId=4942918), paras 11–12. |
+| C12 | Core confirmed; two figure details unsourced | MC para 13, p.8: not contestable on non-disclosure/misrepresentation, except established fraud, after "60 months of continuous coverage"; ported/migrated credits count. "(was 96)" and "on the original sum insured" are not in it. | Status → Primary; figure → "60 months of continuous coverage; ported and migrated credits count". Claim text unchanged ("exclusions still apply" follows because para 13 only bars non-disclosure challenges). |
+| C03 | Confirmed | NSS Report 596, p.47 [21], section 2.3.2: hospitalisation cases (excluding childbirth), private hospital incl. govt-empanelled: urban 64.6%, rural 57.9%. | Status → Primary; source → NSS Report 596, section 2.3.2. care: "Excludes childbirth; private includes government-empanelled hospitals." |
+| C28 | Confirmed | NSS Report 596, p.50 [24]: any scheme, urban 19.1 (2017–18) → 44.3 (2025); rural 14.1 → 47.4. | No change (already Primary via the press note); optionally add the report as a second source. |
