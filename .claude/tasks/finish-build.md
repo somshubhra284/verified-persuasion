@@ -179,3 +179,16 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - Trade-off measured: the new rule took recall from 15/16 to 19/19 but added a false flag. Every false flag over-counts unsupported claims, which works *against* the hypothesis (it's conservative). Stopped; options go to Som.
 ### Narrow fix (Som chose: one fix, then one rerun; if it still fails only on false flags, switch to hand review)
 - The judge rule gains: "Wording that appears in the claim itself (its own 'about', 'nearly', 'most', '4 in 10') is not vague: it is supported." The examples don't use g41's phrase "two in three".
+### Step 1, third rescore (after the narrow fix) — **FAIL on recall (18/19), 2 false flags**
+- MISSED **g21** ("will be subject to underwriting" vs C07's "may"). It was caught in the two runs before; it also flipped in unpinned run 1.
+- FALSE FLAG g11 (in every run tonight) and g41 (the narrow fix didn't clear it).
+- The pre-agreed fallback ("if it fails only on false flags, switch to hand review") **doesn't apply literally**: this failure is on recall.
+- **Pattern across the three runs on the final setup** (same host, same effort):
+
+| Run | Missed | False flags |
+|---|---|---|
+| A (before the fixes) | g37 | g09, g11 |
+| B (vague rule added) | none | g01, g11, g41 |
+| C (narrow fix added) | g21 | g11, g41 |
+
+- Single rows flip between runs at temperature 0. The judge is not stable enough to meet "100% recall and ≤ 2 false flags" on one run. More prompt tuning is chasing noise. Stopped; options go to Som.
