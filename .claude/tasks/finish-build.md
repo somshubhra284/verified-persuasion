@@ -197,3 +197,6 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - The write-up reports checker-vs-hand agreement.
 - Why: across three runs on one fixed setup, single gold rows flipped between runs (table above). No single run can reliably meet "100% recall, ≤ 2 false flags", and prompt fixes only moved the errors.
 - Still to build before participants: a way to record hand labels next to the checker's, and `analyze.py` reading the hand count. Step 1 is closed by this decision; testing continues with step 1b.
+### Step 1b: classifier held-out rescore (DeepInfra, effort medium) — **PASS**
+- Primary 49/50 (98%), secondary 7/7, 0 unneeded follow-ups, 1 missed follow-up. The bar is ≥ 90% and ≤ 2 wrong.
+- Fix 4: h-49 (the English R2 sentence) → B0 ✓. **h-50 (Hinglish variant) → B5 ✗**. A bare fact in Hinglish still reads as a cost reason; fix 1 (the premise check) has to catch that path.
