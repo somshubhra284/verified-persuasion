@@ -48,3 +48,18 @@ Any Groq call. Pilot and participants. Editing the ledger before the PDFs are ch
   - `docs/test-plan-day2.md` gains step 1b, the LLM held-out re-score (same bar); step 2 depends on it.
 - **Recruiting:** `docs/recruiting.md` has the invite, self-check, consent, how to run each arm, the day-7 message, the debrief and a recruiting log template (kept at `sessions/recruiting-log.md`, which is gitignored).
 - `converse.py` disclosure: added "You can stop at any time (Ctrl-C)." so the consent text matches the program word for word. A stopped session is logged as incomplete.
+
+### Item 1: downloads (15 Oct, done by Claude with curl and a browser user-agent; no browser needed)
+All five are in `sources/` (gitignored). Each was checked to be the right document from its title page or text:
+
+| File | Pages | Text extractable? | From |
+|---|---|---|---|
+| IRDAI-Annual-Report-2024-25.pdf | 416 | yes (Hindi half in a legacy font; English from about p. 250) | irdai.gov.in document-detail?documentId=8375620 |
+| IRDAI-Master-Circular-Health-29-May-2024.pdf | 17 | yes | irdai.gov.in document-detail?documentId=4942918 (ref IRDAI/HLT/CIR/PRO/84/5/2024) |
+| IRDAI-senior-citizen-premium-circular-Jan-2025.pdf | 3 | **no, scanned** | irdai.gov.in document-detail?documentId=6639156 |
+| CIO-Annual-Report-2024-25.pdf | 98 | **almost none, images** | cioins.co.in/annualreports/AnnualReport2024-2025.pdf |
+| NSS-Report-596-Household-Social-Consumption-Health.pdf | 128 | yes | mospi.gov.in, NSS Report no. 596 (80/Health) |
+
+- Added `pypdf` to `.venv` for text extraction. It's a checking tool only; the scripts don't import it.
+- The two scanned files need page images to verify. `sips` renders only page 1, so use `brew install poppler` (which also lets the Read tool show PDF pages).
+- Next: verify each claim against its PDF and propose ledger changes for Som's approval.
