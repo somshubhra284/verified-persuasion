@@ -153,3 +153,9 @@ Fix 2 (C30, your call). Recruiting and the pilot. Any LLM call today, beyond rea
 - Two attempts (each with 4 SDK retries) failed with 429: "openai/gpt-oss-120b is temporarily rate-limited upstream", provider_name Groq.
 - That's OpenRouter's shared Groq capacity, not Som's key. No result.
 - Options for Som: retry later on Groq; pin another full-precision host (e.g. Crusoe bf16), noting the host change; or BYOK (that would use the Groq key, which Som ruled out).
+### Host and setup changes (15 Oct evening)
+- Crusoe (Som's second choice) was rate-limited (429, `upstream_provider_shared_pool`). Single probe calls to DeepInfra, AkashML and DekaLLM succeeded. **Som chose DeepInfra** (bf16, full precision).
+- DeepInfra then also 429'd ("engine_overloaded") during the gold run. `pin()` now retries 429s after waiting 15/30/45/60/90 s, on the same host only, and never falls back.
+- **Reasoning effort pinned to `medium`** (`classify_eval.EFFORT`, sent as `reasoning: {effort}` on OpenRouter), because hosts may default differently. The provider tag is now `openrouter:DeepInfra:effort-medium`. A live check returned DeepInfra / openai/gpt-oss-120b with 37 reasoning tokens.
+- The gold run started before the effort pin was stopped part-way; no result was recorded.
+- Commands from here on: `PROVIDER=openrouter OPENROUTER_HOST=DeepInfra .venv/bin/python …`

@@ -25,7 +25,8 @@ PROVIDERS = {"groq": ("GROQ_API_KEY", "https://api.groq.com/openai/v1"),
              "openrouter": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1")}
 PROVIDER = os.environ.get("PROVIDER", "groq")
 HOST = os.environ.get("OPENROUTER_HOST") if PROVIDER == "openrouter" else None
-PROVIDER_TAG = PROVIDER + (f":{HOST}" if HOST else "")  # logged next to the model, so results from each host stay separable
+EFFORT = "medium"  # gpt-oss reasoning effort; hosts may default differently, so it is set explicitly on OpenRouter
+PROVIDER_TAG = PROVIDER + (f":{HOST}:effort-{EFFORT}" if HOST else "")  # logged next to the model, so results from each host stay separable
 BUCKETS = {f"B{i}" for i in range(8)}
 
 # ponytail: substring keywords with first-match-wins ordering. Ceiling: no negation or context ("not young").
@@ -61,7 +62,18 @@ def keyword_classify(text):
 def pin(create, host):
     """Wrap chat.completions.create: ask OpenRouter for one host only, then verify the host and model that answered."""
     def pinned(**kw):
-        r = create(**kw, extra_body={"provider": {"order": [host], "allow_fallbacks": False, "require_parameters": True}})
+        import time
+        from openai import RateLimitError
+        for wait in (15, 30, 45, 60, 90, None):  # ponytail: fixed backoff on shared-pool 429s; never falls back to another host
+            try:
+                r = create(**kw, extra_body={"provider": {"order": [host], "allow_fallbacks": False, "require_parameters": True},
+                                             "reasoning": {"effort": EFFORT}})
+                break
+            except RateLimitError:
+                if wait is None:
+                    raise
+                print(f"  [{host} rate-limited, waiting {wait}s]", file=sys.stderr)
+                time.sleep(wait)
         served = (r.model_extra or {}).get("provider")
         if served != host or r.model != kw["model"]:
             raise RuntimeError(f"answered by {served} / {r.model}, expected {host} / {kw['model']}; stopping")
