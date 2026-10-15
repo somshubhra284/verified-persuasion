@@ -1,6 +1,6 @@
 """Web version of the study: one live link for graders (try-out) and participants.
 
-  .venv/bin/uvicorn app:app --reload        # local: events go to sessions/<pid>.jsonl, exactly like the CLI
+  SESSIONS_DIR=sessions .venv/bin/uvicorn app:app --reload   # local test: files only (without it, .env sends to Supabase)
   .venv/bin/python app.py --selfcheck       # offline: full flows with a fake model, no API
 
 Hosting: the page (public/index.html) is a static Hugging Face Space; this API runs on Render
@@ -80,8 +80,10 @@ class SupabaseStore:
         return [r["pid"] for r in self._call("GET", q)]
 
 
-STORE = (SupabaseStore(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SECRET_KEY"])
-         if os.environ.get("SUPABASE_URL") else FileStore(os.environ.get("SESSIONS_DIR", HERE / "sessions")))
+# An explicit SESSIONS_DIR always wins, so local tests never write to the live database (.env holds the Supabase keys).
+STORE = (FileStore(os.environ["SESSIONS_DIR"]) if os.environ.get("SESSIONS_DIR") else
+         SupabaseStore(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SECRET_KEY"]) if os.environ.get("SUPABASE_URL") else
+         FileStore(HERE / "sessions"))
 app = FastAPI(title="Verified Persuasion")
 # The page lives on Hugging Face Spaces and calls this API on Render: allow only that origin (comma-separated list).
 ALLOWED = [o.strip() for o in os.environ.get("ALLOWED_ORIGIN", "").split(",") if o.strip()]

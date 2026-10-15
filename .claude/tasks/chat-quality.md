@@ -89,3 +89,4 @@ The demo video and case study. Changes to the ledger. Tuning away the add-ons (t
   - `app.py`: the secondary bucket goes through the classify → system prompt → next_reply path, the API returns `sources` for cited IDs, and a selfcheck covers both.
 - Re-validation criteria are written in `runs/chat-quality/README.md`.
 - **Re-validation on Cerebras:** see `runs/chat-quality/README.md`. Everything passes after the history-encoding fix; median latency 1.0 s. The duplicate-refusal cleanup was added in code.
+- **Store selection fix:** local UI tests had written demo-2…5 to the live Supabase (the .env Supabase keys won over SESSIONS_DIR). An explicit `SESSIONS_DIR` now always wins. Som's own test session P01 (DeepInfra, unfinished) is in the live DB: ask before deleting.
