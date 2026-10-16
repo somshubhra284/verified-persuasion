@@ -176,7 +176,7 @@ def system_prompt(bucket, reason, secondary=None, plan=None):
     mine += [c for c in usable_claims() if c["id"] in plan_ids(plan) and c not in mine]  # e.g. C05 for "buy later"
     other = [c for c in usable_claims() if c not in mine]
     also = f" They also mentioned: {secondary} ({BUCKET_NAMES[secondary]})." if secondary else ""
-    # the conclusion stays out: its own wording ("significant uncovered expenses") was copied into replies (SIM07)
+    # the conclusion stays out: its own wording ("significant uncovered expenses") was copied into replies (stress test)
     plan_text = json.dumps({"crux": (plan or {}).get("crux", ""), "chain": (plan or {}).get("chain", [])}, ensure_ascii=False, indent=1)
     return ((HERE / "prompts" / "conversation_prompt.md").read_text()
             .replace("{reason}", reason).replace("{bucket}", bucket).replace("{bucket_name}", BUCKET_NAMES[bucket])
@@ -210,7 +210,7 @@ def next_reply(client, model, system, history, bucket, turn, log, secondary=None
                                              messages=msgs).choices[0].message.content
         reply, cited, problem, premise, premise_claim, meta = check_reply(raw, ids)
         if (not problem and attempt == 0 and cited and set(cited) <= given and meta.get("move") in ("answer", "advance")):
-            # a verbatim repeat (C22 x3 in SIM07) gets one retry; if it repeats again, a repeat beats a refusal
+            # a verbatim repeat (C22 x3 in a stress test) gets one retry; if it repeats again, a repeat beats a refusal
             problem = f"you already gave {', '.join(cited)}; answer their last message with a different listed claim, or bridge"
         if not problem:
             break

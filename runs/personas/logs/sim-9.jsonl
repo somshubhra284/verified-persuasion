@@ -1,6 +1,0 @@
-{"ts": "2026-10-15T23:50:35", "pid": "sim-9", "mode": "sim", "text": null, "event": "start", "label": "SIM08"}
-{"ts": "2026-10-15T23:50:35", "age": 30, "arm": "brief", "pid": "sim-9", "text": null, "event": "t0", "score": 8}
-{"ts": "2026-10-15T23:50:36", "pid": "sim-9", "text": "I deal with insurance claims at work. It's endless paperwork, TPAs keep asking for documents, and the fine print always has some exclusion. Not worth the stress.", "event": "reason"}
-{"ts": "2026-10-15T23:50:37", "pid": "sim-9", "text": "I deal with insurance claims at work. It's endless paperwork, TPAs keep asking for documents, and the fine print always has some exclusion. Not worth the stress.", "event": "classify", "model": "openai/gpt-oss-120b", "primary": "B3", "provider": "openrouter:Cerebras:effort-medium", "secondary": null}
-{"ts": "2026-10-15T23:50:38", "pid": "sim-9", "text": null, "event": "brief_read", "seconds": 0, "brochure_sha": "4cb7a95c0db3"}
-{"ts": "2026-10-15T23:51:12", "pid": "sim-9", "text": null, "event": "t1", "score": 8}

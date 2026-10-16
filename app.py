@@ -151,7 +151,7 @@ def llm(fn):
 
 
 class Start(BaseModel):
-    mode: str = "study"  # study | demo | pilot | sim (simulated personas: arm chosen, never counted)
+    mode: str = "study"  # study | demo | pilot | sim (test sessions: arm chosen, never counted)
     consent: bool
     arm: str | None = None  # sim mode only
     label: str | None = None  # sim mode only: persona name

@@ -1,3 +1,0 @@
-{"ts": "2026-10-15T23:54:11", "pid": "sim-11", "mode": "sim", "text": null, "event": "start", "label": "SIM10"}
-{"ts": "2026-10-15T23:54:11", "age": 30, "arm": null, "pid": "sim-11", "text": null, "event": "t0", "score": 5}
-{"ts": "2026-10-15T23:54:11", "arm": null, "pid": "sim-11", "text": null, "event": "screened_out", "reasons": ["T0 5 < 6"]}
