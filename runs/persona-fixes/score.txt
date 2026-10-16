@@ -1,0 +1,108 @@
+
+##### J1 classify=[('B2', 'B5')] chain=['C06', 'C08', 'C05', 'C02']
+  B1 [advance/resisting ['C06'] prem=None->None ]: I hear you. Based on IRDAI circular IRDAI/HLT/REG/CIR/003/01/2020, this means the coverage you have now is tied to the employer’s group policy and can only be moved into your own name when you leave the group. What would you do if you needed coverage before you get married?
+  U: Yes I think I will have significant financial responsibility that time and my wife and kids will need coverage as well. That time it would make more sense than now.
+  B2 [advance/open ['C08'] prem=None->None ]: I hear you. Based on IRDAI Master Circular on Health Insurance Business, 29 May 2024, paras 11–12, this means a fresh policy bought after leaving a job, rather than migrated, starts its waiting periods from zero. How would the need for a new waiting period affect your plan to wait until marriage?
+  U: Okay i will wait for the underwriting. i can't imagine why is it something to think about keenly.
+  B3 [answer/resisting ['C07'] prem=None->None ]: I hear you. According to IRDAI circular IRDAI/HLT/REG/CIR/003/01/2020, this may be subject to underwriting. What concerns you about the underwriting process?
+  U: I don't think I have any pre-existing diseases which will require waiting periods.
+    [violation retry] ask about their reasoning, not their feelings: 'How would you feel if a condition you were
+  B4 [answer/open ['C05'] prem=None->None ]: I hear you. According to ICMR-INDIAB-17, Lancet Diabetes & Endocrinology, Jul 2023, about 1 in 9 Indian adults aged 20 and over has diabetes and more than 1 in 3 has high blood pressure. What would change your view if a sizable share of adults have such conditions?
+  U: how can I predict the future. i think I am already covered here by my employer insurance.
+  B5 [advance/resisting ['C02'] prem=None->None ]: I hear you. According to MoSPI/NSO, NSS 80th round press note, 20 Apr 2026, the typical private‑hospital stay costs ₹24,000 (≈$248) out of pocket. If you needed care beyond your employer’s limit, how would that affect your decision?
+
+##### J2 classify=[('B2', None)] chain=['C06', 'C08', 'C05']
+  B1 [advance/resisting ['C06'] prem=None->None ]: I hear you – you’re wondering why you’d need anything beyond the group cover. Based on IRDAI circular IRDAI/HLT/REG/CIR/003/01/2020, this means the employer’s cover belongs to the group policy and the option to move it into your own name only applies when you exit the group. What would you consider if you changed jobs or left the company?
+  U: not convinced
+  B2 [bridge/resisting ['C06'] prem=None->None ]: You mentioned that your company already provides a 5 lakh cover. Based on IRDAI circular IRDAI/HLT/REG/CIR/003/01/2020, this means the employer’s cover belongs to the group policy and the migration option only applies when you leave the group. How do you see the risk if you were to change jobs before using that cover?
+  U: not convinced
+    [violation retry] the question asks about buying/migrating/insurers: 'If you were to switch jobs, how would 
+    [violation retry] the question asks about buying/migrating/insurers: 'If you needed coverage before you coul
+  B3 [None/None [] prem=None->None REFUSED ]: I don't have a source for that, so I won't state it.
+  U: not convinced
+  B4 [advance/resisting ['C08'] prem=None->None ]: I understand you’re still skeptical. Based on IRDAI Master Circular on Health Insurance Business, 29 May 2024, paras 11–12, this means a fresh policy bought after leaving a job, rather than migrated, starts its waiting periods from zero. Would you consider how that might affect coverage if you needed treatment soon after a job change?
+  U: not convinced
+  B5 [advance/resisting ['C05'] prem=None->None ]: I hear you’re still not convinced. According to ICMR-INDIAB-17, Lancet Diabetes & Endocrinology, Jul 2023, about 1 in 9 Indian adults aged 20 and over has diabetes, and more than 1 in 3 has high blood pressure. How does the prevalence of these conditions affect your confidence in relying only on the group cover?
+
+##### J3 classify=[('B2', None)] chain=['C06', 'C08', 'C05']
+  B1 [advance/resisting ['C06'] prem=None->None ]: I hear you – you’re wondering why you’d need anything beyond the group cover. Based on IRDAI circular IRDAI/HLT/REG/CIR/003/01/2020, this means the employer’s cover belongs to the group policy and the option to move it into your own name only applies when you exit the group. What would you consider if you changed jobs or left the company?
+  U: that's a fair point
+  B2 [advance/agrees ['C08'] prem=None->None ]: I hear you. Based on IRDAI Master Circular on Health Insurance Business, 29 May 2024, paras 11–12, this means a fresh policy bought after leaving a job starts its waiting periods from zero, unlike a migrated one. What would change for you if you needed to start waiting periods again after leaving your company?
+  U: that's a fair point
+  B3 [advance/open ['C05'] prem=None->None ]: I hear you. According to ICMR-INDIAB-17, Lancet Diabetes & Endocrinology, Jul 2023, about 1 in 9 Indian adults aged 20 and over has diabetes and more than 1 in 3 has high blood pressure. How would that affect your view on relying solely on the group cover?
+  U: that's a fair point
+  B4 [wrap/open ['C06', 'C08', 'C05'] prem=None->None ]: You mentioned your employer’s 5 lakh group cover. Based on IRDAI circular IRDAI/HLT/REG/CIR/003/01/2020, that cover belongs to the group policy and can only be moved to your name when you leave the group; a new individual policy would start its waiting periods from zero (IRDAI Master Circular on Health Insurance Business, 29 May 2024), and given that about 1 in 9 Indian adults has diabetes and over 1 in 3 have high blood pressure (ICMR‑INDIAB‑17, Lancet Diabetes & Endocrinology, Jul 2023), relying solely on the group cover may leave gaps if you change jobs or develop health issues.
+
+##### R1 classify=[('B3', None)] chain=['C10', 'C05', 'C08']
+  B1 [answer/resisting ['C10'] prem='Most health insurance claims in India get rejected'->C10 ]: I hear you say that most claims are rejected. According to IRDAI Annual Report 2024–25, para I.6.5.6 and Table I.29, of about 3.7 crore health claims handled in 2024–25, 87% were paid and 8% were rejected. How would you view the situation if a claim you filed was actually approved and covered your expenses?
+  U: Are you sure? I read most claims get rejected.
+    [violation retry] you already gave C10; answer their last message with a different listed claim, or bridge
+  B2 [answer/resisting ['C34'] prem='most claims get rejected'->C34 ]: I hear you say most claims are rejected. According to IRDAI data for 2023–24, as reported by IndiaMedToday, about 83% of health claims were settled and 11% were repudiated. Does seeing that the majority of claims are actually paid change how you view the risk of paying for a policy?
+  U: My friend said 70% of claims are rejected.
+    [violation retry] you already gave C10; answer their last message with a different listed claim, or bridge
+  B3 [answer/resisting ['C34'] prem='70% of claims are rejected'->C34 ]: I hear you say your friend claims 70% of claims are rejected. According to IRDAI data for 2023–24, as reported by IndiaMedToday, about 83% of health claims were settled and 11% were repudiated. Does seeing that the majority of claims are actually paid change how you view the need for a policy?
+
+##### R2B5 classify=[('B5', None)] chain=['C02', 'C05', 'C08']
+  B1 [answer/resisting ['C02'] prem='hospital costs double every five years'->None REFUSED ]: I don't have a source for that, so I won't state it. I hear you’re concerned about rising costs. According to MoSPI/NSO, NSS 80th round press note, 20 Apr 2026, the typical private‑hospital stay cost ₹24,000 (≈$248) out of pocket. If a hospital stay cost more than that, how would you handle it?
+
+##### R2mid classify=[('B5', None)] chain=['C02', 'C05', 'C08', 'C10']
+  B1 [advance/resisting ['C02'] prem=None->None ]: I hear you—premiums feel like an expense. According to MoSPI/NSO, NSS 80th round press note, 20 Apr 2026, the typical private‑hospital stay costs a median of ₹24,000 (≈$248) out of pocket. How would that affect your view on keeping the money in savings instead of paying premiums?
+  U: Well hospital costs double every five years anyway, right?
+  B2 [answer/resisting [] prem='hospital costs double every five years'->None REFUSED ]: I don't have a source for that, so I won't state it. What makes you think the cost increase matters for your savings decision?
+  U: So you agree I should get insurance then?
+  B3 [advance/open ['C05'] prem=None->None ]: I hear you. According to ICMR-INDIAB-17, Lancet Diabetes & Endocrinology, Jul 2023, about 1 in 9 Indian adults aged 20 and over has diabetes, and more than 1 in 3 has high blood pressure. How does the likelihood of these conditions affect your view on keeping money in savings versus having coverage?
+
+##### SIM01 classify=[('B2', 'B5')] chain=['C06', 'C08', 'C05', 'C02']
+  B1 [advance/resisting ['C06'] prem=None->None ]: I hear you. Based on IRDAI circular IRDAI/HLT/REG/CIR/003/01/2020, this means the coverage you have now is tied to the employer’s group policy and can only be moved into your own name when you leave the group. What would you do if you needed coverage before you get married?
+  U: Nothing would happen, my company cover would pay for it. I'm not planning to leave my job anytime soon.
+  B2 [answer/resisting ['C18'] prem=None->None ]: I hear you. According to National Health Accounts Estimates 2022–23, NHSRC/MoHFW, May 2026, about 43% of total health spending in India is paid directly out of pocket. How would you handle a situation where the cover doesn’t fully pay?
+  U: But I don't have any health issues right now. By the time I get married I'll just buy a policy and the waiting period will be over before anything happens.
+  B3 [answer/resisting ['C08'] prem='the waiting period will be over before anything happens'->C08 ]: I hear you. Based on IRDAI Master Circular on Health Insurance Business, 29 May 2024, paras 11–12, this means a fresh policy bought after leaving a job, rather than migrated, starts its waiting periods from zero. How would you handle a health issue that appears before the waiting period ends?
+  U: Okay, those numbers are higher than I thought. But even if something happened, my company cover would still pay for it, so I don't see the problem.
+    [violation retry] ask about their reasoning, not their feelings: 'How would you feel about the chance of dev
+  B4 [wrap/resisting ['C06', 'C08'] prem=None->None FORCED]: Based on IRDAI circular IRDAI/HLT/REG/CIR/003/01/2020, your coverage is tied to the employer’s group policy and can only be moved into your own name when you leave the group. Based on IRDAI Master Circular on Health Insurance Business, 29 May 2024, paras 11–12, a fresh personal policy would start its waiting periods from zero. Thank you for the discussion.
+
+##### SIM03 classify=[('B3', None)] chain=['C10', 'C12', 'C05', 'C02']
+  B1 [answer/resisting ['C10'] prem='Most health insurance claims in India get rejected.'->C10 ]: I hear you. According to IRDAI Annual Report 2024–25, para I.6.5.6 and Table I.29, about 87% of health claims were paid and only around 8% were rejected. What would change your view if most claims are actually paid?
+  U: Those are just official numbers. My uncle paid for 8 years and they still rejected him for a pre-existing disease. How is that fair?
+  B2 [answer/resisting ['C12'] prem=None->None ]: I understand your concern. According to IRDAI Master Circular on Health Insurance Business, 29 May 2024, para 13, after five years of continuous cover an insurer can’t reject a claim for non‑disclosure or misrepresentation, except in cases of established fraud; policy exclusions still apply. Would knowing this rule change how you view the situation?
+  U: He did have it for 8 years, so by that rule they shouldn't have rejected him. That just shows companies don't follow the rules anyway. What's the point?
+  B3 [bridge/resisting ['C12'] prem=None->None ]: According to IRDAI Master Circular on Health Insurance Business, 29 May 2024, para 13, after five years of continuous cover an insurer can’t reject a claim for non‑disclosure or misrepresentation, except in cases of established fraud. What would you need to see to feel the system is working fairly?
+  U: You're just repeating the same rule. If a company breaks it, what can an ordinary person like my uncle even do?
+  B4 [wrap/resisting ['C10', 'C12'] prem=None->None FORCED]: You mentioned that most claims are rejected and that your uncle faced a denial despite years of coverage; I noted that the majority of claims are paid (87%) and that after five years insurers cannot reject a claim for non‑disclosure except in fraud cases. Thank you for sharing your experience.
+
+##### SIM05 classify=[('B5', 'B1')] chain=['C02', 'C05', 'C08']
+  B1 [advance/resisting ['C02'] prem=None->None ]: I hear you – paying a premium every year can feel like a waste. According to MoSPI/NSO, NSS 80th round press note, 20 Apr 2026, the typical (median) private‑hospital stay cost ₹24,000 (≈$248) out of pocket, excluding childbirth. If you needed a private hospital stay, how would that cost compare to the returns on your FD?
+  U: 24-50 hazaar toh main FD se easily nikal lungi. Itne ke liye har saal premium kyun bharun?
+  B2 [advance/resisting ['C05'] prem='24-50 hazaar'->C02 ]: I understand you could pull ₹24‑50 k from your FD if needed. According to ICMR-INDIAB-17, Lancet Diabetes & Endocrinology, Jul 2023, about 1 in 9 Indian adults has diabetes and more than 1 in 3 has high blood pressure. If such a condition developed, would your FD still be enough to cover ongoing treatment?
+  U: 3 in 100 matlab 97% logon ko kuch hota hi nahi. Aur main healthy hoon, toh main un 97 mein hoon.
+  B3 [advance/resisting ['C08'] prem='3 in 100'->C01 ]: I see you feel being healthy puts you in the 97 % who likely won’t need care. Based on IRDAI Master Circular on Health Insurance Business, 29 May 2024, paras 11–12, this means a fresh policy starts its waiting periods from zero. How would that affect your view on paying premiums now versus later?
+  U: Diabetes ya BP hua bhi toh dawai se manage ho jaata hai, uske liye hospital thodi jaana padta hai.
+  B4 [wrap/resisting ['C02', 'C05', 'C08'] prem=None->None FORCED]: You mentioned that you’re healthy and can manage conditions with medication; as we discussed, a private hospital stay can cost around ₹24,000, diabetes and hypertension affect a sizable portion of adults, and a fresh policy would start its waiting periods from zero. Thank you for the conversation.
+
+##### SIM07 classify=[('B6', None)] chain=['C22', 'C28', 'C03', 'C02']
+  B1 [advance/neutral ['C22'] prem='5 lakh free for everyone'->C22 ]: I hear you say the scheme covers everyone. According to National Health Authority, AB PM-JAY, Ayushman Bharat's base cover goes to families selected mainly from the SECC 2011 deprivation and occupation lists; it is not open to anyone who applies. What would you do if you needed care but your family isn’t among those selected?
+  U: But my neighbour got treated free under it last year. It's a government scheme, I'm sure I'm eligible too.
+    [violation retry] you already gave C22; answer their last message with a different listed claim, or bridge
+  B2 [answer/resisting ['C23'] prem=None->None ]: I see why you feel the scheme should cover you as it did your neighbour. According to National Health Authority press release, Sep 2024, Ayushman Bharat covers everyone regardless of income only from age 70. If you’re not yet 70, what would you do if you needed care before that age?
+  U: I saw on the news they expanded it to everyone last year. So now it covers all of us.
+    [violation retry] you already gave C23; answer their last message with a different listed claim, or bridge
+  B3 [answer/resisting ['C22'] prem='they expanded it to everyone last year'->C22 ]: I hear you say the scheme now covers everyone. According to National Health Authority, AB PM-JAY, Ayushman Bharat's base cover goes to families selected mainly from the SECC 2011 deprivation and occupation lists; it is not open to anyone who applies. What would you do if you needed care but your family isn’t among those selected?
+  U: Then what was the expansion on the news about? Who did they add?
+    [violation retry] you already gave C23; answer their last message with a different listed claim, or bridge
+  B4 [wrap/resisting ['C22', 'C23'] prem=None->None FORCED]: You said the government scheme covers you; according to National Health Authority, AB PM-JAY, the base cover is limited to families selected from the SECC 2011 deprivation and occupation lists and only people age 70 and above receive coverage regardless of income. Thank you for the conversation.
+
+##### SIM09 classify=[('B0', None), ('B1', None)] chain=['C05', 'C08', 'C02']
+  B1 [advance/open ['C05'] prem=None->None ]: I hear you. According to ICMR-INDIAB-17, Lancet Diabetes & Endocrinology, Jul 2023, about 1 in 9 Indian adults aged 20 and over has diabetes, and more than 1 in 3 has high blood pressure. How would your view shift if you learned that many young adults develop such chronic conditions?
+  U: 3 in 100 is pretty low honestly. I'd take those odds.
+  B2 [advance/resisting ['C08'] prem='3 in 100 is pretty low honestly.'->C01 ]: I hear you. Based on IRDAI Master Circular on Health Insurance Business, 29 May 2024, paras 11–12, a fresh policy bought after leaving a job starts its waiting periods from zero. Would you consider how a new policy could protect you if you needed care before any waiting period ends?
+  U: 24k I can pay from one month's salary. Not a big deal.
+  B3 [advance/open ['C02'] prem=None->None ]: I hear you. According to MoSPI/NSO, NSS 80th round press note, 20 Apr 2026, the typical (median) private-hospital stay cost ₹24,000 (≈$248) out of pocket, excluding childbirth. Does knowing that this is the median cost for a hospital stay change how you view the expense?
+  U: Diabetes and BP are mostly older people or family history. I'm 26 and I go to the gym.
+    [violation retry] you already gave C05; answer their last message with a different listed claim, or bridge
+  B4 [answer/resisting ['C01'] prem='Diabetes and BP are mostly older people or family history'->None REFUSED ]: I don't have a source for that, so I won't state it. I hear you. According to MoSPI/NSO, NSS 80th round press note, 20 Apr 2026, there were about 3 hospital admissions per 100 urban residents each year (all ages, excluding childbirth). How does that influence your view on the need for coverage at your age?
+  U: Maybe, but I'll deal with it if and when it happens.
+  B5 [wrap/resisting ['C05', 'C08', 'C02'] prem=None->None ]: You mentioned that, as a young and healthy person, you view health insurance as an unnecessary expense. Yet, according to ICMR-INDIAB-17, about 1 in 9 Indian adults aged 20 and over has diabetes and more than 1 in 3 has high blood pressure; a fresh policy bought after leaving a job starts its waiting periods from zero (IRDAI Master Circular, 29 May 2024); and the typical private‑hospital stay costs ₹24,000 (≈$248) out of pocket (MoSPI/NSO, 20 Apr 2026).
+
+violations: [('R1', 2, 'repeat', ['C34']), ('SIM07', 2, 'repeat', ['C22'])]
+latency median 1.0s max 4s n=42

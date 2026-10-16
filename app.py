@@ -13,7 +13,7 @@ IDs: participants who pass screening get P01, P02, ... (odd = system arm, even =
 declined / screened-out get S01, S02, ...; try-outs get demo-N (always the system arm, never counted, capped per
 day); `?pilot=1` gives pilot-N (alternating arms, never counted).
 """
-import hashlib, hmac, json, os, ssl, sys, time, urllib.parse, urllib.request  # hashlib: session tokens
+import hashlib, hmac, json, os, ssl, sys, time, urllib.error, urllib.parse, urllib.request  # hashlib: session tokens
 from pathlib import Path
 
 os.environ.setdefault("RATE_LIMIT_WAITS", "5,10,20,30")  # keeps one request under ~2 min, so the page doesn't look stuck
@@ -71,8 +71,14 @@ class SupabaseStore:
         req = urllib.request.Request(self.root + table + query, method=method, data=json.dumps(body).encode() if body else None,
                                      headers={"apikey": self.key, "Authorization": f"Bearer {self.key}",
                                               "Content-Type": "application/json", "Prefer": "return=minimal"})
-        with urllib.request.urlopen(req, timeout=20, context=self.tls) as r:
-            return json.loads(r.read() or "null")
+        for attempt in range(3):
+            try:
+                with urllib.request.urlopen(req, timeout=20, context=self.tls) as r:
+                    return json.loads(r.read() or "null")
+            except urllib.error.HTTPError as e:  # Supabase sometimes answers reads with HTTP 555 (twice on 16 Oct)
+                if method != "GET" or e.code < 500 or attempt == 2:  # never retry writes: no duplicate events
+                    raise
+                time.sleep(attempt + 1)
 
     def append(self, rec):
         self._call("POST", body={"pid": rec["pid"], "ts": rec["ts"], "event": rec["event"], "data": rec})
@@ -279,7 +285,7 @@ def message(t: Turn):
         history.append({"role": "user", "content": t.text})
     text, ids, done, _ = llm(lambda: cv.next_reply(make_client(), MODEL, cv.system_prompt(bucket, reason_text, secondary, plan),
                                                    history, bucket, turn, log, secondary, plan,
-                                                   wrap_now=cv.should_wrap(stances, turn)))
+                                                   stances=stances))
     return {"reply": text, "sources": sources(ids), "last": done}
 
 
@@ -338,8 +344,9 @@ def selfcheck():
         msgs = kw["messages"]
         wrap = "Wrap up now" in msgs[-1]["content"]
         stance = "agrees" if "fair point" in msgs[-1]["content"] else "resisting"
+        new = "C10 C12 C13 C14 C29 C30 C11 C34 C24 C23".split()[sum(m["role"] == "assistant" for m in msgs)]  # no repeats
         return NS(choices=[NS(message=NS(content=json.dumps({"reply": "Thanks for talking." if wrap else "About 87% were paid.",
-                                                             "claim_ids": [] if wrap else ["C10"], "stance": stance,
+                                                             "claim_ids": [] if wrap else [new], "stance": stance,
                                                              "move": "wrap" if wrap else "advance"})))])
     make_client = lambda: NS(chat=NS(completions=NS(create=create)))
     llm_classifier = lambda: (lambda text: {"primary": "B0" if "dunno" in text else "B2" if "employer" in text else "B3",
@@ -393,11 +400,11 @@ def selfcheck():
         assert a["buckets"] == ["B2", "B5"] and a["question_claims"] == [], a  # C10 came from the plan, not a question
         pl = next(e for e in STORE.events(two["pid"]) if e["event"] == "plan")
         assert pl["plan_extra"] == ["C10"]  # a plan claim outside the person's buckets (the C05 case) is logged
-        # a stalled argument: after the opening, 3 resisting replies force a wrap, and the API reports last
+        # a stalled argument: the 3rd resisting message after the opening gets the wrap (its own stance counts), API reports last
         st = c.post("/api/start", json={**ok, "mode": "demo"}).json()
         c.post("/api/reason", json={**st, "text": "claims get rejected"})
-        lasts = [c.post("/api/message", json={**st, "text": "not convinced"}).json().get("last") for _ in range(5)]
-        assert lasts[:4] == [False, False, False, True] and evs(st["pid"]).count("plan") == 1, lasts
+        lasts = [c.post("/api/message", json={**st, "text": "not convinced"}).json().get("last") for _ in range(4)]
+        assert lasts == [False, False, True, None] and evs(st["pid"]).count("plan") == 1, lasts
         assert c.post("/api/message", json={**st, "text": "more?"}).json() == {"done": True}
         # sim mode: the requested arm, its own id series, screening still applies, never counted by analyze.py
         sm = c.post("/api/start", json={**ok, "mode": "sim", "arm": "brief", "label": "Riya"}).json()
