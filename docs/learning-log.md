@@ -155,6 +155,20 @@ This is a record of where the evidence changed the plan, the system or the hypot
   - general argument knowledge in the planner prompt ("buy later / healthy now → waiting periods restart + how common conditions are") fixed it, and a fresh variant (J4) passed too
 - **Means:** the constraint (sourced facts only) and the persuasion (a case built for the person) are separate design problems. Fixing the first made the bot honest; it took the second to make it go anywhere. The bot's own stance labels are a steering aid, not a measure; the before/after score stays the outcome.
 
+## 17. Ten simulated people found what the scripted tests didn't
+- **What I did:** I ran 10 personas end to end on the live platform (`runs/personas/`). Claude drafted every reply in character, I approved each one, and I gave every T1. Each persona had a different reason, tone and language. The scores are simulated and say nothing about the hypothesis.
+- **What it showed:**
+  - Honest facts can still argue the other side. To people who are healthy or saving, ₹24,000 (≈$248) and "3 admissions per 100" sounded affordable. Three personas said so outright.
+  - Under pushback the bot repeated a fact word for word, three times for Sunil, instead of reaching for the claim that answered him (C23).
+  - Premises phrased as common sense ("treatment there is free", "everyone does that") weren't detected, so the refusal never fired.
+  - Recaps restated ledger figures with no source, and added consequences. The wording came from the argument plan's own conclusion.
+  - The stall rule fired one turn late.
+- **What changed** (`runs/persona-fixes/`):
+  - Rules a program can check moved into code, and they held in the replays: a figure with no claim ID, "how would you feel" questions, claim IDs in the text, verbatim repeats (one retry), and stall timing.
+  - Judgement calls went into the prompts, and only partly held: lead with long-term conditions and the waiting-period reset rather than small costs, wider premise examples, and match the person's language.
+  - The first prompt round caused regressions (Hinglish to English speakers), which a second round fixed. The replays also exposed an old regex bug: "switch jobs" was treated as a purchase question.
+- **Means:** what the code checks stays fixed; what the prompt asks for drifts. Remaining add-ons are counted by the hand review, as decided earlier, not tuned away.
+
 ## To add
 - Day-2 results: the checker rescore, the classifier rescore, and the reversal runs after the fixes. Did fix 1 make R2-open refuse up front?
 - Pilot: how real reasons differed from my test sets.
