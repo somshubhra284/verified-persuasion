@@ -155,7 +155,7 @@ This is a record of where the evidence changed the plan, the system or the hypot
   - general argument knowledge in the planner prompt ("buy later / healthy now → waiting periods restart + how common conditions are") fixed it, and a fresh variant (J4) passed too
 - **Means:** the constraint (sourced facts only) and the persuasion (a case built for the person) are separate design problems. Fixing the first made the bot honest; it took the second to make it go anywhere. The bot's own stance labels are a steering aid, not a measure; the before/after score stays the outcome.
 
-## 17. Pre-pilot stress tests found what the scripted tests didn't
+## 17. Pre-pilot testing changed the design
 - **What I did:** before the pilot, I ran full test conversations on the live platform, each with a different reason, tone and language. These were tests, not participants; nothing from them counts as study data.
 - **What it showed:**
   - Honest facts can still argue the other side. For a healthy or saving user, ₹24,000 (≈$248) and "3 admissions per 100" read as affordable, and the test replies turned them into reasons to stay put.
